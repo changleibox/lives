@@ -283,6 +283,9 @@ class _BottomBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final model = context.watch<WatchModel>();
+    if (!model.started) {
+      return const SizedBox();
+    }
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -302,11 +305,10 @@ class _BottomBar extends StatelessWidget {
         direction: Axis.vertical,
         spacing: 8,
         children: [
-          if (model.started)
-            TextChatRoom(
-              messages: model.messages,
-            ),
-          if (model.started) const _ChatInput(),
+          TextChatRoom(
+            messages: model.messages,
+          ),
+          const _ChatInput(),
         ],
       ),
     );
