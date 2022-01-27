@@ -14,6 +14,7 @@ import 'package:lives/commons/test_data.dart';
 import 'package:lives/entries/bullet_chat.dart';
 import 'package:lives/helpers/storage.dart';
 import 'package:lives/models/live_error.dart';
+import 'package:lives/models/live_module.dart';
 import 'package:lives/models/live_observer.dart';
 import 'package:lives/models/live_room.dart';
 import 'package:lives/models/live_room_def.dart';

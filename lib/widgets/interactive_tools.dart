@@ -23,7 +23,6 @@ class InteractiveTools extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final room = model.room;
     return Container(
       decoration: const BoxDecoration(
         color: Color(0xdd1e1d27),
@@ -62,7 +61,7 @@ class InteractiveTools extends StatelessWidget {
                       text: '语音连麦',
                       icon: CupertinoIcons.mic_fill,
                       onPressed: () {
-                        room.requestJoinAnchor();
+                        model.requestJoinAnchor();
                       },
                     ),
                   ),
@@ -130,14 +129,14 @@ class InteractiveTools extends StatelessWidget {
                     text: '闪光灯关',
                     icon: CupertinoIcons.bolt_fill,
                     onPressed: () {
-                      room.enableCameraTorch(true);
+                      model.enableCameraTorch(true);
                     },
                   ),
                   _Button(
                     text: '麦克风开',
                     icon: CupertinoIcons.mic_fill,
                     onPressed: () {
-                      room.muteLocalAudio(true);
+                      model.muteLocalAudio(true);
                     },
                   ),
                   _Button(
