@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_grasp/flutter_grasp.dart';
 import 'package:lives/commons/test_data.dart';
+import 'package:lives/enums/live_type.dart';
 import 'package:lives/models/lives.dart';
 import 'package:lives/widgets/beauty.dart';
 import 'package:lives/widgets/more.dart';
@@ -15,37 +16,6 @@ import 'package:provider/provider.dart';
 const _animationDuration = Duration(
   milliseconds: 150,
 );
-
-/// 直播类型
-enum LiveType {
-  /// 视频
-  video,
-
-  /// 游戏
-  game,
-
-  /// 语音
-  voice,
-
-  /// 虚拟
-  fictitious,
-}
-
-extension _LiveTypeName on LiveType {
-  /// 名称
-  String get label {
-    switch (this) {
-      case LiveType.video:
-        return '视频';
-      case LiveType.game:
-        return '游戏';
-      case LiveType.voice:
-        return '语音';
-      case LiveType.fictitious:
-        return '虚拟';
-    }
-  }
-}
 
 /// Created by changlei on 2022/1/19.
 ///
