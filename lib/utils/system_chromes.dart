@@ -10,7 +10,7 @@ const _overlayStyle = SystemUiOverlayStyle(
   systemStatusBarContrastEnforced: true,
   systemNavigationBarContrastEnforced: true,
   systemNavigationBarIconBrightness: Brightness.light,
-  statusBarIconBrightness: Brightness.light,
+  statusBarIconBrightness: Brightness.dark,
   statusBarBrightness: Brightness.light,
 );
 
@@ -27,6 +27,7 @@ class SystemChromes {
   static SystemUiOverlayStyle get liveOverlayStyle {
     return _overlayStyle.copyWith(
       systemNavigationBarColor: CupertinoColors.black,
+      statusBarIconBrightness: Brightness.light,
     );
   }
 }
