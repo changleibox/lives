@@ -7,6 +7,7 @@ import 'package:flutter_grasp/flutter_grasp.dart';
 import 'package:lives/commons/test_data.dart';
 import 'package:lives/enums/live_type.dart';
 import 'package:lives/models/lives.dart';
+import 'package:lives/utils/system_chromes.dart';
 import 'package:lives/widgets/beauty.dart';
 import 'package:lives/widgets/more.dart';
 import 'package:lives/widgets/popularize.dart';
@@ -42,7 +43,7 @@ class _NotLiveOverlayState extends State<NotLiveOverlay> {
   @override
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light,
+      value: SystemChromes.liveOverlayStyle,
       child: AnimatedPadding(
         duration: const Duration(
           milliseconds: 300,

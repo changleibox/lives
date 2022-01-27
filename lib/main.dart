@@ -3,16 +3,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:lives/routes/routes.dart';
+import 'package:lives/utils/system_chromes.dart';
 import 'package:oktoast/oktoast.dart';
 
 void main() {
-  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-    statusBarColor: CupertinoColors.white.withAlpha(0),
-    systemNavigationBarColor: CupertinoColors.white.withAlpha(0),
-    systemNavigationBarDividerColor: CupertinoColors.white.withAlpha(0),
-    systemStatusBarContrastEnforced: true,
-    systemNavigationBarContrastEnforced: true,
-  ));
   runApp(const LivesApp());
 }
 
@@ -26,16 +20,16 @@ class LivesApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return CupertinoApp(
       title: '腾讯直播',
-      theme: const CupertinoThemeData(
-        brightness: Brightness.light,
-        primaryColor: Color(0xfff56494)
-      ),
+      theme: const CupertinoThemeData(brightness: Brightness.light, primaryColor: Color(0xfff56494)),
       routes: RouteProvider.routes,
       initialRoute: Navigator.defaultRouteName,
       builder: (context, child) {
-        return OKToast(
-          position: ToastPosition.bottom,
-          child: child!,
+        return AnnotatedRegion<SystemUiOverlayStyle>(
+          value: SystemChromes.overlayStyle,
+          child: OKToast(
+            position: ToastPosition.bottom,
+            child: child!,
+          ),
         );
       },
     );

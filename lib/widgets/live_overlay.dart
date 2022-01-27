@@ -7,6 +7,7 @@ import 'package:flutter_grasp/flutter_grasp.dart';
 import 'package:lives/commons/test_data.dart';
 import 'package:lives/models/lives.dart';
 import 'package:lives/utils/formats.dart';
+import 'package:lives/utils/system_chromes.dart';
 import 'package:lives/widgets/beauty.dart';
 import 'package:lives/widgets/competition.dart';
 import 'package:lives/widgets/income.dart';
@@ -39,7 +40,7 @@ class _LiveOverlayState extends State<LiveOverlay> {
   @override
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light,
+      value: SystemChromes.liveOverlayStyle,
       child: AnimatedPadding(
         duration: const Duration(
           milliseconds: 300,
