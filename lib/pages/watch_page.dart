@@ -1,0 +1,163 @@
+// Copyright (c) 2022 CHANGLEI. All rights reserved.
+
+import 'package:flutter/cupertino.dart';
+import 'package:flutter_grasp/flutter_grasp.dart';
+import 'package:lives/models/live_error.dart';
+import 'package:lives/models/lives.dart';
+import 'package:lives/widgets/future_wrapper.dart';
+import 'package:lives/widgets/live_video_player.dart';
+import 'package:lives/widgets/watch_overlay.dart';
+import 'package:oktoast/oktoast.dart';
+import 'package:provider/provider.dart';
+
+/// Created by changlei on 2022/1/25.
+///
+/// 观看直播
+class WatchPage extends StatefulWidget with HostProvider {
+  /// 构建直播页面
+  const WatchPage({Key? key}) : super(key: key);
+
+  @override
+  _WatchPageState createState() => _WatchPageState();
+
+  @override
+  _WatchPresenter createPresenter() => _WatchPresenter();
+}
+
+class _WatchPageState extends HostState<WatchPage, _WatchPresenter> {
+  @override
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (context) => presenter._model,
+      child: Consumer<WatchModel>(
+        builder: (context, value, child) {
+          return WillPopScope(
+            onWillPop: () async {
+              final result = await presenter._onExit();
+              return result == true;
+            },
+            child: CupertinoPageScaffold(
+              backgroundColor: CupertinoColors.white,
+              resizeToAvoidBottomInset: false,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  if (value.mounted)
+                    Positioned.fill(
+                      child: LiveVideoPlayer(
+                        key: ObjectKey(value.anchorId),
+                        onViewCreated: presenter._startWatch,
+                      ),
+                    ),
+                  if (value.mounted)
+                    Positioned.fill(
+                      child: WatchOverlay(
+                        anchorId: value.anchorId,
+                        userId: value.userId,
+                      ),
+                    ),
+                  if (value.mounted && presenter._errorMessage != null)
+                    Positioned.fill(
+                      child: Container(
+                        alignment: Alignment.center,
+                        child: Text(
+                          presenter._errorMessage!,
+                          style: CupertinoTheme.of(context).textTheme.navLargeTitleTextStyle,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _WatchPresenter extends VoidPresenter<WatchPage> {
+  final _model = WatchModel();
+
+  String? _errorMessage;
+
+  @override
+  Future<void> onLoad(bool showProgress, CancelToken? cancelToken) {
+    final anchorId = (arguments as Map<String, dynamic>?)?['anchorId'] as String?;
+    return _model.setup(anchorId);
+  }
+
+  @override
+  void initState() {
+    _model.addDestroyListener(_onRoomDestroy);
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _model.removeDestroyListener(_onRoomDestroy);
+    super.dispose();
+  }
+
+  void _onRoomDestroy() {
+    markNeedsBuild(() {
+      _errorMessage = '直播已结束';
+    });
+  }
+
+  Future<void> _startWatch(int viewId) async {
+    try {
+      await _model.startWatch(viewId);
+    } on LiveError catch (e) {
+      if (e.isNotExist) {
+        _errorMessage = '直播未开始';
+      } else {
+        showToast(e.message.toString());
+      }
+    } finally {
+      markNeedsBuild();
+    }
+  }
+
+  Future<void> _exitWatch() async {
+    try {
+      await FutureWrapper.wrapLoading(
+        context: context,
+        computation: _model.exitWatch,
+      );
+    } on LiveError catch (e) {
+      if (!e.isNotExist) {
+        showToast(e.message);
+      }
+    }
+    Navigator.pop(context, true);
+  }
+
+  Future<bool?> _onExit() async {
+    if (!_model.started) {
+      return true;
+    }
+    return await showCupertinoDialog<bool>(
+      context: context,
+      builder: (context) {
+        return CupertinoAlertDialog(
+          title: const Text('提示'),
+          content: const Text('您确定要退出当前直播吗？'),
+          actions: [
+            CupertinoDialogAction(
+              child: const Text('取消'),
+              onPressed: () async {
+                Navigator.pop(context, false);
+              },
+            ),
+            CupertinoDialogAction(
+              isDestructiveAction: true,
+              onPressed: _exitWatch,
+              child: const Text('确定'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
