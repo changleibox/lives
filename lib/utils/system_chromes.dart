@@ -28,6 +28,7 @@ class SystemChromes {
     return _overlayStyle.copyWith(
       systemNavigationBarColor: CupertinoColors.black,
       statusBarIconBrightness: Brightness.light,
+      statusBarBrightness: Brightness.dark,
     );
   }
 }
