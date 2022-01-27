@@ -30,6 +30,7 @@ class _HomePageState extends HostState<HomePage, _HomePresenter> {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
+      resizeToAvoidBottomInset: false,
       navigationBar: CupertinoNavigationBar(
         middle: const Text('首页'),
         trailing: CupertinoButton(
