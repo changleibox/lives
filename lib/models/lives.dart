@@ -12,6 +12,7 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:lives/commons/test_data.dart';
 import 'package:lives/entries/bullet_chat.dart';
+import 'package:lives/enums/beauty_type.dart';
 import 'package:lives/helpers/storage.dart';
 import 'package:lives/models/live_error.dart';
 import 'package:lives/models/live_module.dart';

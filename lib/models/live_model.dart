@@ -9,6 +9,13 @@ class LiveModel extends LivesModel implements LiveModule {
   final _speedNotifier = ValueNotifier<int>(0);
   final _clockNotifier = ValueNotifier<int>(0);
   final _networkNotifier = ValueNotifier<int>(1);
+  final _beautyValue = <BeautyType, int>{
+    BeautyType.smooth: 6,
+    BeautyType.nature: 6,
+    BeautyType.pitu: 6,
+    BeautyType.whitening: 0,
+    BeautyType.ruddy: 0,
+  };
 
   Timer? _timer;
   int? _viewId;
@@ -36,6 +43,18 @@ class LiveModel extends LivesModel implements LiveModule {
 
   @override
   TXBeautyManager get beautyManager => _LiveProxy.beautyManager;
+
+  /// 获取美颜数据
+  Map<BeautyType, int> get beauty => Map.unmodifiable(_beautyValue);
+
+  /// 设置美颜数据
+  set beauty(Map<BeautyType, int> value) {
+    if (mapEquals(value, _beautyValue)) {
+      return;
+    }
+    _beautyValue.addAll(value);
+    notifyListeners();
+  }
 
   /// 是否为前置摄像头，null为为开启预览
   bool? get isFront => _isFront;

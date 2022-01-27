@@ -1,48 +1,17 @@
 // Copyright (c) 2022 CHANGLEI. All rights reserved.
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_grasp/flutter_grasp.dart';
+import 'package:lives/enums/beauty_type.dart';
+import 'package:lives/models/lives.dart';
+import 'package:provider/provider.dart';
 import 'package:tencent_trtc_cloud/trtc_cloud_def.dart';
 import 'package:tencent_trtc_cloud/tx_beauty_manager.dart';
 
 const _animationDuration = Duration(
   milliseconds: 150,
 );
-
-/// 美颜类型
-enum BeautyType {
-  /// 光滑
-  smooth,
-
-  /// 自然
-  nature,
-
-  /// P图
-  pitu,
-
-  /// 美白
-  whitening,
-
-  /// 红润
-  ruddy,
-}
-
-extension _BeautyTypeName on BeautyType {
-  String get label {
-    switch (this) {
-      case BeautyType.smooth:
-        return '光滑';
-      case BeautyType.nature:
-        return '自然';
-      case BeautyType.pitu:
-        return 'P图';
-      case BeautyType.whitening:
-        return '美白';
-      case BeautyType.ruddy:
-        return '红润';
-    }
-  }
-}
 
 /// Created by changlei on 2022/1/26.
 ///
@@ -52,30 +21,40 @@ class Beauty extends StatefulWidget {
   const Beauty({
     Key? key,
     required this.manager,
+    this.initialBeauty = const {},
+    this.onChanged,
   }) : super(key: key);
 
   /// 美颜管理器
   final TXBeautyManager manager;
+
+  /// 初始数据
+  final Map<BeautyType, int> initialBeauty;
+
+  /// 变更回调
+  final ValueChanged<Map<BeautyType, int>>? onChanged;
 
   @override
   State<Beauty> createState() => _BeautyState();
 }
 
 class _BeautyState extends State<Beauty> {
-  final _curBeautyValue = <BeautyType, int>{};
+  final _beautyValue = <BeautyType, int>{};
 
   BeautyType _groupValue = BeautyType.smooth;
 
   @override
   void initState() {
     super.initState();
-    _curBeautyValue.addAll(<BeautyType, int>{
-      BeautyType.smooth: 6,
-      BeautyType.nature: 6,
-      BeautyType.pitu: 6,
-      BeautyType.whitening: 0,
-      BeautyType.ruddy: 0,
-    });
+    _beautyValue.addAll(widget.initialBeauty);
+  }
+
+  @override
+  void didUpdateWidget(covariant Beauty oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!mapEquals(widget.initialBeauty, oldWidget.initialBeauty)) {
+      _beautyValue.addAll(widget.initialBeauty);
+    }
   }
 
   Widget _buildItem(BeautyType value) {
@@ -118,6 +97,7 @@ class _BeautyState extends State<Beauty> {
     } else if (groupValue == BeautyType.ruddy) {
       manager.setRuddyLevel(value.round());
     }
+    widget.onChanged?.call(Map.unmodifiable(_beautyValue));
   }
 
   @override
@@ -171,20 +151,20 @@ class _BeautyState extends State<Beauty> {
                   ),
                   Expanded(
                     child: CupertinoSlider(
-                      value: _curBeautyValue[_groupValue]!.toDouble(),
+                      value: _beautyValue[_groupValue]!.toDouble(),
                       min: 0,
                       max: 9,
                       divisions: 9,
                       onChanged: (double value) {
                         setState(() {
-                          _curBeautyValue[_groupValue] = value.toInt();
+                          _beautyValue[_groupValue] = value.toInt();
                         });
                         _onBeautyValueChange(_groupValue, value);
                       },
                     ),
                   ),
                   Text(
-                    _curBeautyValue[_groupValue]!.toString(),
+                    _beautyValue[_groupValue]!.toString(),
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontSize: 14,
@@ -203,11 +183,16 @@ class _BeautyState extends State<Beauty> {
 
 /// 显示美颜弹窗
 Future<void> showBeauty(BuildContext context, TXBeautyManager manager) {
+  final model = context.read<LiveModel>();
   return showCupertinoModalPopup<void>(
     context: context,
     builder: (context) {
       return Beauty(
         manager: manager,
+        initialBeauty: model.beauty,
+        onChanged: (value) {
+          model.beauty = value;
+        },
       );
     },
   );
