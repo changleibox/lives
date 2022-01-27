@@ -22,16 +22,20 @@ class LiveModel extends LivesModel implements LiveModule {
   /// room
   TRTCLiveRoom get _room => _LiveProxy.room;
 
-  /// 获取背景音乐音效管理对象 TXAudioEffectManager。
+  @override
   TXAudioEffectManager get audioEffectManager => _LiveProxy.audioEffectManager;
 
-  /// 获取美颜管理对象 TXBeautyManager。
+  @override
   TXBeautyManager get beautyManager => _LiveProxy.beautyManager;
 
   Timer? _timer;
   int? _viewId;
   bool? _isFront;
   int _lastSendBytes = 0;
+  bool _enableCameraTorch = false;
+  bool _isMirror = false;
+  bool _localMute = false;
+  bool _remoteMute = false;
 
   void _startDownTimer() {
     _timer ??= Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -112,23 +116,13 @@ class LiveModel extends LivesModel implements LiveModule {
   }
 
   @override
-  Future<void> enableCameraTorch(bool enable) {
-    return _room.enableCameraTorch(enable);
+  Future<void> enableCameraTorch() {
+    return _room.enableCameraTorch(_enableCameraTorch = !_enableCameraTorch);
   }
 
   @override
   Future<UserListCallback> getAnchorInfo() {
     return _room.getAnchorInfo();
-  }
-
-  @override
-  TXAudioEffectManager getAudioEffectManager() {
-    return _room.getAudioEffectManager();
-  }
-
-  @override
-  TXBeautyManager getBeautyManager() {
-    return _room.getBeautyManager();
   }
 
   @override
@@ -147,13 +141,13 @@ class LiveModel extends LivesModel implements LiveModule {
   }
 
   @override
-  Future<void> muteAllRemoteAudio(bool mute) {
-    return _room.muteAllRemoteAudio(mute);
+  Future<void> muteAllRemoteAudio() {
+    return _room.muteAllRemoteAudio(_remoteMute = !_remoteMute);
   }
 
   @override
-  Future<void> muteLocalAudio(bool mute) {
-    return _room.muteLocalAudio(mute);
+  Future<void> muteLocalAudio() {
+    return _room.muteLocalAudio(_localMute = !_localMute);
   }
 
   @override
@@ -192,13 +186,8 @@ class LiveModel extends LivesModel implements LiveModule {
   }
 
   @override
-  Future<ActionCallback> sendRoomTextMsg(String message) {
-    return _room.sendRoomTextMsg(message);
-  }
-
-  @override
-  Future<void> setMirror(bool isMirror) {
-    return _room.setMirror(isMirror);
+  Future<void> setMirror() {
+    return _room.setMirror(_isMirror = !_isMirror);
   }
 
   @override
@@ -207,38 +196,11 @@ class LiveModel extends LivesModel implements LiveModule {
   }
 
   @override
-  Future<void> startCameraPreview(bool isFrontCamera, int viewId) {
-    return _room.startCameraPreview(isFrontCamera, viewId);
-  }
-
-  @override
-  Future<void> startPlay(String userId, int viewId) {
-    return _room.startPlay(userId, viewId);
-  }
-
-  @override
-  Future<void> startPublish(String? streamId) {
-    return _room.startPublish(streamId);
-  }
-
-  @override
-  Future<void> stopCameraPreview() {
-    return _room.stopCameraPreview();
-  }
-
-  @override
-  Future<void> stopPlay(String userId) {
-    return _room.stopPlay(userId);
-  }
-
-  @override
-  Future<void> stopPublish() {
-    return _room.stopPublish();
-  }
-
-  @override
-  Future<void> updateLocalView(int viewId) {
-    return _room.updateLocalView(viewId);
+  Future<void> updateLocalView() async {
+    if (_viewId == null) {
+      return;
+    }
+    return _room.updateLocalView(_viewId!);
   }
 
   @override

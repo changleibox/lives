@@ -30,31 +30,11 @@ abstract class LiveModule {
   /// 获取群成员列表。
   Future<UserListCallback> getRoomMemberInfo(int nextSeq);
 
-  /// 开启本地视频的预览画面。
-  Future<void> startCameraPreview(bool isFrontCamera, int viewId);
-
   /// 更新本地视频预览画面的窗口,仅仅ios有效
-  Future<void> updateLocalView(int viewId);
-
-  /// 停止本地视频采集及预览。
-  Future<void> stopCameraPreview();
-
-  /// 开始直播（推流），适用于以下场景：
-  /// 主播开播的时候调用
-  /// 观众开始连麦时调用
-  Future<void> startPublish(String? streamId);
-
-  /// 停止直播（推流）。
-  Future<void> stopPublish();
-
-  /// 播放远端视频画面，可以在普通观看和连麦场景中调用。
-  Future<void> startPlay(String userId, int viewId);
+  Future<void> updateLocalView();
 
   /// 更新远端视频画面的窗口,仅仅ios有效
   Future<void> updateRemoteView(String userId, int viewId);
-
-  /// 停止渲染远端视频画面。
-  Future<void> stopPlay(String userId);
 
   /// 观众请求连麦。
   Future<ActionCallback> requestJoinAnchor();
@@ -79,14 +59,14 @@ abstract class LiveModule {
   Future<void> switchCamera();
 
   /// 开关闪光灯
-  Future<void> enableCameraTorch(bool enable);
+  Future<void> enableCameraTorch();
 
   /// 设置是否镜像展示。
-  Future<void> setMirror(bool isMirror);
+  Future<void> setMirror();
 
   /// 开启本地静音。
   /// @param mute 是否静音
-  Future<void> muteLocalAudio(bool mute);
+  Future<void> muteLocalAudio();
 
   /// 静音远端音频。
   /// @param userId 远端用户id
@@ -95,17 +75,13 @@ abstract class LiveModule {
 
   /// 静音所有远端音频。
   /// @param mute 是否静音
-  Future<void> muteAllRemoteAudio(bool mute);
+  Future<void> muteAllRemoteAudio();
 
   /// 获取背景音乐音效管理对象 TXAudioEffectManager。
-  TXAudioEffectManager getAudioEffectManager();
+  TXAudioEffectManager get audioEffectManager;
 
   /// 获取美颜管理对象 TXBeautyManager。
-  TXBeautyManager getBeautyManager();
-
-  /// 在房间中广播文本消息，一般用于弹幕聊天
-  /// @param message 文本消息
-  Future<ActionCallback> sendRoomTextMsg(String message);
+  TXBeautyManager get beautyManager;
 
   /// 发送自定义文本消息。
   /// @param cmd 命令字，由开发者自定义，主要用于区分不同消息类型。
