@@ -158,7 +158,10 @@ class InteractiveTools extends StatelessWidget {
                   _Button(
                     text: '清晰度',
                     icon: CupertinoIcons.desktopcomputer,
-                    onPressed: () {},
+                    onPressed: () {
+                      final manager = model.beautyManager;
+                      manager.enableSharpnessEnhancement(true);
+                    },
                   ),
                   _Button(
                     text: '房间管理',
