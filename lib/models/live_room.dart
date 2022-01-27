@@ -177,6 +177,9 @@ abstract class TRTCLiveRoom {
   /// @param isFrontCamera true:切换前置摄像头 false:切换后置摄像头
   Future<void> switchCamera(bool isFrontCamera);
 
+  /// 开关闪光灯
+  Future<void> enableCameraTorch(bool enable);
+
   /// 设置是否镜像展示。
   Future<void> setMirror(bool isMirror);
 
@@ -1117,5 +1120,10 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
   @override
   Future<void> switchCamera(bool isFrontCamera) {
     return _txDeviceManager.switchCamera(isFrontCamera);
+  }
+
+  @override
+  Future<void> enableCameraTorch(bool enable) {
+    return _txDeviceManager.enableCameraTorch(enable);
   }
 }

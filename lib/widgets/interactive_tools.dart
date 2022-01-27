@@ -129,7 +129,9 @@ class InteractiveTools extends StatelessWidget {
                   _Button(
                     text: '闪光灯关',
                     icon: CupertinoIcons.bolt_fill,
-                    onPressed: () {},
+                    onPressed: () {
+                      room.enableCameraTorch(true);
+                    },
                   ),
                   _Button(
                     text: '麦克风开',
