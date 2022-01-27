@@ -1,10 +1,18 @@
 // Copyright (c) 2022 CHANGLEI. All rights reserved.
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:lives/routes/routes.dart';
 import 'package:oktoast/oktoast.dart';
 
 void main() {
+  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+    statusBarColor: CupertinoColors.white.withAlpha(0),
+    systemNavigationBarColor: CupertinoColors.white.withAlpha(0),
+    systemNavigationBarDividerColor: CupertinoColors.white.withAlpha(0),
+    systemStatusBarContrastEnforced: true,
+    systemNavigationBarContrastEnforced: true,
+  ));
   runApp(const LivesApp());
 }
 
