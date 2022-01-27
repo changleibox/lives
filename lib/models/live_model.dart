@@ -10,6 +10,15 @@ class LiveModel extends LivesModel implements LiveModule {
   final _clockNotifier = ValueNotifier<int>(0);
   final _networkNotifier = ValueNotifier<int>(1);
 
+  Timer? _timer;
+  int? _viewId;
+  bool? _isFront;
+  int _lastSendBytes = 0;
+  bool _enableTorch = false;
+  bool _isMirror = false;
+  bool _localMute = false;
+  bool _remoteMute = false;
+
   /// 网速
   ValueListenable<int> get speedNotifier => _speedNotifier;
 
@@ -28,14 +37,20 @@ class LiveModel extends LivesModel implements LiveModule {
   @override
   TXBeautyManager get beautyManager => _LiveProxy.beautyManager;
 
-  Timer? _timer;
-  int? _viewId;
-  bool? _isFront;
-  int _lastSendBytes = 0;
-  bool _enableCameraTorch = false;
-  bool _isMirror = false;
-  bool _localMute = false;
-  bool _remoteMute = false;
+  /// 是否为前置摄像头，null为为开启预览
+  bool? get isFront => _isFront;
+
+  /// 是否开启闪光灯
+  bool get enableTorch => _enableTorch;
+
+  /// 是否镜像显示
+  bool get isMirror => _isMirror;
+
+  /// 本地是否静音
+  bool get localMute => _localMute;
+
+  /// 远程是否静音
+  bool get remoteMute => _remoteMute;
 
   void _startDownTimer() {
     _timer ??= Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -116,8 +131,9 @@ class LiveModel extends LivesModel implements LiveModule {
   }
 
   @override
-  Future<void> enableCameraTorch() {
-    return _room.enableCameraTorch(_enableCameraTorch = !_enableCameraTorch);
+  Future<void> enableCameraTorch() async {
+    await _room.enableCameraTorch(_enableTorch = !_enableTorch);
+    notifyListeners();
   }
 
   @override
@@ -141,13 +157,15 @@ class LiveModel extends LivesModel implements LiveModule {
   }
 
   @override
-  Future<void> muteAllRemoteAudio() {
-    return _room.muteAllRemoteAudio(_remoteMute = !_remoteMute);
+  Future<void> muteAllRemoteAudio() async {
+    await _room.muteAllRemoteAudio(_remoteMute = !_remoteMute);
+    notifyListeners();
   }
 
   @override
-  Future<void> muteLocalAudio() {
-    return _room.muteLocalAudio(_localMute = !_localMute);
+  Future<void> muteLocalAudio() async {
+    await _room.muteLocalAudio(_localMute = !_localMute);
+    notifyListeners();
   }
 
   @override
@@ -186,8 +204,9 @@ class LiveModel extends LivesModel implements LiveModule {
   }
 
   @override
-  Future<void> setMirror() {
-    return _room.setMirror(_isMirror = !_isMirror);
+  Future<void> setMirror() async {
+    await _room.setMirror(_isMirror = !_isMirror);
+    notifyListeners();
   }
 
   @override
@@ -215,5 +234,6 @@ class LiveModel extends LivesModel implements LiveModule {
       return;
     }
     await _LiveProxy.switchCamera(_isFront = !isFont);
+    notifyListeners();
   }
 }

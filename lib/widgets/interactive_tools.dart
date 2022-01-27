@@ -126,14 +126,14 @@ class InteractiveTools extends StatelessWidget {
                     },
                   ),
                   _Button(
-                    text: '闪光灯关',
+                    text: '闪光灯${model.enableTorch ? '开' : '关'}',
                     icon: CupertinoIcons.bolt_fill,
                     onPressed: () {
                       model.enableCameraTorch();
                     },
                   ),
                   _Button(
-                    text: '麦克风开',
+                    text: '麦克风${model.localMute ? '关' : '开'}',
                     icon: CupertinoIcons.mic_fill,
                     onPressed: () {
                       model.muteLocalAudio();
