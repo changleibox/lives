@@ -463,138 +463,102 @@ class _LiveOperators extends StatelessWidget {
       child: WidgetGroup(
         mainAxisSize: MainAxisSize.min,
         children: [
-          CupertinoButton(
-            minSize: 0,
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16,
-            ),
-            child: WidgetGroup.spacing(
-              direction: Axis.vertical,
-              spacing: 8,
-              children: const [
-                Icon(
-                  CupertinoIcons.rectangle_expand_vertical,
-                  color: CupertinoColors.white,
-                ),
-                Text(
-                  '直播推广',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: CupertinoColors.white,
-                  ),
-                ),
-              ],
-            ),
+          _OperationButton(
+            icon: CupertinoIcons.rectangle_expand_vertical,
+            label: '直播推广',
             onPressed: () {
               showPopularize(context);
             },
           ),
-          CupertinoButton(
-            minSize: 0,
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16,
+          if (model.liveType == LiveType.video)
+            _OperationButton(
+              icon: CupertinoIcons.camera_rotate,
+              label: '翻转',
+              onPressed: () {
+                model.switchCamera();
+              },
             ),
-            onPressed: model.switchCamera,
-            child: WidgetGroup.spacing(
-              direction: Axis.vertical,
-              spacing: 8,
-              children: const [
-                Icon(
-                  CupertinoIcons.camera_rotate,
-                  color: CupertinoColors.white,
-                ),
-                Text(
-                  '翻转',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: CupertinoColors.white,
-                  ),
-                ),
-              ],
+          if (model.liveType == LiveType.video)
+            _OperationButton(
+              icon: CupertinoIcons.bandage,
+              label: '美颜',
+              onPressed: () {
+                showBeauty(context, model.beautyManager);
+              },
             ),
-          ),
-          CupertinoButton(
-            minSize: 0,
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16,
+          if (model.liveType == LiveType.game)
+            _OperationButton(
+              icon: CupertinoIcons.device_phone_landscape,
+              label: '横屏',
+              onPressed: () {},
             ),
-            child: WidgetGroup.spacing(
-              direction: Axis.vertical,
-              spacing: 8,
-              children: const [
-                Icon(
-                  CupertinoIcons.bandage,
-                  color: CupertinoColors.white,
-                ),
-                Text(
-                  '美颜',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: CupertinoColors.white,
-                  ),
-                ),
-              ],
+          if (model.liveType == LiveType.game)
+            _OperationButton(
+              icon: CupertinoIcons.app,
+              label: '投屏',
+              onPressed: () {},
             ),
-            onPressed: () {
-              showBeauty(context, model.beautyManager);
-            },
-          ),
-          CupertinoButton(
-            minSize: 0,
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16,
+          if (model.liveType == LiveType.voice)
+            _OperationButton(
+              icon: CupertinoIcons.tv,
+              label: '背景',
+              onPressed: () {},
             ),
-            child: WidgetGroup.spacing(
-              direction: Axis.vertical,
-              spacing: 8,
-              children: const [
-                Icon(
-                  CupertinoIcons.share,
-                  color: CupertinoColors.white,
-                ),
-                Text(
-                  '分享',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: CupertinoColors.white,
-                  ),
-                ),
-              ],
-            ),
+          _OperationButton(
+            icon: CupertinoIcons.share,
+            label: '分享',
             onPressed: () {
               showShare(context);
             },
           ),
-          CupertinoButton(
-            minSize: 0,
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16,
-            ),
-            child: WidgetGroup.spacing(
-              direction: Axis.vertical,
-              spacing: 8,
-              children: const [
-                Icon(
-                  CupertinoIcons.ellipsis_circle,
-                  color: CupertinoColors.white,
-                ),
-                Text(
-                  '更多',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: CupertinoColors.white,
-                  ),
-                ),
-              ],
-            ),
+          _OperationButton(
+            icon: CupertinoIcons.ellipsis_circle,
+            label: '更多',
             onPressed: () {
               showMore(context);
             },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _OperationButton extends StatelessWidget {
+  const _OperationButton({
+    Key? key,
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+  }) : super(key: key);
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoButton(
+      minSize: 0,
+      padding: const EdgeInsets.symmetric(
+        horizontal: 16,
+      ),
+      onPressed: onPressed,
+      child: WidgetGroup.spacing(
+        direction: Axis.vertical,
+        spacing: 8,
+        children: [
+          Icon(
+            icon,
+            color: CupertinoColors.white,
+          ),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: CupertinoColors.white,
+            ),
           ),
         ],
       ),
