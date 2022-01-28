@@ -18,7 +18,7 @@ abstract class LivesModel extends ChangeNotifier with LiveObserver {
   /// 初始化
   Future<void> setup() async {
     _mounted = true;
-    _messages.add(BulletChat.systemTips);
+    _setupMessages();
     notifyListeners();
   }
 
@@ -54,6 +54,12 @@ abstract class LivesModel extends ChangeNotifier with LiveObserver {
 
   /// 消息列表
   List<BulletChat> get messages => List.unmodifiable(_messages);
+
+  /// 初始化消息列表
+  void _setupMessages() {
+    _messages.clear();
+    _messages.add(BulletChat.systemTips);
+  }
 
   /// 发送消息
   Future<void> sendMessage(String message) async {
