@@ -8,7 +8,7 @@
 import ReplayKit
 import TXLiteAVSDK_ReplayKitExt
 
-let APPGROUP = "group.me.box.app.lives"
+let APP_GROUP = "group.me.box.app.lives"
 
 class SampleHandler: RPBroadcastSampleHandler, TXReplayKitExtDelegate {
     
@@ -16,7 +16,7 @@ class SampleHandler: RPBroadcastSampleHandler, TXReplayKitExtDelegate {
 
     override func broadcastStarted(withSetupInfo setupInfo: [String : NSObject]?) {
         // User has requested to start the broadcast. Setup info from the UI extension can be supplied but optional.
-        TXReplayKitExt.sharedInstance().setup(withAppGroup: APPGROUP, delegate: self)
+        TXReplayKitExt.sharedInstance().setup(withAppGroup: APP_GROUP, delegate: self)
     }
     
     override func broadcastPaused() {
