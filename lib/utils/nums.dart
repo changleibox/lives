@@ -1,7 +1,5 @@
 // Copyright (c) 2022 CHANGLEI. All rights reserved.
 
-import 'package:flutter_grasp/flutter_grasp.dart';
-
 /// Created by changlei on 2022/1/18.
 ///
 /// num相关工具类
@@ -11,7 +9,7 @@ double? parseDouble(Object? source, {double? defaultValue = 0}) {
   if (source is double) {
     return source;
   }
-  if (TextUtils.isEmpty(source?.toString())) {
+  if (source?.toString().isNotEmpty != true) {
     return defaultValue;
   }
   return double.tryParse(source!.toString()) ?? defaultValue;
@@ -22,7 +20,7 @@ int? parseInt(Object? source, {int? defaultValue = 0}) {
   if (source is int) {
     return source;
   }
-  if (TextUtils.isEmpty(source?.toString())) {
+  if (source?.toString().isNotEmpty != true) {
     return defaultValue;
   }
   return int.tryParse(source!.toString()) ?? defaultValue;
@@ -33,7 +31,7 @@ num? parseNum(Object? source, {num? defaultValue = 0}) {
   if (source is num) {
     return source;
   }
-  if (TextUtils.isEmpty(source?.toString())) {
+  if (source?.toString().isNotEmpty != true) {
     return defaultValue;
   }
   return num.tryParse(source!.toString()) ?? defaultValue;

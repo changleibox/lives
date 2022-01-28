@@ -3,11 +3,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_grasp/flutter_grasp.dart';
 import 'package:lives/commons/test_data.dart';
 import 'package:lives/models/lives.dart';
 import 'package:lives/utils/system_chromes.dart';
 import 'package:lives/widgets/text_chat_room.dart';
+import 'package:lives/widgets/widget_group.dart';
 import 'package:provider/provider.dart';
 
 /// Created by changlei on 2022/1/19.

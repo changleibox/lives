@@ -6,7 +6,6 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_grasp/flutter_grasp.dart';
 import 'package:lives/generated/assets.dart';
 import 'package:lives/widgets/barrier.dart';
 import 'package:lives/widgets/progress_indicator.dart';

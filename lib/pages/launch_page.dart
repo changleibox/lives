@@ -3,7 +3,7 @@
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_grasp/flutter_grasp.dart';
+import 'package:lives/frameworks/framework.dart';
 import 'package:lives/generated/assets.dart';
 import 'package:lives/models/lives.dart';
 import 'package:lives/routes/routes.dart';
@@ -58,8 +58,7 @@ class _LaunchPresenter extends Presenter<LaunchPage> {
   Timer? _timer;
 
   @override
-  Future<void> onStabled() async {
-    super.onStabled();
+  Future<void> onPostFrame(Duration timeStamp) async {
     await Future.wait(<Future<void>>[
       Future<void>.delayed(const Duration(seconds: 3)),
       Lives.setup(),
@@ -69,6 +68,7 @@ class _LaunchPresenter extends Presenter<LaunchPage> {
     } else {
       unawaited(Routes.login.pushNamedAndRemoveUntil(context, (route) => false));
     }
+    super.onPostFrame(timeStamp);
   }
 
   @override

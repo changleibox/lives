@@ -2,7 +2,7 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_grasp/flutter_grasp.dart';
+import 'package:lives/widgets/widget_group.dart';
 
 const _progressHeight = 12.0;
 

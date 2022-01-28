@@ -66,7 +66,7 @@ class _ProgressWrapper {
     Barrier? barrier;
 
     void setProgress(String message, int? count, int? total, {String? description}) {
-      if (TextUtils.isEmpty(message) || (count != null && total != null && count == total)) {
+      if (message.isEmpty || (count != null && total != null && count == total)) {
         return;
       }
       final sizes = <String>[

@@ -3,7 +3,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_grasp/flutter_grasp.dart';
 import 'package:lives/commons/test_data.dart';
 import 'package:lives/enums/live_type.dart';
 import 'package:lives/models/lives.dart';
@@ -12,6 +11,7 @@ import 'package:lives/widgets/beauty.dart';
 import 'package:lives/widgets/more.dart';
 import 'package:lives/widgets/popularize.dart';
 import 'package:lives/widgets/share.dart';
+import 'package:lives/widgets/widget_group.dart';
 import 'package:provider/provider.dart';
 
 const _animationDuration = Duration(
