@@ -279,14 +279,19 @@ class _LiveProxy {
       throw LiveError(callback.code, callback.desc);
     }
     assert(type != LiveType.voice || viewId != null);
-    if (viewId != null) {
-      await _room.startPlay(anchorId, viewId);
+    if (type != LiveType.voice) {
+      await _room.startPlay(anchorId, viewId!);
     }
   }
 
   /// 停止观看直播
-  static Future<void> exitWatch(String anchorId) async {
-    await _room.stopPlay(anchorId);
+  static Future<void> exitWatch(
+    String anchorId, {
+    LiveType type = LiveType.video,
+  }) async {
+    if (type != LiveType.voice) {
+      await _room.stopPlay(anchorId);
+    }
     final callback = await _room.exitRoom();
     if (callback.code != 0) {
       throw LiveError(callback.code, callback.desc);
