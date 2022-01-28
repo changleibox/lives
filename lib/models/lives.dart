@@ -226,7 +226,7 @@ class _LiveProxy {
       case LiveType.game:
         await _room.startCapture(
           encParams: TRTCVideoEncParam(
-            enableAdjustRes: true,
+            enableAdjustRes: false,
             videoBitrate: 3000,
             minVideoBitrate: 3000,
             videoFps: 60,
