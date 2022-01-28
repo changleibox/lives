@@ -228,7 +228,7 @@ class _LiveProxy {
             enableAdjustRes: true,
             videoBitrate: 3000,
             minVideoBitrate: 3000,
-            videoFps: 24,
+            videoFps: 60,
             videoResolution: TRTCCloudDef.TRTC_VIDEO_RESOLUTION_1920_1080,
             videoResolutionMode: TRTCCloudDef.TRTC_VIDEO_RESOLUTION_MODE_PORTRAIT,
           ),
