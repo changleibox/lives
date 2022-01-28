@@ -14,7 +14,6 @@
 		5329BD0A27A3EA100089A8FA /* libresolv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 5329BD0827A3E9EB0089A8FA /* libresolv.tbd */; };
 		5329BD0C27A3EA1B0089A8FA /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5329BD0B27A3EA1B0089A8FA /* Accelerate.framework */; };
 		5329BD0E27A3EA250089A8FA /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5329BD0D27A3EA250089A8FA /* AVFoundation.framework */; };
-		5329BD1227A3F20F0089A8FA /* TXLiteAVSDK_ReplayKitExt.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5329BD1127A3F20F0089A8FA /* TXLiteAVSDK_ReplayKitExt.framework */; };
 		533A689327A3DE160062AEDA /* ReplayKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 533A685427A3D9730062AEDA /* ReplayKit.framework */; };
 		533A689627A3DE160062AEDA /* SampleHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 533A689527A3DE160062AEDA /* SampleHandler.swift */; };
 		533A689A27A3DE160062AEDA /* Upload.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 533A689227A3DE160062AEDA /* Upload.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -22,6 +21,7 @@
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
+		9C397D0527A4536C00EC9E25 /* TXLiteAVSDK_ReplayKitExt.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9C397D0427A4536C00EC9E25 /* TXLiteAVSDK_ReplayKitExt.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -67,7 +67,6 @@
 		5329BD0827A3E9EB0089A8FA /* libresolv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.tbd; path = usr/lib/libresolv.tbd; sourceTree = SDKROOT; };
 		5329BD0B27A3EA1B0089A8FA /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		5329BD0D27A3EA250089A8FA /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
-		5329BD1127A3F20F0089A8FA /* TXLiteAVSDK_ReplayKitExt.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = TXLiteAVSDK_ReplayKitExt.framework; sourceTree = "<group>"; };
 		533A685427A3D9730062AEDA /* ReplayKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ReplayKit.framework; path = System/Library/Frameworks/ReplayKit.framework; sourceTree = SDKROOT; };
 		533A686027A3D9740062AEDA /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		533A687527A3DA380062AEDA /* Runner.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Runner.entitlements; sourceTree = "<group>"; };
@@ -86,6 +85,7 @@
 		97C146FD1CF9000F007C117D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		97C147001CF9000F007C117D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		97C147021CF9000F007C117D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		9C397D0427A4536C00EC9E25 /* TXLiteAVSDK_ReplayKitExt.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = TXLiteAVSDK_ReplayKitExt.framework; sourceTree = "<group>"; };
 		B234AE80F7A833BBE37AB263 /* Pods_Runner.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Runner.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D229DF8473DC3C3BCC1BC982 /* Pods-Runner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -99,7 +99,7 @@
 				5329BD0E27A3EA250089A8FA /* AVFoundation.framework in Frameworks */,
 				5329BD0C27A3EA1B0089A8FA /* Accelerate.framework in Frameworks */,
 				533A689327A3DE160062AEDA /* ReplayKit.framework in Frameworks */,
-				5329BD1227A3F20F0089A8FA /* TXLiteAVSDK_ReplayKitExt.framework in Frameworks */,
+				9C397D0527A4536C00EC9E25 /* TXLiteAVSDK_ReplayKitExt.framework in Frameworks */,
 				5329BD0A27A3EA100089A8FA /* libresolv.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -193,7 +193,7 @@
 				B234AE80F7A833BBE37AB263 /* Pods_Runner.framework */,
 				533A685427A3D9730062AEDA /* ReplayKit.framework */,
 				533A686027A3D9740062AEDA /* UIKit.framework */,
-				5329BD1127A3F20F0089A8FA /* TXLiteAVSDK_ReplayKitExt.framework */,
+				9C397D0427A4536C00EC9E25 /* TXLiteAVSDK_ReplayKitExt.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";

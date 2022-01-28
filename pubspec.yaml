@@ -38,7 +38,8 @@ dependencies:
   flatterer:
     git: https://github.com.cnpmjs.org/changleibox/flatterer.git
   # 腾讯直播
-  tencent_trtc_cloud: ^2.1.0
+  tencent_trtc_cloud:
+    git: https://github.com.cnpmjs.org/changleibox/tencent_trtc_cloud.git
   # 腾讯IM
   tencent_im_sdk_plugin: ^3.7.5
   # 炫酷进度条
