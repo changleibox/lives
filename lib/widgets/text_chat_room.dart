@@ -18,32 +18,33 @@ class TextChatRoom extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16,
-      ),
-      margin: const EdgeInsets.only(
-        right: 140,
-      ),
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height / 3,
-      ),
-      child: ListView.separated(
-        physics: const ClampingScrollPhysics(),
-        reverse: true,
-        padding: EdgeInsets.zero,
-        shrinkWrap: true,
-        itemCount: messages.length,
-        itemBuilder: (context, index) {
-          return _ChatItem(
-            message: messages.elementAt(index),
-          );
-        },
-        separatorBuilder: (context, index) {
-          return const SizedBox(
-            height: 10,
-          );
-        },
+    return FractionallySizedBox(
+      widthFactor: 0.8,
+      alignment: Alignment.centerLeft,
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 16,
+        ),
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height / 3,
+        ),
+        child: ListView.separated(
+          physics: const ClampingScrollPhysics(),
+          reverse: true,
+          padding: EdgeInsets.zero,
+          shrinkWrap: true,
+          itemCount: messages.length,
+          itemBuilder: (context, index) {
+            return _ChatItem(
+              message: messages.elementAt(index),
+            );
+          },
+          separatorBuilder: (context, index) {
+            return const SizedBox(
+              height: 10,
+            );
+          },
+        ),
       ),
     );
   }
