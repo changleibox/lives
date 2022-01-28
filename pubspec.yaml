@@ -41,7 +41,8 @@ dependencies:
   tencent_trtc_cloud:
     git: https://github.com.cnpmjs.org/changleibox/tencent_trtc_cloud.git
   # 腾讯IM
-  tencent_im_sdk_plugin: ^3.7.5
+  tencent_im_sdk_plugin:
+    git: https://github.com.cnpmjs.org/changleibox/tencent_im_sdk_plugin.git
   # 炫酷进度条
   progress_indicators: ^1.0.0
   # 加密库
