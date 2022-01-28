@@ -225,6 +225,7 @@ class _LiveProxy {
         break;
       case LiveType.game:
         await _room.startCapture(
+          appGroup: 'group.me.box.lives',
           encParams: TRTCVideoEncParam(
             enableAdjustRes: false,
             videoBitrate: 3000,

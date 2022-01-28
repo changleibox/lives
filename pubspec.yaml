@@ -58,6 +58,10 @@ dependencies:
   oktoast: ^3.1.5
   # 权限
   permission_handler: ^8.3.0
+  # 屏幕分享
+  replay_kit_launcher: ^0.3.0
+  # android显示alertWindow
+  system_alert_window: ^1.0.1
 
 dev_dependencies:
   flutter_test:
