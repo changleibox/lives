@@ -612,6 +612,7 @@ class _StartLiveButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final model = context.watch<LiveModel>();
     return WidgetGroup.spacing(
       direction: Axis.vertical,
       spacing: 24,
@@ -632,15 +633,15 @@ class _StartLiveButton extends StatelessWidget {
             child: WidgetGroup.spacing(
               mainAxisSize: MainAxisSize.min,
               spacing: 4,
-              children: const [
-                Icon(
+              children: [
+                const Icon(
                   CupertinoIcons.play_rectangle_fill,
                   size: 18,
                   color: CupertinoColors.white,
                 ),
                 Text(
-                  '开始视频直播',
-                  style: TextStyle(
+                  '开始${model.liveType.label}直播',
+                  style: const TextStyle(
                     color: CupertinoColors.white,
                     fontWeight: FontWeight.w500,
                     fontSize: 15,

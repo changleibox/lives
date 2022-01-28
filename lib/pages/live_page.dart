@@ -2,11 +2,14 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_grasp/flutter_grasp.dart';
+import 'package:lives/enums/live_type.dart';
 import 'package:lives/models/live_error.dart';
 import 'package:lives/models/lives.dart';
 import 'package:lives/widgets/future_wrapper.dart';
+import 'package:lives/widgets/live_capture_player.dart';
 import 'package:lives/widgets/live_overlay.dart';
 import 'package:lives/widgets/live_video_player.dart';
+import 'package:lives/widgets/live_voice_player.dart';
 import 'package:lives/widgets/not_live_overlay.dart';
 import 'package:oktoast/oktoast.dart';
 import 'package:provider/provider.dart';
@@ -26,6 +29,26 @@ class LivePage extends StatefulWidget with HostProvider {
 }
 
 class _LivePageState extends HostState<LivePage, _LivePresenter> {
+  Widget _buildCenter() {
+    final model = presenter._model;
+    final key = ObjectKey(model.userId);
+    switch (model.liveType) {
+      case LiveType.video:
+        return LiveVideoPlayer(
+          key: key,
+          onViewCreated: presenter._startPreview,
+        );
+      case LiveType.game:
+        return LiveCapturePlayer(
+          key: key,
+        );
+      case LiveType.voice:
+        return LiveVoicePlayer(
+          key: key,
+        );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
@@ -45,10 +68,7 @@ class _LivePageState extends HostState<LivePage, _LivePresenter> {
                 children: [
                   if (value.mounted)
                     Positioned.fill(
-                      child: LiveVideoPlayer(
-                        key: ObjectKey(value.userId),
-                        onViewCreated: presenter._startPreview,
-                      ),
+                      child: _buildCenter(),
                     ),
                   if (value.mounted)
                     Positioned.fill(

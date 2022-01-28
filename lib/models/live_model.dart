@@ -36,6 +36,19 @@ class LiveModel extends LivesModel implements LiveModule {
       return;
     }
     _liveType = value;
+    switch (value) {
+      case LiveType.video:
+        if (_isFront != null && _viewId != null) {
+          startPreview(_isFront!, _viewId!);
+        }
+        break;
+      case LiveType.game:
+        stopPreview();
+        break;
+      case LiveType.voice:
+        stopPreview();
+        break;
+    }
     notifyListeners();
   }
 
