@@ -146,6 +146,20 @@ abstract class TRTCLiveRoom {
   /// 停止直播（推流）。
   Future<void> stopPublish();
 
+  /// 开始直播（推流），适用于以下场景：
+  /// 主播开播的时候调用
+  /// 观众开始连麦时调用
+  Future<void> startCapture(
+    int streamType,
+    TRTCVideoEncParam encParams, {
+    String shareUserId = '',
+    String shareUserSig = '',
+    String appGroup = '',
+  });
+
+  /// 停止直播（推流）。
+  Future<void> stopCapture();
+
   /// 播放远端视频画面，可以在普通观看和连麦场景中调用。
   Future<void> startPlay(String userId, int viewId);
 
@@ -247,6 +261,7 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
   String _curCallID = '';
   String _curPKCallID = '';
   bool _isPk = false;
+  bool _isCapture = false;
 
   // ignore: unused_field
   TRTCLiveRoomConfig? _roomConfig;
@@ -1060,26 +1075,7 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
     if (!_isEnterRoom) {
       return ActionCallback(code: _codeErr, desc: 'not enter room yet.');
     }
-    // 如果是观众，那么则切换到主播
-    if (_originRole == TRTCCloudDef.TRTCRoleAudience) {
-      await _cloud.switchRole(TRTCCloudDef.TRTCRoleAnchor);
-      // 观众切换到主播是小主播，小主播设置一下分辨率
-      final param = TRTCVideoEncParam();
-      param.videoResolution = TRTCCloudDef.TRTC_VIDEO_RESOLUTION_480_270;
-      param.videoBitrate = 400;
-      param.videoFps = 15;
-      param.videoResolutionMode = TRTCCloudDef.TRTC_VIDEO_RESOLUTION_MODE_PORTRAIT;
-      await _cloud.setVideoEncoderParam(param);
-    } else if (_originRole == TRTCCloudDef.TRTCRoleAnchor) {
-      // 大主播的时候切换分辨率
-      final param = TRTCVideoEncParam();
-      param.videoResolution = TRTCCloudDef.TRTC_VIDEO_RESOLUTION_1280_720;
-      param.videoBitrate = 1800;
-      param.videoFps = 15;
-      param.enableAdjustRes = true;
-      param.videoResolutionMode = TRTCCloudDef.TRTC_VIDEO_RESOLUTION_MODE_PORTRAIT;
-      await _cloud.setVideoEncoderParam(param);
-    }
+    await _handleVideoEncoderParams();
     if (!_isEmpty(streamId)) {
       _streamId = streamId;
       await _cloud.startPublishing(streamId!, TRTCCloudDef.TRTC_VIDEO_STREAM_TYPE_BIG);
@@ -1125,5 +1121,60 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
   @override
   Future<void> enableCameraTorch(bool enable) {
     return _txDeviceManager.enableCameraTorch(enable);
+  }
+
+  @override
+  Future<ActionCallback> startCapture(
+    int streamType,
+    TRTCVideoEncParam encParams, {
+    String shareUserId = '',
+    String shareUserSig = '',
+    String appGroup = '',
+  }) async {
+    if (!_isEnterRoom) {
+      return ActionCallback(code: _codeErr, desc: 'not enter room yet.');
+    }
+    await _handleVideoEncoderParams();
+    _isCapture = true;
+    await _cloud.startScreenCapture(
+      streamType,
+      encParams,
+      shareUserId: shareUserId,
+      shareUserSig: shareUserSig,
+      appGroup: appGroup,
+    );
+    await _cloud.startLocalAudio(TRTCCloudDef.TRTC_AUDIO_QUALITY_DEFAULT);
+
+    return ActionCallback(code: 0, desc: 'startCapture success');
+  }
+
+  @override
+  Future<void> stopCapture() async {
+    if (_isCapture) {
+      await _cloud.stopScreenCapture();
+    }
+  }
+
+  Future<void> _handleVideoEncoderParams() async {
+    // 如果是观众，那么则切换到主播
+    if (_originRole == TRTCCloudDef.TRTCRoleAudience) {
+      await _cloud.switchRole(TRTCCloudDef.TRTCRoleAnchor);
+      // 观众切换到主播是小主播，小主播设置一下分辨率
+      final param = TRTCVideoEncParam();
+      param.videoResolution = TRTCCloudDef.TRTC_VIDEO_RESOLUTION_480_270;
+      param.videoBitrate = 400;
+      param.videoFps = 15;
+      param.videoResolutionMode = TRTCCloudDef.TRTC_VIDEO_RESOLUTION_MODE_PORTRAIT;
+      await _cloud.setVideoEncoderParam(param);
+    } else if (_originRole == TRTCCloudDef.TRTCRoleAnchor) {
+      // 大主播的时候切换分辨率
+      final param = TRTCVideoEncParam();
+      param.videoResolution = TRTCCloudDef.TRTC_VIDEO_RESOLUTION_1280_720;
+      param.videoBitrate = 1800;
+      param.videoFps = 15;
+      param.enableAdjustRes = true;
+      param.videoResolutionMode = TRTCCloudDef.TRTC_VIDEO_RESOLUTION_MODE_PORTRAIT;
+      await _cloud.setVideoEncoderParam(param);
+    }
   }
 }

@@ -12,9 +12,6 @@ enum LiveType {
 
   /// 语音
   voice,
-
-  /// 虚拟
-  fictitious,
 }
 
 /// 直播类型名称
@@ -28,8 +25,6 @@ extension LiveTypeName on LiveType {
         return '游戏';
       case LiveType.voice:
         return '语音';
-      case LiveType.fictitious:
-        return '虚拟';
     }
   }
 }
