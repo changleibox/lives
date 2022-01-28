@@ -153,7 +153,16 @@ abstract class LivesModel extends ChangeNotifier with LiveObserver {
     for (var listener in _listeners) {
       listener();
     }
-    notifyListeners();
+    if (_mounted) {
+      notifyListeners();
+    }
     super.onRoomDestroy(params);
+  }
+
+  @override
+  void dispose() {
+    _mounted = false;
+    notifyListeners();
+    super.dispose();
   }
 }
