@@ -42,6 +42,7 @@ class _WatchPageState extends HostState<WatchPage, _WatchPresenter> {
           key: key,
           alignment: model.started ? const Alignment(0.0, -0.3) : Alignment.center,
           avatar: model.getMemberInfo(model.anchorId)?.userAvatar,
+          display: model.started,
         );
     }
   }
@@ -119,13 +120,26 @@ class _WatchPresenter extends VoidPresenter<WatchPage> {
     super.dispose();
   }
 
+  @override
+  void onPostFrame(Duration timeStamp) {
+    super.onPostFrame(timeStamp);
+    switch (_model.liveType) {
+      case LiveType.video:
+      case LiveType.game:
+        break;
+      case LiveType.voice:
+        _startWatch();
+        break;
+    }
+  }
+
   void _onRoomDestroy() {
     markNeedsBuild(() {
       _errorMessage = '直播已结束';
     });
   }
 
-  Future<void> _startWatch(int viewId) async {
+  Future<void> _startWatch([int? viewId]) async {
     try {
       await _model.startWatch(viewId);
     } on LiveError catch (e) {

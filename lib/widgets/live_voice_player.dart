@@ -14,6 +14,7 @@ class LiveVoicePlayer extends StatefulWidget {
     Key? key,
     this.alignment = Alignment.center,
     this.avatar,
+    this.display = true,
   }) : super(key: key);
 
   /// 对齐方式
@@ -22,6 +23,9 @@ class LiveVoicePlayer extends StatefulWidget {
   /// 头像
   final String? avatar;
 
+  /// 是否显示头像
+  final bool display;
+
   @override
   _LiveVoicePlayerState createState() => _LiveVoicePlayerState();
 }
@@ -29,8 +33,9 @@ class LiveVoicePlayer extends StatefulWidget {
 class _LiveVoicePlayerState extends State<LiveVoicePlayer> {
   @override
   Widget build(BuildContext context) {
-    return PlayerBackground(
-      child: AnimatedAlign(
+    Widget child = const SizedBox.shrink();
+    if (widget.display) {
+      child = AnimatedAlign(
         duration: const Duration(
           milliseconds: 250,
         ),
@@ -53,7 +58,10 @@ class _LiveVoicePlayerState extends State<LiveVoicePlayer> {
             ),
           ),
         ),
-      ),
+      );
+    }
+    return PlayerBackground(
+      child: child,
     );
   }
 }

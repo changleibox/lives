@@ -278,7 +278,7 @@ class _LiveProxy {
     if (callback.code != 0) {
       throw LiveError(callback.code, callback.desc);
     }
-    assert(type != LiveType.voice || viewId != null);
+    assert(type == LiveType.voice || viewId != null);
     if (type != LiveType.voice) {
       await _room.startPlay(anchorId, viewId!);
     }
