@@ -12,7 +12,7 @@ let APPGROUP = "group.me.box.app.lives"
 
 class SampleHandler: RPBroadcastSampleHandler, TXReplayKitExtDelegate {
     
-    let recordScreenKey = Notification.Name.init("TRTCRecordScreenKey")
+    let recordScreenKey = Notification.Name.init("ZGFinishBroadcastUploadExtensionProcessNotification")
 
     override func broadcastStarted(withSetupInfo setupInfo: [String : NSObject]?) {
         // User has requested to start the broadcast. Setup info from the UI extension can be supplied but optional.
