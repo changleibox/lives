@@ -1,6 +1,6 @@
 // Copyright (c) 2022 CHANGLEI. All rights reserved.
 
-import 'dart:io';
+import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_grasp/flutter_grasp.dart';
@@ -13,8 +13,6 @@ import 'package:lives/widgets/live_voice_player.dart';
 import 'package:lives/widgets/watch_overlay.dart';
 import 'package:oktoast/oktoast.dart';
 import 'package:provider/provider.dart';
-import 'package:replay_kit_launcher/replay_kit_launcher.dart';
-import 'package:system_alert_window/system_alert_window.dart';
 
 /// Created by changlei on 2022/1/25.
 ///
@@ -143,34 +141,8 @@ class _WatchPresenter extends VoidPresenter<WatchPage> {
     });
   }
 
-  Future<void> _showCaptureWindow() async {
-    if (Platform.isIOS) {
-      await ReplayKitLauncher.launchReplayKitBroadcast('Upload');
-    } else if (Platform.isAndroid) {
-      if ((await SystemAlertWindow.requestPermissions()) == true) {
-        await SystemAlertWindow.showSystemWindow(
-          width: 18,
-          height: 95,
-          margin: SystemWindowMargin(top: 200),
-          gravity: SystemWindowGravity.TOP,
-          header: SystemWindowHeader(
-            title: SystemWindowText(
-              text: '屏幕分享中',
-              fontSize: 14,
-              textColor: CupertinoColors.label,
-            ),
-            decoration: SystemWindowDecoration(
-              startColor: CupertinoColors.systemGrey,
-            ),
-          ),
-        );
-      }
-    }
-  }
-
   Future<void> _startWatch([int? viewId]) async {
     try {
-      await _showCaptureWindow();
       await _model.startWatch(viewId);
     } on LiveError catch (e) {
       if (e.isNotExist) {

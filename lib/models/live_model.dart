@@ -134,6 +134,7 @@ class LiveModel extends LivesModel implements LiveModule {
       _roomId,
       roomName: '我在火星',
       cover: cover,
+      appGroup: 'group.me.box.lives',
       type: _liveType,
     );
     _setupMessages();

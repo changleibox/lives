@@ -204,6 +204,7 @@ class _LiveProxy {
     int roomId, {
     String? roomName,
     String? cover,
+    String? appGroup,
     LiveType type = LiveType.video,
   }) async {
     final callback = await _room.createRoom(
@@ -225,7 +226,7 @@ class _LiveProxy {
         break;
       case LiveType.game:
         await _room.startCapture(
-          appGroup: 'group.me.box.lives',
+          appGroup: appGroup ?? '',
           encParams: TRTCVideoEncParam(
             enableAdjustRes: false,
             videoBitrate: 3000,

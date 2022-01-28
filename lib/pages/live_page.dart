@@ -138,6 +138,7 @@ class _LivePresenter extends VoidPresenter<LivePage> {
         context: context,
         computation: _model.startLive,
       );
+      await _model.liveType.start();
     } on LiveError catch (e) {
       showToast(e.message.toString());
     }
