@@ -95,7 +95,7 @@ class InteractiveTools extends StatelessWidget {
               padding: EdgeInsets.zero,
               shrinkWrap: true,
               crossAxisCount: 4,
-              childAspectRatio: 1.74,
+              childAspectRatio: 1.5,
               children: [
                 _Button(
                   text: '分享',
