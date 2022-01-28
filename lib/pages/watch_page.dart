@@ -130,11 +130,11 @@ class _WatchPresenter extends VoidPresenter<WatchPage> {
         showToast(e.message);
       }
     }
-    Navigator.pop(context, true);
   }
 
   Future<bool?> _onExit() async {
     if (!_model.started) {
+      await _exitWatch();
       return true;
     }
     return await showCupertinoDialog<bool>(
@@ -152,7 +152,10 @@ class _WatchPresenter extends VoidPresenter<WatchPage> {
             ),
             CupertinoDialogAction(
               isDestructiveAction: true,
-              onPressed: _exitWatch,
+              onPressed: () async {
+                await _exitWatch();
+                Navigator.pop(context, true);
+              },
               child: const Text('确定'),
             ),
           ],
