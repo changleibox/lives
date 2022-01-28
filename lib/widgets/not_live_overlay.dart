@@ -125,10 +125,7 @@ class _AppBar extends StatefulWidget {
 }
 
 class _AppBarState extends State<_AppBar> {
-  LiveType _groupValue = LiveType.video;
-
-  Widget _buildItem(LiveType value) {
-    final selected = _groupValue == value;
+  Widget _buildItem(LiveType value, bool selected) {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: 8,
@@ -151,6 +148,7 @@ class _AppBarState extends State<_AppBar> {
 
   @override
   Widget build(BuildContext context) {
+    final model = context.watch<LiveModel>();
     return SafeArea(
       bottom: false,
       child: Container(
@@ -194,13 +192,13 @@ class _AppBarState extends State<_AppBar> {
                 borderColor: CupertinoColors.white.withOpacity(0),
                 selectedColor: CupertinoColors.white.withOpacity(0),
                 unselectedColor: CupertinoColors.white.withOpacity(0),
-                groupValue: _groupValue,
+                groupValue: model.liveType,
                 onValueChanged: (value) {
-                  setState(() {
-                    _groupValue = value;
-                  });
+                  model.liveType = value;
                 },
-                children: Map.fromEntries(LiveType.values.map((e) => MapEntry(e, _buildItem(e)))),
+                children: Map.fromEntries(LiveType.values.map((e) {
+                  return MapEntry(e, _buildItem(e, e == model.liveType));
+                })),
               ),
             ),
           ],

@@ -25,6 +25,19 @@ class LiveModel extends LivesModel implements LiveModule {
   bool _isMirror = false;
   bool _localMute = false;
   bool _remoteMute = false;
+  LiveType _liveType = LiveType.video;
+
+  /// 直播类型
+  LiveType get liveType => _liveType;
+
+  set liveType(LiveType value) {
+    assert(!started);
+    if (value == liveType) {
+      return;
+    }
+    _liveType = value;
+    notifyListeners();
+  }
 
   /// 网速
   ValueListenable<int> get speedNotifier => _speedNotifier;
@@ -108,6 +121,7 @@ class LiveModel extends LivesModel implements LiveModule {
       _roomId,
       roomName: '我在火星',
       cover: cover,
+      type: _liveType,
     );
     _startDownTimer();
     _started = true;
@@ -120,7 +134,9 @@ class LiveModel extends LivesModel implements LiveModule {
   Future<void> exitLive() async {
     _LiveProxy.removeListener(this);
     _LiveProxy.removeTRTCListener(_onEvent);
-    await _LiveProxy.exitLive();
+    await _LiveProxy.exitLive(
+      type: _liveType,
+    );
     if (_isFront != null && _viewId != null) {
       await startPreview(_isFront!, _viewId!);
     }

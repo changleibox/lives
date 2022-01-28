@@ -149,9 +149,9 @@ abstract class TRTCLiveRoom {
   /// 开始直播（推流），适用于以下场景：
   /// 主播开播的时候调用
   /// 观众开始连麦时调用
-  Future<void> startCapture(
-    int streamType,
-    TRTCVideoEncParam encParams, {
+  Future<ActionCallback> startCapture({
+    int? streamType,
+    TRTCVideoEncParam? encParams,
     String shareUserId = '',
     String shareUserSig = '',
     String appGroup = '',
@@ -159,6 +159,14 @@ abstract class TRTCLiveRoom {
 
   /// 停止直播（推流）。
   Future<void> stopCapture();
+
+  /// 开始直播（推流），适用于以下场景：
+  /// 主播开播的时候调用
+  /// 观众开始连麦时调用
+  Future<ActionCallback> startVoice();
+
+  /// 停止直播（推流）。
+  Future<void> stopVoice();
 
   /// 播放远端视频画面，可以在普通观看和连麦场景中调用。
   Future<void> startPlay(String userId, int viewId);
@@ -261,7 +269,8 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
   String _curCallID = '';
   String _curPKCallID = '';
   bool _isPk = false;
-  bool _isCapture = false;
+  bool _isStartCapture = false;
+  bool _isStartAudio = false;
 
   // ignore: unused_field
   TRTCLiveRoomConfig? _roomConfig;
@@ -1124,9 +1133,9 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
   }
 
   @override
-  Future<ActionCallback> startCapture(
-    int streamType,
-    TRTCVideoEncParam encParams, {
+  Future<ActionCallback> startCapture({
+    int? streamType,
+    TRTCVideoEncParam? encParams,
     String shareUserId = '',
     String shareUserSig = '',
     String appGroup = '',
@@ -1135,10 +1144,10 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
       return ActionCallback(code: _codeErr, desc: 'not enter room yet.');
     }
     await _handleVideoEncoderParams();
-    _isCapture = true;
+    _isStartCapture = true;
     await _cloud.startScreenCapture(
-      streamType,
-      encParams,
+      streamType ?? TRTCCloudDef.TRTC_VIDEO_STREAM_TYPE_BIG,
+      encParams ?? TRTCVideoEncParam(),
       shareUserId: shareUserId,
       shareUserSig: shareUserSig,
       appGroup: appGroup,
@@ -1150,8 +1159,40 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
 
   @override
   Future<void> stopCapture() async {
-    if (_isCapture) {
+    await _cloud.stopLocalAudio();
+    if (_originRole == TRTCCloudDef.TRTCRoleAudience) {
+      await _cloud.switchRole(TRTCCloudDef.TRTCRoleAudience);
+    } else if (_originRole == TRTCCloudDef.TRTCRoleAnchor) {
+      await _cloud.exitRoom();
+    }
+
+    if (_isStartCapture) {
       await _cloud.stopScreenCapture();
+    }
+  }
+
+  @override
+  Future<ActionCallback> startVoice() async {
+    if (!_isEnterRoom) {
+      return ActionCallback(code: _codeErr, desc: 'not enter room yet.');
+    }
+    await _handleVideoEncoderParams();
+    _isStartAudio = true;
+    await _cloud.startLocalAudio(TRTCCloudDef.TRTC_AUDIO_QUALITY_DEFAULT);
+
+    return ActionCallback(code: 0, desc: 'startCapture success');
+  }
+
+  @override
+  Future<void> stopVoice() async {
+    if (_originRole == TRTCCloudDef.TRTCRoleAudience) {
+      await _cloud.switchRole(TRTCCloudDef.TRTCRoleAudience);
+    } else if (_originRole == TRTCCloudDef.TRTCRoleAnchor) {
+      await _cloud.exitRoom();
+    }
+
+    if (_isStartAudio) {
+      await _cloud.stopLocalAudio();
     }
   }
 

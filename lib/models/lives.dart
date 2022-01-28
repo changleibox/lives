@@ -13,6 +13,7 @@ import 'package:flutter/foundation.dart';
 import 'package:lives/commons/test_data.dart';
 import 'package:lives/entries/bullet_chat.dart';
 import 'package:lives/enums/beauty_type.dart';
+import 'package:lives/enums/live_type.dart';
 import 'package:lives/helpers/storage.dart';
 import 'package:lives/models/live_error.dart';
 import 'package:lives/models/live_module.dart';
@@ -199,7 +200,12 @@ class _LiveProxy {
   }
 
   /// 开始直播
-  static Future<void> startLive(int roomId, {String? roomName, String? cover}) async {
+  static Future<void> startLive(
+    int roomId, {
+    String? roomName,
+    String? cover,
+    LiveType type = LiveType.video,
+  }) async {
     final callback = await _room.createRoom(
       roomId,
       RoomParam(
@@ -212,15 +218,35 @@ class _LiveProxy {
       throw LiveError(callback.code, callback.desc);
     }
     _createdRoom = true;
-    await _room.startPublish('$_streamId$userId');
+    switch (type) {
+      case LiveType.video:
+        await _room.startPublish('$_streamId$userId');
+        break;
+      case LiveType.game:
+        await _room.startCapture();
+        break;
+      case LiveType.voice:
+        await _room.startVoice();
+        break;
+    }
   }
 
   /// 退出直播
-  static Future<void> exitLive() async {
+  static Future<void> exitLive({LiveType type = LiveType.video}) async {
     if (!_createdRoom) {
       return;
     }
-    await _room.stopPublish();
+    switch (type) {
+      case LiveType.video:
+        await _room.stopPublish();
+        break;
+      case LiveType.game:
+        await _room.stopCapture();
+        break;
+      case LiveType.voice:
+        await _room.stopVoice();
+        break;
+    }
     final callback = await _room.destroyRoom();
     if (callback.code != 0) {
       throw LiveError(callback.code, callback.desc);
