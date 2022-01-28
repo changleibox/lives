@@ -25,12 +25,22 @@ class _LiveVoicePlayerState extends State<LiveVoicePlayer> {
     final userInfo = model.getMemberInfo(model.userId);
     return PlayerBackground(
       child: Center(
-        child: ClipOval(
-          clipBehavior: Clip.antiAlias,
-          child: CachedNetworkImage(
-            imageUrl: userInfo?.userAvatar ?? avatar,
-            width: 104,
-            height: 104,
+        child: Container(
+          decoration: ShapeDecoration(
+            shape: CircleBorder(
+              side: BorderSide(
+                color: CupertinoColors.white.withOpacity(0.2),
+                width: 20,
+              ),
+            ),
+          ),
+          child: ClipOval(
+            clipBehavior: Clip.antiAlias,
+            child: CachedNetworkImage(
+              imageUrl: userInfo?.userAvatar ?? avatar,
+              width: 104,
+              height: 104,
+            ),
           ),
         ),
       ),
