@@ -68,4 +68,16 @@ extension LiveTypeName on LiveType {
       }
     }
   }
+
+  /// 关闭
+  Future<void> exit() async {
+    if (this != LiveType.game) {
+      return;
+    }
+    if (Platform.isIOS) {
+      await ReplayKitLauncher.finishReplayKitBroadcast('ZGFinishBroadcastUploadExtensionProcessNotification');
+    } else if (Platform.isAndroid) {
+      await SystemAlertWindow.closeSystemWindow();
+    }
+  }
 }
