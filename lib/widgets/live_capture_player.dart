@@ -26,7 +26,7 @@ class _LiveCapturePlayerState extends State<LiveCapturePlayer> {
           model.started ? '录屏中，可切换到游戏界面直播啦' : '开始直播后，观众会实时看到你手机上\n的游戏画面，或其他应哟过',
           textAlign: TextAlign.center,
           style: const TextStyle(
-            fontSize: 12,
+            fontSize: 14,
             fontWeight: FontWeight.bold,
             color: CupertinoColors.white,
           ),

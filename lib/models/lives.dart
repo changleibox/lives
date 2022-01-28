@@ -223,7 +223,16 @@ class _LiveProxy {
         await _room.startPublish('$_streamId$userId');
         break;
       case LiveType.game:
-        await _room.startCapture();
+        await _room.startCapture(
+          encParams: TRTCVideoEncParam(
+            enableAdjustRes: true,
+            videoBitrate: 3000,
+            minVideoBitrate: 3000,
+            videoFps: 24,
+            videoResolution: TRTCCloudDef.TRTC_VIDEO_RESOLUTION_1920_1080,
+            videoResolutionMode: TRTCCloudDef.TRTC_VIDEO_RESOLUTION_MODE_PORTRAIT,
+          ),
+        );
         break;
       case LiveType.voice:
         await _room.startVoice();
