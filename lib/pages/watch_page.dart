@@ -144,7 +144,9 @@ class _WatchPresenter extends VoidPresenter<WatchPage> {
   }
 
   Future<void> _showCaptureWindow() async {
-    if (Platform.isAndroid) {
+    if (Platform.isIOS) {
+      await ReplayKitLauncher.launchReplayKitBroadcast('Upload');
+    } else if (Platform.isAndroid) {
       if ((await SystemAlertWindow.requestPermissions()) == true) {
         await SystemAlertWindow.showSystemWindow(
           width: 18,
@@ -163,8 +165,6 @@ class _WatchPresenter extends VoidPresenter<WatchPage> {
           ),
         );
       }
-    } else {
-      await ReplayKitLauncher.launchReplayKitBroadcast('Upload');
     }
   }
 
