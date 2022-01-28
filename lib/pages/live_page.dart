@@ -29,7 +29,7 @@ class LivePage extends StatefulWidget with HostProvider {
 }
 
 class _LivePageState extends HostState<LivePage, _LivePresenter> {
-  Widget _buildCenter() {
+  Widget _buildPlayer() {
     final model = presenter._model;
     final key = ObjectKey(model.userId);
     switch (model.liveType) {
@@ -42,11 +42,13 @@ class _LivePageState extends HostState<LivePage, _LivePresenter> {
         return LiveCapturePlayer(
           key: key,
           alignment: model.started ? const Alignment(0.0, -0.3) : Alignment.center,
+          started: model.started,
         );
       case LiveType.voice:
         return LiveVoicePlayer(
           key: key,
           alignment: model.started ? const Alignment(0.0, -0.3) : Alignment.center,
+          avatar: model.getMemberInfo(model.userId)?.userAvatar,
         );
     }
   }
@@ -70,7 +72,7 @@ class _LivePageState extends HostState<LivePage, _LivePresenter> {
                 children: [
                   if (value.mounted)
                     Positioned.fill(
-                      child: _buildCenter(),
+                      child: _buildPlayer(),
                     ),
                   if (value.mounted)
                     Positioned.fill(

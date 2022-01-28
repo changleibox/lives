@@ -3,9 +3,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:lives/commons/test_data.dart';
-import 'package:lives/models/lives.dart';
 import 'package:lives/widgets/player_background.dart';
-import 'package:provider/provider.dart';
 
 /// Created by changlei on 2022/1/18.
 ///
@@ -15,10 +13,14 @@ class LiveVoicePlayer extends StatefulWidget {
   const LiveVoicePlayer({
     Key? key,
     this.alignment = Alignment.center,
+    this.avatar,
   }) : super(key: key);
 
   /// 对齐方式
   final AlignmentGeometry alignment;
+
+  /// 头像
+  final String? avatar;
 
   @override
   _LiveVoicePlayerState createState() => _LiveVoicePlayerState();
@@ -27,8 +29,6 @@ class LiveVoicePlayer extends StatefulWidget {
 class _LiveVoicePlayerState extends State<LiveVoicePlayer> {
   @override
   Widget build(BuildContext context) {
-    final model = context.watch<LiveModel>();
-    final userInfo = model.getMemberInfo(model.userId);
     return PlayerBackground(
       child: AnimatedAlign(
         duration: const Duration(
@@ -47,7 +47,7 @@ class _LiveVoicePlayerState extends State<LiveVoicePlayer> {
           child: ClipOval(
             clipBehavior: Clip.antiAlias,
             child: CachedNetworkImage(
-              imageUrl: userInfo?.userAvatar ?? avatar,
+              imageUrl: widget.avatar ?? avatar,
               width: 104,
               height: 104,
             ),

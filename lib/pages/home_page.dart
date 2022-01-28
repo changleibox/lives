@@ -96,20 +96,23 @@ class _HomePresenter extends Presenter<HomePage> {
     if (!await _checkPermission()) {
       return;
     }
-    final anchorId = await showCupertinoDialog<String>(
+    final result = await showCupertinoDialog<Map<String, dynamic>>(
       context: context,
       builder: (context) {
         return const _AnchorIdTextField();
       },
     );
-    if (anchorId == null) {
+    if (result == null) {
       return;
     }
+    final anchorId = result['anchorId'] as String?;
+    final liveType = result['liveType'] as LiveType?;
     await Future<void>.delayed(_keyboardDuration);
     await Routes.watch.pushNamed(
       context,
       arguments: <String, dynamic>{
         'anchorId': anchorId,
+        'liveType': liveType,
       },
     );
   }

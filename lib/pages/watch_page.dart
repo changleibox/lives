@@ -7,6 +7,7 @@ import 'package:lives/models/live_error.dart';
 import 'package:lives/models/lives.dart';
 import 'package:lives/widgets/future_wrapper.dart';
 import 'package:lives/widgets/live_video_player.dart';
+import 'package:lives/widgets/live_voice_player.dart';
 import 'package:lives/widgets/watch_overlay.dart';
 import 'package:oktoast/oktoast.dart';
 import 'package:provider/provider.dart';
@@ -26,6 +27,25 @@ class WatchPage extends StatefulWidget with HostProvider {
 }
 
 class _WatchPageState extends HostState<WatchPage, _WatchPresenter> {
+  Widget _buildPlayer() {
+    final model = presenter._model;
+    final key = ObjectKey(model.userId);
+    switch (model.liveType) {
+      case LiveType.video:
+      case LiveType.game:
+        return LiveVideoPlayer(
+          key: key,
+          onViewCreated: presenter._startWatch,
+        );
+      case LiveType.voice:
+        return LiveVoicePlayer(
+          key: key,
+          alignment: model.started ? const Alignment(0.0, -0.3) : Alignment.center,
+          avatar: model.getMemberInfo(model.anchorId)?.userAvatar,
+        );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
@@ -45,10 +65,7 @@ class _WatchPageState extends HostState<WatchPage, _WatchPresenter> {
                 children: [
                   if (value.mounted)
                     Positioned.fill(
-                      child: LiveVideoPlayer(
-                        key: ObjectKey(value.anchorId),
-                        onViewCreated: presenter._startWatch,
-                      ),
+                      child: _buildPlayer(),
                     ),
                   if (value.mounted)
                     Positioned.fill(
