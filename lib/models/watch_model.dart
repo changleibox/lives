@@ -24,7 +24,7 @@ class WatchModel extends LivesModel {
 
   /// 主播id
   String get anchorId {
-    assert(mounted, '为初始化');
+    assert(mounted, '未初始化');
     return _anchorId;
   }
 
