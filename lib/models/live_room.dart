@@ -105,7 +105,7 @@ abstract class TRTCLiveRoom {
   /// @param roomId 房间标识，需要由您分配并进行统一管理。
   /// @param roomParam 房间信息，用于房间描述的信息，例如房间名称，封面信息等。如果房间列表和房间信息都由您的服务器自行管理，可忽略该参数。
   /// @param callback 创建房间的结果回调，成功时 code 为0.
-  Future<ActionCallback> createRoom(int roomId, RoomParam roomParam);
+  Future<ActionCallback> createRoom(int roomId, RoomParam roomParam, {int? scene});
 
   /// 销毁房间（房间创建者调用）
   /// 主播在创建房间后，可以调用这个函数来销毁房间。
@@ -113,7 +113,7 @@ abstract class TRTCLiveRoom {
 
   /// 进入房间（观众调用）
   /// @param roomId 房间标识
-  Future<ActionCallback> enterRoom(int roomId);
+  Future<ActionCallback> enterRoom(int roomId, {int? scene});
 
   /// 退出房间（观众调用）
   Future<ActionCallback> exitRoom();
@@ -306,7 +306,7 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
   TXAudioEffectManager get audioEffectManager => _txAudioManager;
 
   @override
-  Future<ActionCallback> createRoom(int roomId, RoomParam roomParam) async {
+  Future<ActionCallback> createRoom(int roomId, RoomParam roomParam, {int? scene}) async {
     if (!_isLogin) {
       return ActionCallback(code: _codeErr, desc: 'im not login yet, create room fail.');
     }
@@ -360,7 +360,7 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
           role: TRTCCloudDef.TRTCRoleAnchor,
           roomId: roomId,
         ),
-        TRTCCloudDef.TRTC_APP_SCENE_LIVE,
+        scene ?? TRTCCloudDef.TRTC_APP_SCENE_LIVE,
       );
       // 默认打开麦克风
       // await enableAudioVolumeEvaluation(true);
@@ -408,7 +408,7 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
   }
 
   @override
-  Future<ActionCallback> enterRoom(int roomId) async {
+  Future<ActionCallback> enterRoom(int roomId, {int? scene}) async {
     if (_isEnterRoom) {
       return ActionCallback(
         code: _codeErr,
@@ -431,7 +431,7 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
           role: TRTCCloudDef.TRTCRoleAudience,
           roomId: roomId,
         ),
-        TRTCCloudDef.TRTC_APP_SCENE_LIVE,
+        scene ?? TRTCCloudDef.TRTC_APP_SCENE_LIVE,
       );
       final res = await groupManager.getGroupsInfo(groupIDList: [roomId.toString()]);
       final groupResult = res.data!;

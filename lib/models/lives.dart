@@ -213,6 +213,7 @@ class _LiveProxy {
         coverUrl: cover,
         quality: TRTCCloudDef.TRTC_AUDIO_QUALITY_DEFAULT,
       ),
+      scene: type.scene,
     );
     if (callback.code != 0) {
       throw LiveError(callback.code, callback.desc);
@@ -264,8 +265,16 @@ class _LiveProxy {
   }
 
   /// 观看直播
-  static Future<void> startWatch(String anchorId, int roomId, int viewId) async {
-    final callback = await _room.enterRoom(roomId);
+  static Future<void> startWatch(
+    String anchorId,
+    int roomId,
+    int viewId, {
+    LiveType type = LiveType.video,
+  }) async {
+    final callback = await _room.enterRoom(
+      roomId,
+      scene: type.scene,
+    );
     if (callback.code != 0) {
       throw LiveError(callback.code, callback.desc);
     }

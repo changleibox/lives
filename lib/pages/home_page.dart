@@ -4,6 +4,7 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_grasp/flutter_grasp.dart';
+import 'package:lives/enums/live_type.dart';
 import 'package:lives/models/lives.dart';
 import 'package:lives/routes/routes.dart';
 import 'package:lives/widgets/future_wrapper.dart';
@@ -161,12 +162,18 @@ class _AnchorIdTextFieldState extends State<_AnchorIdTextField> {
     super.dispose();
   }
 
-  Future<void> _onConfirm(String text) async {
+  Future<void> _onConfirm({
+    required String text,
+    LiveType liveType = LiveType.video,
+  }) async {
     if (text.isEmpty) {
       showToast('请输入主播ID');
       return;
     }
-    Navigator.pop(context, text);
+    Navigator.pop(context, {
+      'anchorId': text,
+      'liveType': liveType,
+    });
   }
 
   @override
@@ -188,22 +195,45 @@ class _AnchorIdTextFieldState extends State<_AnchorIdTextField> {
             fontSize: 14,
             color: CupertinoColors.placeholderText,
           ),
-          onSubmitted: _onConfirm,
+          onSubmitted: (value) {
+            _onConfirm(text: value);
+          },
         ),
       ),
       actions: [
         CupertinoDialogAction(
+          onPressed: () {
+            _onConfirm(
+              text: _controller.text,
+              liveType: LiveType.video,
+            );
+          },
+          child: const Text('视频'),
+        ),
+        CupertinoDialogAction(
+          onPressed: () {
+            _onConfirm(
+              text: _controller.text,
+              liveType: LiveType.game,
+            );
+          },
+          child: const Text('游戏'),
+        ),
+        CupertinoDialogAction(
+          onPressed: () {
+            _onConfirm(
+              text: _controller.text,
+              liveType: LiveType.voice,
+            );
+          },
+          child: const Text('语音'),
+        ),
+        CupertinoDialogAction(
+          isDestructiveAction: true,
           child: const Text('取消'),
           onPressed: () {
             Navigator.pop(context);
           },
-        ),
-        CupertinoDialogAction(
-          isDestructiveAction: true,
-          onPressed: () {
-            _onConfirm(_controller.text);
-          },
-          child: const Text('确定'),
         ),
       ],
     );

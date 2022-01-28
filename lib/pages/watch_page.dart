@@ -2,6 +2,7 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_grasp/flutter_grasp.dart';
+import 'package:lives/enums/live_type.dart';
 import 'package:lives/models/live_error.dart';
 import 'package:lives/models/lives.dart';
 import 'package:lives/widgets/future_wrapper.dart';
@@ -83,8 +84,10 @@ class _WatchPresenter extends VoidPresenter<WatchPage> {
 
   @override
   Future<void> onLoad(bool showProgress, CancelToken? cancelToken) {
-    final anchorId = (arguments as Map<String, dynamic>?)?['anchorId'] as String?;
-    return _model.setup(anchorId);
+    final arguments = this.arguments as Map<String, dynamic>?;
+    final anchorId = arguments?['anchorId'] as String?;
+    final liveType = arguments?['liveType'] as LiveType?;
+    return _model.setup(anchorId, liveType);
   }
 
   @override

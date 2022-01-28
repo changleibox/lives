@@ -7,13 +7,18 @@ part of 'lives.dart';
 /// 直播
 class WatchModel extends LivesModel {
   late String _anchorId;
+  late LiveType _liveType;
 
   @override
   int get _roomId => int.tryParse(_anchorId) ?? 0;
 
+  /// 直播类型
+  LiveType get liveType => _liveType;
+
   @override
-  Future<void> setup([String? anchorId]) async {
+  Future<void> setup([String? anchorId, LiveType? liveType]) async {
     _anchorId = anchorId ?? userId;
+    _liveType = liveType ?? LiveType.video;
     await super.setup();
   }
 
@@ -26,7 +31,7 @@ class WatchModel extends LivesModel {
   /// 观看直播
   Future<void> startWatch(int viewId) async {
     _LiveProxy.addListener(this);
-    await _LiveProxy.startWatch(_anchorId, _roomId, viewId);
+    await _LiveProxy.startWatch(_anchorId, _roomId, viewId, type: _liveType);
     _started = true;
     await _refreshRoomInfo();
     await _refreshUserInfo();
