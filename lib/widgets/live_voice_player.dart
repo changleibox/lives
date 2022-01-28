@@ -12,7 +12,13 @@ import 'package:provider/provider.dart';
 /// 直播播放器
 class LiveVoicePlayer extends StatefulWidget {
   /// 直播播放器
-  const LiveVoicePlayer({Key? key}) : super(key: key);
+  const LiveVoicePlayer({
+    Key? key,
+    this.alignment = Alignment.center,
+  }) : super(key: key);
+
+  /// 对齐方式
+  final AlignmentGeometry alignment;
 
   @override
   _LiveVoicePlayerState createState() => _LiveVoicePlayerState();
@@ -24,7 +30,11 @@ class _LiveVoicePlayerState extends State<LiveVoicePlayer> {
     final model = context.watch<LiveModel>();
     final userInfo = model.getMemberInfo(model.userId);
     return PlayerBackground(
-      child: Center(
+      child: AnimatedAlign(
+        duration: const Duration(
+          milliseconds: 250,
+        ),
+        alignment: widget.alignment,
         child: Container(
           decoration: ShapeDecoration(
             shape: CircleBorder(

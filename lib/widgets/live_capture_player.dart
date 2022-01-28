@@ -10,7 +10,13 @@ import 'package:provider/provider.dart';
 /// 直播播放器
 class LiveCapturePlayer extends StatefulWidget {
   /// 直播播放器
-  const LiveCapturePlayer({Key? key}) : super(key: key);
+  const LiveCapturePlayer({
+    Key? key,
+    this.alignment = Alignment.center,
+  }) : super(key: key);
+
+  /// 对齐方式
+  final AlignmentGeometry alignment;
 
   @override
   _LiveCapturePlayerState createState() => _LiveCapturePlayerState();
@@ -21,7 +27,11 @@ class _LiveCapturePlayerState extends State<LiveCapturePlayer> {
   Widget build(BuildContext context) {
     final model = context.watch<LiveModel>();
     return PlayerBackground(
-      child: Center(
+      child: AnimatedAlign(
+        duration: const Duration(
+          milliseconds: 250,
+        ),
+        alignment: widget.alignment,
         child: Text(
           model.started ? '录屏中，可切换到游戏界面直播啦' : '开始直播后，观众会实时看到你手机上\n的游戏画面，或其他应哟过',
           textAlign: TextAlign.center,
