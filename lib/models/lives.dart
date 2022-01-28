@@ -267,8 +267,8 @@ class _LiveProxy {
   /// 观看直播
   static Future<void> startWatch(
     String anchorId,
-    int roomId,
-    int viewId, {
+    int roomId, {
+    int? viewId,
     LiveType type = LiveType.video,
   }) async {
     final callback = await _room.enterRoom(
@@ -278,11 +278,15 @@ class _LiveProxy {
     if (callback.code != 0) {
       throw LiveError(callback.code, callback.desc);
     }
-    await _room.startPlay(anchorId, viewId);
+    assert(type != LiveType.voice || viewId != null);
+    if (viewId != null) {
+      await _room.startPlay(anchorId, viewId);
+    }
   }
 
   /// 停止观看直播
-  static Future<void> exitWatch() async {
+  static Future<void> exitWatch(String anchorId) async {
+    await _room.stopPlay(anchorId);
     final callback = await _room.exitRoom();
     if (callback.code != 0) {
       throw LiveError(callback.code, callback.desc);

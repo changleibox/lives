@@ -29,9 +29,14 @@ class WatchModel extends LivesModel {
   }
 
   /// 观看直播
-  Future<void> startWatch(int viewId) async {
+  Future<void> startWatch([int? viewId]) async {
     _LiveProxy.addListener(this);
-    await _LiveProxy.startWatch(_anchorId, _roomId, viewId, type: _liveType);
+    await _LiveProxy.startWatch(
+      _anchorId,
+      _roomId,
+      viewId: viewId,
+      type: _liveType,
+    );
     _started = true;
     await _refreshRoomInfo();
     await _refreshUserInfo();
@@ -41,7 +46,7 @@ class WatchModel extends LivesModel {
   /// 停止观看直播
   Future<void> exitWatch() async {
     _LiveProxy.removeListener(this);
-    await _LiveProxy.exitWatch();
+    await _LiveProxy.exitWatch(_anchorId);
     if (!_started) {
       return;
     }
