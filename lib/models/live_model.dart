@@ -139,9 +139,12 @@ class LiveModel extends LivesModel implements LiveModule {
     );
     _setupMessages();
     _startDownTimer();
-    _started = true;
     await _refreshRoomInfo();
     await _refreshUserInfo();
+    if (_started) {
+      return;
+    }
+    _started = true;
     notifyListeners();
   }
 

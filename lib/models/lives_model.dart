@@ -130,20 +130,26 @@ abstract class LivesModel extends ChangeNotifier with LiveObserver {
 
   @override
   void onReceiveRoomTextMsg(BulletChat bulletChat) {
-    _messages.addFirst(bulletChat);
-    notifyListeners();
+    if (_started) {
+      _messages.addFirst(bulletChat);
+      notifyListeners();
+    }
     super.onReceiveRoomTextMsg(bulletChat);
   }
 
   @override
   void onAudienceEnter(UserInfo userInfo) {
-    _onMemberEnterExit(userInfo, '进入直播间');
+    if (_started) {
+      _onMemberEnterExit(userInfo, '进入直播间');
+    }
     super.onAudienceEnter(userInfo);
   }
 
   @override
   void onAudienceExit(UserInfo userInfo) {
-    _onMemberEnterExit(userInfo, '离开直播间');
+    if (_started) {
+      _onMemberEnterExit(userInfo, '离开直播间');
+    }
     super.onAudienceExit(userInfo);
   }
 
