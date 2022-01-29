@@ -31,6 +31,7 @@ class WatchModel extends LivesModel {
   /// 观看直播
   Future<void> startWatch([int? viewId]) async {
     _LiveProxy.addListener(this);
+    await _liveType.startWatch();
     await _LiveProxy.startWatch(
       _anchorId,
       _roomId,
@@ -47,6 +48,7 @@ class WatchModel extends LivesModel {
   Future<void> exitWatch() async {
     _LiveProxy.removeListener(this);
     await _LiveProxy.exitWatch(_anchorId);
+    await _liveType.stopWatch();
     _started = false;
     notifyListeners();
   }

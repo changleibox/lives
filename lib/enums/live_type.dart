@@ -55,7 +55,7 @@ extension LiveTypeName on LiveType {
   }
 
   /// 显示屏幕分享Window
-  Future<void> start([FutureOr<void> Function()? onStarted]) async {
+  Future<void> startLive([FutureOr<void> Function()? onStarted]) async {
     if (this != LiveType.game) {
       return;
     }
@@ -86,7 +86,7 @@ extension LiveTypeName on LiveType {
   }
 
   /// 关闭
-  Future<void> stop([FutureOr<void> Function()? onStopped]) async {
+  Future<void> stopLive([FutureOr<void> Function()? onStopped]) async {
     if (this != LiveType.game) {
       return;
     }
@@ -94,6 +94,24 @@ extension LiveTypeName on LiveType {
       await ReplayKitLauncher.finishReplayKitBroadcast('ZGFinishBroadcastUploadExtensionProcessNotification');
     } else if (Platform.isAndroid) {
       await SystemAlertWindow.closeSystemWindow();
+    }
+    await onStopped?.call();
+    await SystemChromes.setPreferredOrientations();
+  }
+
+  /// 显示屏幕分享Window
+  Future<void> startWatch([FutureOr<void> Function()? onStarted]) async {
+    if (this != LiveType.game) {
+      return;
+    }
+    await onStarted?.call();
+    await SystemChromes.setPreferredOrientations(this);
+  }
+
+  /// 关闭
+  Future<void> stopWatch([FutureOr<void> Function()? onStopped]) async {
+    if (this != LiveType.game) {
+      return;
     }
     await onStopped?.call();
     await SystemChromes.setPreferredOrientations();

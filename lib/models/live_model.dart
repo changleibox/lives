@@ -139,7 +139,7 @@ class LiveModel extends LivesModel implements LiveModule {
       appGroup: 'group.me.box.lives',
       type: _liveType,
     );
-    await _liveType.start(() => _startPendingLive(exitLive));
+    await _liveType.startLive(() => _startPendingLive(exitLive));
     _setupMessages();
     _startDownTimer();
     await _refreshRoomInfo();
@@ -159,7 +159,7 @@ class LiveModel extends LivesModel implements LiveModule {
       await startPreview(_isFront!, _viewId!);
     }
     _stopPendingLive();
-    await _liveType.stop();
+    await _liveType.stopLive();
     _speedNotifier.value = 0;
     _lastSendBytes = 0;
     _networkNotifier.value = 1;
