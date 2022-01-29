@@ -406,94 +406,110 @@ class _LiveOptions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final model = context.watch<LiveModel>();
+    final orientation = MediaQuery.of(context).orientation;
+    final portrait = orientation == Orientation.portrait;
+    const buttons = _Buttons();
     return Container(
       padding: const EdgeInsets.symmetric(
         vertical: 8,
       ),
       child: WidgetGroup.spacing(
         children: [
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              child: WidgetGroup.spacing(
-                spacing: 24,
-                children: [
-                  CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    minSize: 0,
-                    onPressed: () {
-                      showInteractiveTools(context);
-                    },
-                    child: const Icon(
-                      CupertinoIcons.rectangle_grid_2x2,
-                      color: CupertinoColors.white,
-                      size: 26,
-                      semanticLabel: '互动工具',
-                    ),
-                  ),
-                  CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    minSize: 0,
-                    onPressed: () {
-                      showBeauty(context, model.beautyManager);
-                    },
-                    child: const Icon(
-                      CupertinoIcons.bandage,
-                      color: CupertinoColors.white,
-                      size: 26,
-                      semanticLabel: '美颜',
-                    ),
-                  ),
-                  CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    minSize: 0,
-                    onPressed: () {
-                      showIncome(context);
-                    },
-                    child: const Icon(
-                      CupertinoIcons.rotate_right,
-                      color: CupertinoColors.white,
-                      size: 26,
-                      semanticLabel: '本场收益',
-                    ),
-                  ),
-                  CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    minSize: 0,
-                    onPressed: () {
-                      showPopularize(context);
-                    },
-                    child: const Icon(
-                      CupertinoIcons.arrow_3_trianglepath,
-                      color: CupertinoColors.white,
-                      size: 26,
-                      semanticLabel: '推广',
-                    ),
-                  ),
-                  CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    minSize: 0,
-                    onPressed: () {
-                      showCompetition(context);
-                    },
-                    child: const Icon(
-                      CupertinoIcons.app_badge,
-                      color: CupertinoColors.white,
-                      size: 26,
-                      semanticLabel: 'pk',
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          if (portrait)
+            const Expanded(
+              child: buttons,
+            )
+          else
+            buttons,
           const _BackButton(),
         ],
       ),
     );
   }
 }
+
+class _Buttons extends StatelessWidget {
+  const _Buttons({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final model = context.watch<LiveModel>();
+    return Container(
+      padding: const EdgeInsets.all(16),
+      child: WidgetGroup.spacing(
+        spacing: 24,
+        children: [
+          CupertinoButton(
+            padding: EdgeInsets.zero,
+            minSize: 0,
+            onPressed: () {
+              showInteractiveTools(context);
+            },
+            child: const Icon(
+              CupertinoIcons.rectangle_grid_2x2,
+              color: CupertinoColors.white,
+              size: 26,
+              semanticLabel: '互动工具',
+            ),
+          ),
+          CupertinoButton(
+            padding: EdgeInsets.zero,
+            minSize: 0,
+            onPressed: () {
+              showBeauty(context, model.beautyManager);
+            },
+            child: const Icon(
+              CupertinoIcons.bandage,
+              color: CupertinoColors.white,
+              size: 26,
+              semanticLabel: '美颜',
+            ),
+          ),
+          CupertinoButton(
+            padding: EdgeInsets.zero,
+            minSize: 0,
+            onPressed: () {
+              showIncome(context);
+            },
+            child: const Icon(
+              CupertinoIcons.rotate_right,
+              color: CupertinoColors.white,
+              size: 26,
+              semanticLabel: '本场收益',
+            ),
+          ),
+          CupertinoButton(
+            padding: EdgeInsets.zero,
+            minSize: 0,
+            onPressed: () {
+              showPopularize(context);
+            },
+            child: const Icon(
+              CupertinoIcons.arrow_3_trianglepath,
+              color: CupertinoColors.white,
+              size: 26,
+              semanticLabel: '推广',
+            ),
+          ),
+          CupertinoButton(
+            padding: EdgeInsets.zero,
+            minSize: 0,
+            onPressed: () {
+              showCompetition(context);
+            },
+            child: const Icon(
+              CupertinoIcons.app_badge,
+              color: CupertinoColors.white,
+              size: 26,
+              semanticLabel: 'pk',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 
 class _BottomBar extends StatelessWidget {
   const _BottomBar({
@@ -503,6 +519,11 @@ class _BottomBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final model = context.watch<LiveModel>();
+    final orientation = MediaQuery.of(context).orientation;
+    final portrait = orientation == Orientation.portrait;
+    final chatRoom = TextChatRoom(
+      messages: model.messages,
+    );
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -521,13 +542,16 @@ class _BottomBar extends StatelessWidget {
         top: false,
         right: false,
         child: WidgetGroup.spacing(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          direction: Axis.vertical,
-          spacing: 8,
+          crossAxisAlignment: portrait ? CrossAxisAlignment.stretch : CrossAxisAlignment.end,
+          direction: portrait ? Axis.vertical : Axis.horizontal,
+          spacing: portrait ? 8 : 24,
           children: [
-            TextChatRoom(
-              messages: model.messages,
-            ),
+            if (portrait)
+              chatRoom
+            else
+              Expanded(
+                child: chatRoom,
+              ),
             const _LiveOptions(),
           ],
         ),
