@@ -590,8 +590,8 @@ class _LiveIM extends LiveIM {
       );
       _timManager.setGroupListener(listener: _groupListener!);
       _simpleMsgListener ??= V2TimSimpleMsgListener(
-        onRecvGroupTextMessage: _onRecvGroupTextMessage,
-        onRecvGroupCustomMessage: _onRecvGroupCustomMessage,
+        onRecvGroupTextMessage: _onReceiveGroupTextMessage,
+        onRecvGroupCustomMessage: _onReceiveGroupCustomMessage,
       );
       _timManager.addSimpleMsgListener(listener: _simpleMsgListener!);
     }
@@ -756,21 +756,17 @@ class _LiveIM extends LiveIM {
     }
   }
 
-  void _onRecvGroupCustomMessage(
-    String msgID,
-    String groupID,
-    V2TimGroupMemberInfo sender,
-    String customData,
-  ) {
+  void _onReceiveGroupCustomMessage(String msgID, String groupID, V2TimGroupMemberInfo sender, String customData) {
     try {
       final customMap = jsonDecode(customData) as Map<String, dynamic>?;
       if (customMap == null) {
         print(_logTag + 'onReceiveGroupCustomMessage extraMap is null, ignore');
         return;
       }
-      if (customMap.containsKey('action') &&
-          customMap.containsKey('command') &&
-          customMap['action'] == _liveCustomCmd) {
+      final hasAction = customMap.containsKey('action');
+      final hasCommand = customMap.containsKey('command');
+      final action = customMap['action'] as int?;
+      if (hasAction && hasCommand && action == _liveCustomCmd) {
         //群自定义消息
         const type = TRTCLiveRoomDelegate.onReceiveRoomCustomMsg;
         _emitEvent(type, <String, dynamic>{
@@ -788,15 +784,9 @@ class _LiveIM extends LiveIM {
     }
   }
 
-  void _onRecvGroupTextMessage(
-    String msgID,
-    String groupID,
-    V2TimGroupMemberInfo sender,
-    String text,
-  ) {
+  void _onReceiveGroupTextMessage(String msgID, String groupID, V2TimGroupMemberInfo sender, String text) {
     //群文本消息
-    const type = TRTCLiveRoomDelegate.onReceiveRoomTextMsg;
-    _emitEvent(type, <String, dynamic>{
+    _emitEvent(TRTCLiveRoomDelegate.onReceiveRoomTextMsg, <String, dynamic>{
       'message': text,
       'userID': sender.userID,
       'userAvatar': sender.faceUrl,
@@ -805,14 +795,13 @@ class _LiveIM extends LiveIM {
   }
 
   void _onMemberEnter(String groupId, List<V2TimGroupMemberInfo> list) {
-    const type = TRTCLiveRoomDelegate.onAudienceEnter;
     final memberList = list;
     for (var i = 0; i < memberList.length; i++) {
       if (_audienceList.contains(memberList[i].userID)) {
         return;
       }
       _audienceList.add(memberList[i].userID!);
-      _emitEvent(type, {
+      _emitEvent(TRTCLiveRoomDelegate.onAudienceEnter, {
         'userId': memberList[i].userID,
         'userName': memberList[i].nickName,
         'userAvatar': memberList[i].faceUrl,
@@ -822,8 +811,7 @@ class _LiveIM extends LiveIM {
 
   void _onMemberLeave(String groupId, V2TimGroupMemberInfo member) {
     _audienceList.remove(member.userID);
-    const type = TRTCLiveRoomDelegate.onAudienceExit;
-    _emitEvent(type, {
+    _emitEvent(TRTCLiveRoomDelegate.onAudienceExit, {
       'userId': member.userID,
       'userName': member.nickName,
       'userAvatar': member.faceUrl,
@@ -832,8 +820,7 @@ class _LiveIM extends LiveIM {
 
   void _onGroupDismissed(String groupID, V2TimGroupMemberInfo opUser) {
     //房间被群主解散
-    const type = TRTCLiveRoomDelegate.onRoomDestroy;
-    _emitEvent(type, <String, dynamic>{});
+    _emitEvent(TRTCLiveRoomDelegate.onRoomDestroy, <String, dynamic>{});
   }
 
   void _onInvitationCancelled(
@@ -868,11 +855,14 @@ class _LiveIM extends LiveIM {
         print(_logTag + 'onReceiveNewInvitation extraMap is null, ignore');
         return;
       }
-      if (customMap.containsKey('data') && customMap['data']['cmd'] == _requestAnchorCMD) {
+      final hasData = customMap.containsKey('data');
+      final customData = customMap['data'] as Map<String, dynamic>?;
+      final cmd = customData?['cmd'] as String?;
+      if (hasData && cmd == _requestAnchorCMD) {
         _emitEvent(TRTCLiveRoomDelegate.onAnchorAccepted, {
           'userId': invitee,
         });
-      } else if (customMap.containsKey('data') && customMap['data']['cmd'] == _requestRoomPKCMD) {
+      } else if (hasData && cmd == _requestRoomPKCMD) {
         _isPk = true;
         _emitEvent(TRTCLiveRoomDelegate.onRoomPKAccepted, {
           'userId': invitee,
@@ -898,11 +888,14 @@ class _LiveIM extends LiveIM {
         print(_logTag + 'onReceiveNewInvitation extraMap is null, ignore');
         return;
       }
-      if (customMap.containsKey('data') && customMap['data']['cmd'] == _requestAnchorCMD) {
+      final hasData = customMap.containsKey('data');
+      final customData = customMap['data'] as Map<String, dynamic>?;
+      final cmd = customData?['cmd'] as String?;
+      if (hasData && cmd == _requestAnchorCMD) {
         _emitEvent(TRTCLiveRoomDelegate.onAnchorRejected, {
           'userId': invitee,
         });
-      } else if (customMap.containsKey('data') && customMap['data']['cmd'] == _requestRoomPKCMD) {
+      } else if (hasData && cmd == _requestRoomPKCMD) {
         _emitEvent(TRTCLiveRoomDelegate.onRoomPKRejected, {
           'userId': invitee,
         });
@@ -928,7 +921,13 @@ class _LiveIM extends LiveIM {
         return;
       }
 
-      if (customMap.containsKey('data') && customMap['data']['cmd'] == _requestAnchorCMD) {
+      final hasData = customMap.containsKey('data');
+      final customData = customMap['data'] as Map<String, dynamic>?;
+      final cmd = customData?['cmd'] as String?;
+      final cmdInfo = customData?['cmdInfo'] as Map<String, dynamic>?;
+      final userName = cmdInfo?['userName'] as Object?;
+      final userAvatar = cmdInfo?['userAvatar'] as Object?;
+      if (hasData && cmd == _requestAnchorCMD) {
         if (_isPk) {
           //在pk通话中，直接拒绝观众的主播请求
           await signalingManager.reject(
@@ -939,19 +938,19 @@ class _LiveIM extends LiveIM {
           _curCallID = inviteID;
           _emitEvent(TRTCLiveRoomDelegate.onRequestJoinAnchor, <String, dynamic>{
             'userId': inviter,
-            'userName': customMap['data']['cmdInfo']['userName'],
-            'userAvatar': customMap['data']['cmdInfo']['userAvatar'],
-            'callId': inviteID
+            'userName': userName,
+            'userAvatar': userAvatar,
+            'callId': inviteID,
           });
         }
-      } else if (customMap.containsKey('data') && customMap['data']['cmd'] == _kickOutAnchorCMD) {
+      } else if (hasData && cmd == _kickOutAnchorCMD) {
         _curCallID = inviteID;
         _emitEvent(TRTCLiveRoomDelegate.onKickOutJoinAnchor, <String, dynamic>{
           'userId': inviter,
-          'userName': customMap['data']['cmdInfo']['userName'],
-          'userAvatar': customMap['data']['cmdInfo']['userAvatar'],
+          'userName': userName,
+          'userAvatar': userAvatar,
         });
-      } else if (customMap.containsKey('data') && customMap['data']['cmd'] == _requestRoomPKCMD) {
+      } else if (hasData && cmd == _requestRoomPKCMD) {
         // 当前有两个主播直接拒绝跨房通话
         if (_anchorList.length >= 2) {
           await signalingManager.reject(
@@ -961,14 +960,14 @@ class _LiveIM extends LiveIM {
         } else {
           _curPKCallID = inviteID;
           _userIdPK = inviter;
-          _roomIdPK = customMap['data']['cmdInfo']['roomId'] as String?;
+          _roomIdPK = cmdInfo?['roomId'] as String?;
           _emitEvent(TRTCLiveRoomDelegate.onRequestRoomPK, <String, dynamic>{
             'userId': inviter,
-            'userName': customMap['data']['cmdInfo']['userName'],
-            'userAvatar': customMap['data']['cmdInfo']['userAvatar'],
+            'userName': userName,
+            'userAvatar': userAvatar,
           });
         }
-      } else if (customMap.containsKey('data') && customMap['data']['cmd'] == _quitRoomPKCMD) {
+      } else if (hasData && cmd == _quitRoomPKCMD) {
         _isPk = false;
         _emitEvent(TRTCLiveRoomDelegate.onQuitRoomPK, {
           'userId': inviter,
