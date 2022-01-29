@@ -439,70 +439,40 @@ class _Buttons extends StatelessWidget {
       child: WidgetGroup.spacing(
         spacing: 24,
         children: [
-          CupertinoButton(
-            padding: EdgeInsets.zero,
-            minSize: 0,
+          _OperationButton(
+            icon: CupertinoIcons.rectangle_grid_2x2,
+            label: '互动工具',
             onPressed: () {
               showInteractiveTools(context);
             },
-            child: const Icon(
-              CupertinoIcons.rectangle_grid_2x2,
-              color: CupertinoColors.white,
-              size: 26,
-              semanticLabel: '互动工具',
-            ),
           ),
-          CupertinoButton(
-            padding: EdgeInsets.zero,
-            minSize: 0,
+          _OperationButton(
+            icon: CupertinoIcons.bandage,
+            label: '美颜',
             onPressed: () {
               showBeauty(context, model.beautyManager);
             },
-            child: const Icon(
-              CupertinoIcons.bandage,
-              color: CupertinoColors.white,
-              size: 26,
-              semanticLabel: '美颜',
-            ),
           ),
-          CupertinoButton(
-            padding: EdgeInsets.zero,
-            minSize: 0,
+          _OperationButton(
+            icon: CupertinoIcons.rotate_right,
+            label: '本场收益',
             onPressed: () {
               showIncome(context);
             },
-            child: const Icon(
-              CupertinoIcons.rotate_right,
-              color: CupertinoColors.white,
-              size: 26,
-              semanticLabel: '本场收益',
-            ),
           ),
-          CupertinoButton(
-            padding: EdgeInsets.zero,
-            minSize: 0,
+          _OperationButton(
+            icon: CupertinoIcons.arrow_3_trianglepath,
+            label: '推广',
             onPressed: () {
               showPopularize(context);
             },
-            child: const Icon(
-              CupertinoIcons.arrow_3_trianglepath,
-              color: CupertinoColors.white,
-              size: 26,
-              semanticLabel: '推广',
-            ),
           ),
-          CupertinoButton(
-            padding: EdgeInsets.zero,
-            minSize: 0,
+          _OperationButton(
+            icon: CupertinoIcons.app_badge,
+            label: 'pk',
             onPressed: () {
               showCompetition(context);
             },
-            child: const Icon(
-              CupertinoIcons.app_badge,
-              color: CupertinoColors.white,
-              size: 26,
-              semanticLabel: 'pk',
-            ),
           ),
         ],
       ),
@@ -510,6 +480,33 @@ class _Buttons extends StatelessWidget {
   }
 }
 
+class _OperationButton extends StatelessWidget {
+  const _OperationButton({
+    Key? key,
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+  }) : super(key: key);
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoButton(
+      padding: EdgeInsets.zero,
+      minSize: 0,
+      onPressed: onPressed,
+      child: Icon(
+        icon,
+        color: CupertinoColors.white,
+        size: 26,
+        semanticLabel: label,
+      ),
+    );
+  }
+}
 
 class _BottomBar extends StatelessWidget {
   const _BottomBar({
