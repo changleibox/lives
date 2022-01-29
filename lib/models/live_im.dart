@@ -327,40 +327,30 @@ class _LiveIM extends LiveIM {
 
   @override
   void rtcListener(TRTCCloudListener rtcType, Object? param) {
-    var typeStr = rtcType.toString();
-    TRTCLiveRoomDelegate type;
-    typeStr = typeStr.replaceFirst('TRTCCloudListener.', '');
-    if (typeStr == 'onEnterRoom') {
+    if (rtcType == TRTCCloudListener.onEnterRoom) {
       if ((param as int) < 0) {
         _isEnterRoom = false;
       } else {
         _isEnterRoom = true;
       }
-    } else if (typeStr == 'onUserVideoAvailable') {
-      type = TRTCLiveRoomDelegate.onUserVideoAvailable;
-      _emitEvent(type, param);
-    } else if (typeStr == 'onError') {
-      type = TRTCLiveRoomDelegate.onError;
-      _emitEvent(type, param);
-    } else if (typeStr == 'onWarning') {
-      type = TRTCLiveRoomDelegate.onWarning;
-      _emitEvent(type, param);
-    } else if (typeStr == 'onUserVoiceVolume') {
+    } else if (rtcType == TRTCCloudListener.onUserVideoAvailable) {
+      _emitEvent(TRTCLiveRoomDelegate.onUserVideoAvailable, param);
+    } else if (rtcType == TRTCCloudListener.onError) {
+      _emitEvent(TRTCLiveRoomDelegate.onError, param);
+    } else if (rtcType == TRTCCloudListener.onWarning) {
+      _emitEvent(TRTCLiveRoomDelegate.onWarning, param);
+    } else if (rtcType == TRTCCloudListener.onUserVoiceVolume) {
       // type = TRTCLiveRoomDelegate.onUserVoiceVolume;
       // emitEvent(type, param);
-    } else if (typeStr == 'onRemoteUserEnterRoom') {
-      // updateMixConfig();
+    } else if (rtcType == TRTCCloudListener.onRemoteUserEnterRoom) {
       _anchorList.add(param as String);
-      type = TRTCLiveRoomDelegate.onAnchorEnter;
-      _emitEvent(type, param);
-    } else if (typeStr == 'onRemoteUserLeaveRoom') {
-      // updateMixConfig();
+      _emitEvent(TRTCLiveRoomDelegate.onAnchorEnter, param);
+    } else if (rtcType == TRTCCloudListener.onRemoteUserLeaveRoom) {
       _anchorList.remove((param as Map)['userId']);
-      type = TRTCLiveRoomDelegate.onAnchorExit;
-      _emitEvent(type, param['userId']);
-    } else if (typeStr == 'onDisconnectOtherRoom') {
+      _emitEvent(TRTCLiveRoomDelegate.onAnchorExit, param['userId']);
+    } else if (rtcType == TRTCCloudListener.onDisConnectOtherRoom) {
       print('==onDisconnectOtherRoom=' + param.toString());
-    } else if (typeStr == 'onStartPublishing') {
+    } else if (rtcType == TRTCCloudListener.onStartPublishing) {
       print('==onStartPublishing=' + param.toString());
     }
   }
