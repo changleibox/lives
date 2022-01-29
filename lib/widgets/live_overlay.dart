@@ -539,24 +539,24 @@ class _BottomBar extends StatelessWidget {
         top: false,
         right: false,
         bottom: portrait,
-        child: WidgetGroup.spacing(
-          crossAxisAlignment: portrait ? CrossAxisAlignment.stretch : CrossAxisAlignment.end,
-          direction: portrait ? Axis.vertical : Axis.horizontal,
-          spacing: portrait ? 8 : 24,
-          children: [
-            if (portrait)
-              chatRoom
-            else
-              Expanded(
-                child: Container(
-                  padding: EdgeInsets.symmetric(
-                    vertical: portrait ? 0 : 16,
-                  ),
+        child: Container(
+          padding: EdgeInsets.only(
+            bottom: portrait ? 0 : 24,
+          ),
+          child: WidgetGroup.spacing(
+            crossAxisAlignment: portrait ? CrossAxisAlignment.stretch : CrossAxisAlignment.end,
+            direction: portrait ? Axis.vertical : Axis.horizontal,
+            spacing: portrait ? 8 : 24,
+            children: [
+              if (portrait)
+                chatRoom
+              else
+                Expanded(
                   child: chatRoom,
                 ),
-              ),
-            const _LiveOptions(),
-          ],
+              const _LiveOptions(),
+            ],
+          ),
         ),
       ),
     );

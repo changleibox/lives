@@ -43,7 +43,6 @@ class _LivePageState extends HostState<LivePage, _LivePresenter> {
       case LiveType.game:
         return LiveCapturePlayer(
           key: key,
-          alignment: model.started ? const Alignment(0.0, -0.3) : Alignment.center,
           started: model.started,
         );
       case LiveType.voice:
