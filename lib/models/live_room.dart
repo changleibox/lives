@@ -365,7 +365,7 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
       if (roomParam.quality != null) {
         await _cloud.startLocalAudio(roomParam.quality!);
       } else {
-        await _cloud.startLocalAudio(TRTCCloudDef.TRTC_AUDIO_QUALITY_DEFAULT);
+        await _cloud.startLocalAudio(TRTCCloudDef.TRTC_AUDIO_QUALITY_MUSIC);
       }
 
       // mAnchorList.add(IMAnchorInfo(
@@ -1168,7 +1168,7 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
       encParams ?? TRTCVideoEncParam(),
       appGroup: appGroup,
     );
-    await _cloud.startLocalAudio(TRTCCloudDef.TRTC_AUDIO_QUALITY_DEFAULT);
+    await _cloud.startLocalAudio(TRTCCloudDef.TRTC_AUDIO_QUALITY_MUSIC);
 
     return ActionCallback(code: 0, desc: 'startCapture success');
   }
@@ -1193,7 +1193,7 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
       return ActionCallback(code: _codeErr, desc: 'not enter room yet.');
     }
     _isStartAudio = true;
-    await _cloud.startLocalAudio(TRTCCloudDef.TRTC_AUDIO_QUALITY_DEFAULT);
+    await _cloud.startLocalAudio(TRTCCloudDef.TRTC_AUDIO_QUALITY_MUSIC);
 
     return ActionCallback(code: 0, desc: 'startCapture success');
   }
