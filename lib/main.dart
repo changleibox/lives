@@ -8,6 +8,7 @@ import 'package:oktoast/oktoast.dart';
 
 void main() {
   runApp(const LivesApp());
+  SystemChromes.setPreferredOrientations();
 }
 
 /// 启动App
@@ -20,7 +21,10 @@ class LivesApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return CupertinoApp(
       title: '腾讯直播',
-      theme: const CupertinoThemeData(brightness: Brightness.light, primaryColor: Color(0xfff56494)),
+      theme: const CupertinoThemeData(
+        brightness: Brightness.light,
+        primaryColor: Color(0xfff56494),
+      ),
       routes: RouteProvider.routes,
       initialRoute: Navigator.defaultRouteName,
       builder: (context, child) {

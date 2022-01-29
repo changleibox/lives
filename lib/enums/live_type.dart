@@ -3,6 +3,7 @@
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
+import 'package:lives/utils/system_chromes.dart';
 import 'package:replay_kit_launcher/replay_kit_launcher.dart';
 import 'package:system_alert_window/system_alert_window.dart';
 import 'package:tencent_trtc_cloud/trtc_cloud_def.dart';
@@ -69,11 +70,20 @@ extension LiveTypeName on LiveType {
     }
   }
 
+  /// 显示屏幕分享Window
+  Future<void> started() async {
+    if (this != LiveType.game) {
+      return;
+    }
+    await SystemChromes.setPreferredOrientations(this);
+  }
+
   /// 关闭
   Future<void> stop() async {
     if (this != LiveType.game) {
       return;
     }
+    await SystemChromes.setPreferredOrientations();
     if (Platform.isIOS) {
       await ReplayKitLauncher.finishReplayKitBroadcast('ZGFinishBroadcastUploadExtensionProcessNotification');
     } else if (Platform.isAndroid) {

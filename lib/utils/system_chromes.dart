@@ -2,6 +2,7 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'package:lives/enums/live_type.dart';
 
 const _overlayStyle = SystemUiOverlayStyle(
   statusBarColor: Color(0x00ffffff),
@@ -30,5 +31,23 @@ class SystemChromes {
       statusBarIconBrightness: Brightness.light,
       statusBarBrightness: Brightness.dark,
     );
+  }
+
+  /// 直播方向
+  static Future<void> setPreferredOrientations([LiveType? liveType]) async {
+    switch (liveType) {
+      case LiveType.video:
+      case LiveType.voice:
+      case null:
+        await SystemChrome.setPreferredOrientations(const [
+          DeviceOrientation.portraitUp,
+        ]);
+        break;
+      case LiveType.game:
+        await SystemChrome.setPreferredOrientations(const [
+          DeviceOrientation.landscapeRight,
+        ]);
+        break;
+    }
   }
 }
