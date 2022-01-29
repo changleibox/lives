@@ -28,7 +28,6 @@ class LiveModel extends LivesModel implements LiveModule {
   bool _localMute = false;
   bool _remoteMute = false;
   LiveType _liveType = LiveType.video;
-  Completer<void>? _pendingCompleter;
 
   /// 直播类型
   LiveType get liveType => _liveType;
@@ -130,6 +129,9 @@ class LiveModel extends LivesModel implements LiveModule {
   Future<void> startLive({String? roomName, String? cover}) async {
     _LiveProxy.addListener(this);
     _LiveProxy.addTRTCListener(_onEvent);
+    if (_liveType == LiveType.game) {
+      await _startPendingLive();
+    }
     if (_isFront != null && _viewId != null) {
       await startPreview(_isFront!, _viewId!);
     }
@@ -144,20 +146,6 @@ class LiveModel extends LivesModel implements LiveModule {
     _startDownTimer();
     await _refreshRoomInfo();
     await _refreshUserInfo();
-    final pendingCompleter = Completer<void>();
-    _pendingCompleter = pendingCompleter;
-    var timeout = false;
-    await pendingCompleter.future.timeout(
-      _timeLimit,
-      onTimeout: () async {
-        await exitLive();
-        timeout = true;
-      },
-    );
-    if (timeout) {
-      return;
-    }
-    timeout = false;
     _started = true;
     notifyListeners();
   }
@@ -172,12 +160,11 @@ class LiveModel extends LivesModel implements LiveModule {
     if (_isFront != null && _viewId != null) {
       await startPreview(_isFront!, _viewId!);
     }
+    _stopPendingLive();
     _speedNotifier.value = 0;
     _lastSendBytes = 0;
     _networkNotifier.value = 1;
     _stopDownTimer();
-    _pendingCompleter?.complete();
-    _pendingCompleter = null;
     _started = false;
     notifyListeners();
   }
@@ -197,12 +184,9 @@ class LiveModel extends LivesModel implements LiveModule {
         _networkNotifier.value = parseInt(localQuality['quality'], defaultValue: 0)!;
         break;
       case TRTCCloudListener.onScreenCaptureStarted:
-      case TRTCCloudListener.onStartPublishing:
-        _pendingCompleter?.complete();
-        _pendingCompleter = null;
+        _stopPendingLive();
         break;
       case TRTCCloudListener.onScreenCaptureStoped:
-      case TRTCCloudListener.onStopPublishing:
         exitLive();
         break;
       default:

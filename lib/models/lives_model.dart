@@ -14,6 +14,7 @@ abstract class LivesModel extends ChangeNotifier with LiveObserver {
   bool _mounted = false;
   bool _started = false;
   int _memberCount = 0;
+  Completer<void>? _pendingCompleter;
 
   /// 初始化
   Future<void> setup() async {
@@ -50,6 +51,28 @@ abstract class LivesModel extends ChangeNotifier with LiveObserver {
   /// 删除直播间解散监听
   void removeDestroyListener(VoidCallback listener) {
     _listeners.remove(listener);
+  }
+
+  Future<void> _startPendingLive([FutureOr<void> Function()? onTimeout]) async {
+    final pendingCompleter = Completer<void>();
+    _pendingCompleter = pendingCompleter;
+    var timeout = false;
+    await pendingCompleter.future.timeout(
+      _timeLimit,
+      onTimeout: () async {
+        await onTimeout?.call();
+        timeout = true;
+      },
+    );
+    if (timeout) {
+      throw TimeoutException('等待超时，请稍后再试');
+    }
+    timeout = false;
+  }
+
+  void _stopPendingLive() {
+    _pendingCompleter?.complete();
+    _pendingCompleter = null;
   }
 
   /// 消息列表
