@@ -44,18 +44,18 @@ typedef FutureOrVoidCallback = FutureOr<void> Function();
 typedef VoiceListener<P> = void Function(TRTCLiveRoomDelegate type, P params);
 
 /// 自己封装的聊天室工具类
-abstract class LiveIM {
+abstract class LiveIMRoom {
   /// 获取 TRTCLiveRoom 单例对象
   /// @return TRTCLiveRoom 实例
   /// @note 可以调用 {@link TRTCLiveRoom.destroySharedInstance()} 销毁单例对象
-  static Future<LiveIM> sharedInstance() async {
-    return _LiveIM.sharedInstance();
+  static Future<LiveIMRoom> sharedInstance() async {
+    return _LiveIMRoom.sharedInstance();
   }
 
   /// 销毁 TRTCLiveRoom 单例对象
   /// @note 销毁实例后，外部缓存的 TRTCLiveRoom 实例不能再使用，需要重新调用 {@link TRTCLiveRoom.sharedInstance()} 获取新实例
   static Future<void> destroySharedInstance() async {
-    await _LiveIM.destroySharedInstance();
+    await _LiveIMRoom.destroySharedInstance();
   }
 
   //////////////////////////////////////////////////////////
@@ -179,14 +179,14 @@ abstract class LiveIM {
 /// Created by box on 2022/1/30.
 ///
 /// 处理聊天
-class _LiveIM extends LiveIM {
+class _LiveIMRoom extends LiveIMRoom {
   /// 处理聊天
-  _LiveIM() {
+  _LiveIMRoom() {
     //获取腾讯即时通信IM manager
     _timManager = TencentImSDKPlugin.v2TIMManager;
   }
 
-  static _LiveIM? _instance;
+  static _LiveIMRoom? _instance;
 
   late final V2TIMManager _timManager;
 
@@ -216,8 +216,8 @@ class _LiveIM extends LiveIM {
   V2TimSimpleMsgListener? _simpleMsgListener;
 
   /// 单例
-  static Future<_LiveIM> sharedInstance() async {
-    _instance ??= _LiveIM();
+  static Future<_LiveIMRoom> sharedInstance() async {
+    _instance ??= _LiveIMRoom();
     return _instance!;
   }
 

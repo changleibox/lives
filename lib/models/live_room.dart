@@ -4,7 +4,7 @@
 
 import 'dart:convert';
 
-import 'package:lives/models/live_im.dart';
+import 'package:lives/models/live_im_room.dart';
 import 'package:lives/models/live_room_def.dart';
 import 'package:tencent_im_sdk_plugin/manager/v2_tim_group_manager.dart';
 import 'package:tencent_im_sdk_plugin/manager/v2_tim_signaling_manager.dart';
@@ -212,7 +212,7 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
   late final TRTCCloud _cloud;
   late final TXAudioEffectManager _txAudioManager;
   late final TXDeviceManager _txDeviceManager;
-  late final LiveIM _imManager;
+  late final LiveIMRoom _imManager;
 
   final Set<ListenerValue> _rtcListeners = {};
 
@@ -233,7 +233,7 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
     _cloud = (await TRTCCloud.sharedInstance())!;
     _txDeviceManager = _cloud.getDeviceManager();
     _txAudioManager = _cloud.getAudioEffectManager();
-    _imManager = await LiveIM.sharedInstance();
+    _imManager = await LiveIMRoom.sharedInstance();
   }
 
   static Future<_TRTCLiveRoom> sharedInstance() async {
@@ -249,7 +249,7 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
       _instance = null;
     }
     await TRTCCloud.destroySharedInstance();
-    await LiveIM.destroySharedInstance();
+    await LiveIMRoom.destroySharedInstance();
   }
 
   V2TIMGroupManager get groupManager => _imManager.groupManager;
