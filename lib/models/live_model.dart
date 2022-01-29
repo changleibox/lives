@@ -198,6 +198,11 @@ class LiveModel extends LivesModel implements LiveModule {
       _pendingCompleter = null;
     } else if (type == TRTCCloudListener.onScreenCaptureStoped) {
       exitLive();
+    } else if (type == TRTCCloudListener.onStartPublishing) {
+      _pendingCompleter?.complete();
+      _pendingCompleter = null;
+    } else if (type == TRTCCloudListener.onStopPublishing) {
+      exitLive();
     }
   }
 
