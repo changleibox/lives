@@ -43,7 +43,7 @@ extension LiveTypeName on LiveType {
   }
 
   /// 显示屏幕分享Window
-  Future<void> start(FutureOr<void> Function() onStarted) async {
+  Future<void> start([FutureOr<void> Function()? onStarted]) async {
     if (this != LiveType.game) {
       return;
     }
@@ -69,20 +69,21 @@ extension LiveTypeName on LiveType {
         );
       }
     }
-    await onStarted();
+    await onStarted?.call();
     await SystemChromes.setPreferredOrientations(this);
   }
 
   /// 关闭
-  Future<void> stop() async {
+  Future<void> stop([FutureOr<void> Function()? onStopped]) async {
     if (this != LiveType.game) {
       return;
     }
-    await SystemChromes.setPreferredOrientations();
     if (Platform.isIOS) {
       await ReplayKitLauncher.finishReplayKitBroadcast('ZGFinishBroadcastUploadExtensionProcessNotification');
     } else if (Platform.isAndroid) {
       await SystemAlertWindow.closeSystemWindow();
     }
+    await onStopped?.call();
+    await SystemChromes.setPreferredOrientations();
   }
 }
