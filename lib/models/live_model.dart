@@ -31,7 +31,7 @@ class LiveModel extends LivesModel implements LiveModule {
   /// 初始化
   @override
   Future<void> setup([LiveType? liveType]) {
-    return super.setup(liveType ?? LiveType.video);
+    return super.setup(liveType);
   }
 
   @override

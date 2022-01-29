@@ -14,7 +14,7 @@ class WatchModel extends LivesModel {
   @override
   Future<void> setup([LiveType? liveType, String? anchorId]) {
     _anchorId = anchorId ?? userId;
-    return super.setup(liveType ?? LiveType.video);
+    return super.setup(liveType);
   }
 
   /// 主播id
