@@ -43,6 +43,16 @@ const String _streamId = 'stream';
 /// 时间回调
 typedef LiveListener = void Function(TRTCLiveRoomDelegate type, Object? params);
 
+const _captureEncParams = TRTCVideoEncParam(
+  enableAdjustRes: false,
+  videoBitrate: 3000,
+  minVideoBitrate: 3000,
+  videoFps: 20,
+  videoResolution: TRTCCloudDef.TRTC_VIDEO_RESOLUTION_1920_1080,
+  videoResolutionMode: TRTCCloudDef.TRTC_VIDEO_RESOLUTION_MODE_LANDSCAPE,
+);
+const _config = TRTCLiveRoomConfig(useCDNFirst: false);
+
 /// Created by changlei on 2022/1/20.
 ///
 /// 新版直播
@@ -170,7 +180,7 @@ class _LiveProxy {
     await _storage.set(_userIdKey, userId);
     final sign = _storage.get<String>(_signKey, defaultValue: _generateSign(userId))!;
     await _storage.set(_signKey, sign);
-    final callback = await _room.login(_sdkAppId, userId, sign, TRTCLiveRoomConfig(useCDNFirst: false));
+    final callback = await _room.login(_sdkAppId, userId, sign, _config);
     if (callback.code != 0) {
       throw LiveError(callback.code, callback.desc);
     }
@@ -228,14 +238,7 @@ class _LiveProxy {
       case LiveType.game:
         await _room.startCapture(
           appGroup: appGroup ?? '',
-          encParams: TRTCVideoEncParam(
-            enableAdjustRes: false,
-            videoBitrate: 3000,
-            minVideoBitrate: 3000,
-            videoFps: 20,
-            videoResolution: TRTCCloudDef.TRTC_VIDEO_RESOLUTION_1920_1080,
-            videoResolutionMode: TRTCCloudDef.TRTC_VIDEO_RESOLUTION_MODE_LANDSCAPE,
-          ),
+          encParams: _captureEncParams,
         );
         break;
       case LiveType.voice:
