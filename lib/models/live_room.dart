@@ -217,7 +217,6 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
   final Set<ListenerValue> _rtcListeners = {};
 
   late int _sdkAppId;
-  late String _userId;
   late String _userSig;
 
   late int _originRole;
@@ -270,7 +269,7 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
           TRTCParams(
             sdkAppId: _sdkAppId,
             //应用Id
-            userId: _userId,
+            userId: _imManager.userId,
             // 用户Id
             userSig: _userSig,
             // 用户签名
@@ -307,7 +306,7 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
           TRTCParams(
             sdkAppId: _sdkAppId,
             //应用Id
-            userId: _userId,
+            userId: _imManager.userId,
             // 用户Id
             userSig: _userSig,
             // 用户签名
@@ -358,7 +357,6 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
   @override
   Future<ActionCallback> login(int sdkAppId, String userId, String userSig, TRTCLiveRoomConfig config) {
     _sdkAppId = sdkAppId;
-    _userId = userId;
     _userSig = userSig;
     _roomConfig = config;
 
@@ -368,7 +366,6 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
   @override
   Future<ActionCallback> logout() {
     _sdkAppId = 0;
-    _userId = '';
     _userSig = '';
     return _imManager.logout();
   }
