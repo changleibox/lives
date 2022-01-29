@@ -174,7 +174,9 @@ class _LiveProxy {
     if (callback.code != 0) {
       throw LiveError(callback.code, callback.desc);
     }
-    await _room.setSelfProfile(name, avatar);
+    if (name != null && avatar != null) {
+      await _room.setSelfProfile(name, avatar);
+    }
   }
 
   /// 退出登录
