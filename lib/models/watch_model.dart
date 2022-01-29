@@ -10,7 +10,7 @@ class WatchModel extends LivesModel {
   late LiveType _liveType;
 
   @override
-  int get _roomId => int.tryParse(_anchorId) ?? 0;
+  String get _roomId => _anchorId;
 
   /// 直播类型
   LiveType get liveType => _liveType;

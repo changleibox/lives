@@ -116,7 +116,7 @@ abstract class LiveIM {
   /// @param roomParam 房间信息，用于房间描述的信息，例如房间名称，封面信息等。如果房间列表和房间信息都由您的服务器自行管理，可忽略该参数。
   /// @param callback 创建房间的结果回调，成功时 code 为0.
   Future<ActionCallback> createRoom({
-    required int roomId,
+    required String roomId,
     required RoomParam roomParam,
     required FutureOrVoidCallback callback,
     int? scene,
@@ -129,7 +129,7 @@ abstract class LiveIM {
   /// 进入房间（观众调用）
   /// @param roomId 房间标识
   Future<ActionCallback> enterRoom({
-    required int roomId,
+    required String roomId,
     int? scene,
     required FutureOrVoidCallback callback,
   });
@@ -242,7 +242,7 @@ class _LiveIM extends LiveIM {
 
   @override
   Future<ActionCallback> createRoom({
-    required int roomId,
+    required String roomId,
     required RoomParam roomParam,
     required FutureOrVoidCallback callback,
     int? scene,
@@ -253,13 +253,13 @@ class _LiveIM extends LiveIM {
     if (_isEnterRoom) {
       return ActionCallback(
         code: _codeErr,
-        desc: 'you have been in room:' + _roomId! + " can't create another room:" + roomId.toString(),
+        desc: 'you have been in room:' + _roomId! + " can't create another room:" + roomId,
       );
     }
     final res = await groupManager.createGroup(
       groupType: 'AVChatRoom',
       groupName: roomParam.roomName,
-      groupID: roomId.toString(),
+      groupID: roomId,
     );
     var msg = res.desc;
     var code = res.code;
@@ -367,22 +367,22 @@ class _LiveIM extends LiveIM {
 
   @override
   Future<ActionCallback> enterRoom({
-    required int roomId,
+    required String roomId,
     int? scene,
     required FutureOrVoidCallback callback,
   }) async {
     if (_isEnterRoom) {
       return ActionCallback(
         code: _codeErr,
-        desc: 'you have been in room:' + _roomId! + " can't create another room:" + roomId.toString(),
+        desc: 'you have been in room:' + _roomId! + " can't create another room:" + roomId,
       );
     }
-    final joinRes = await _timManager.joinGroup(groupID: roomId.toString(), message: '');
+    final joinRes = await _timManager.joinGroup(groupID: roomId, message: '');
     if (joinRes.code == 0 || joinRes.code == 10013) {
       _roomId = roomId.toString();
       _isEnterRoom = true;
       await callback();
-      final res = await groupManager.getGroupsInfo(groupIDList: [roomId.toString()]);
+      final res = await groupManager.getGroupsInfo(groupIDList: [roomId]);
       final groupResult = res.data!;
       _ownerUserId = groupResult[0].groupInfo!.owner!;
     }

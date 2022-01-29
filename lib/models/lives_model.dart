@@ -32,7 +32,7 @@ abstract class LivesModel extends ChangeNotifier with LiveObserver {
   /// 当前登录用户id
   String get userId => _LiveProxy.userId!;
 
-  int get _roomId => int.tryParse(userId) ?? 0;
+  String get _roomId => userId;
 
   /// 房间信息
   RoomInfo? get roomInfo => _roomInfo;

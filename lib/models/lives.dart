@@ -213,7 +213,7 @@ class _LiveProxy {
 
   /// 开始直播
   static Future<void> startLive(
-    int roomId, {
+    String roomId, {
     String? roomName,
     String? cover,
     String? appGroup,
@@ -273,7 +273,7 @@ class _LiveProxy {
   /// 观看直播
   static Future<void> startWatch(
     String anchorId,
-    int roomId, {
+    String roomId, {
     int? viewId,
     LiveType type = LiveType.video,
   }) async {
@@ -305,8 +305,8 @@ class _LiveProxy {
   }
 
   /// 获取直播间信息
-  static Future<RoomInfoCallback> getRooms(int roomId) async {
-    return await _room.getRoomInfo([roomId.toString()]);
+  static Future<RoomInfoCallback> getRooms(String roomId) async {
+    return await _room.getRoomInfo([roomId]);
   }
 
   /// 获取成员信息
