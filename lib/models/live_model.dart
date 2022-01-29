@@ -2,6 +2,8 @@
 
 part of 'lives.dart';
 
+const _timeLimit = Duration(seconds: 5);
+
 /// Created by changlei on 2022/1/18.
 ///
 /// 直播
@@ -26,6 +28,7 @@ class LiveModel extends LivesModel implements LiveModule {
   bool _localMute = false;
   bool _remoteMute = false;
   LiveType _liveType = LiveType.video;
+  Completer<void>? _pendingCompleter;
 
   /// 直播类型
   LiveType get liveType => _liveType;
@@ -141,6 +144,20 @@ class LiveModel extends LivesModel implements LiveModule {
     _startDownTimer();
     await _refreshRoomInfo();
     await _refreshUserInfo();
+    final pendingCompleter = Completer<void>();
+    _pendingCompleter = pendingCompleter;
+    var timeout = false;
+    await pendingCompleter.future.timeout(
+      _timeLimit,
+      onTimeout: () async {
+        await exitLive();
+        timeout = true;
+      },
+    );
+    if (timeout) {
+      return;
+    }
+    timeout = false;
     _started = true;
     notifyListeners();
   }
@@ -159,6 +176,8 @@ class LiveModel extends LivesModel implements LiveModule {
     _lastSendBytes = 0;
     _networkNotifier.value = 1;
     _stopDownTimer();
+    _pendingCompleter?.complete();
+    _pendingCompleter = null;
     _started = false;
     notifyListeners();
   }
@@ -174,6 +193,11 @@ class LiveModel extends LivesModel implements LiveModule {
     } else if (type == TRTCCloudListener.onNetworkQuality) {
       final localQuality = (params as Map<String, dynamic>)['localQuality'] as Map<String, dynamic>;
       _networkNotifier.value = parseInt(localQuality['quality'], defaultValue: 0)!;
+    } else if (type == TRTCCloudListener.onScreenCaptureStarted) {
+      _pendingCompleter?.complete();
+      _pendingCompleter = null;
+    } else if (type == TRTCCloudListener.onScreenCaptureStoped) {
+      exitLive();
     }
   }
 
