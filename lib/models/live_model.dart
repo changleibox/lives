@@ -129,10 +129,6 @@ class LiveModel extends LivesModel implements LiveModule {
   Future<void> startLive({String? roomName, String? cover}) async {
     _LiveProxy.addListener(this);
     _LiveProxy.addTRTCListener(_onEvent);
-    await _liveType.start();
-    if (_liveType == LiveType.game) {
-      await _startPendingLive();
-    }
     if (_isFront != null && _viewId != null) {
       await startPreview(_isFront!, _viewId!);
     }
@@ -143,6 +139,10 @@ class LiveModel extends LivesModel implements LiveModule {
       appGroup: 'group.me.box.lives',
       type: _liveType,
     );
+    await _liveType.start();
+    if (_liveType == LiveType.game) {
+      await _startPendingLive();
+    }
     _setupMessages();
     _startDownTimer();
     await _refreshRoomInfo();
@@ -155,14 +155,14 @@ class LiveModel extends LivesModel implements LiveModule {
   Future<void> exitLive() async {
     _LiveProxy.removeListener(this);
     _LiveProxy.removeTRTCListener(_onEvent);
+    _stopPendingLive();
+    await _liveType.stop();
     await _LiveProxy.exitLive(
       type: _liveType,
     );
     if (_isFront != null && _viewId != null) {
       await startPreview(_isFront!, _viewId!);
     }
-    _stopPendingLive();
-    await _liveType.stop();
     _speedNotifier.value = 0;
     _lastSendBytes = 0;
     _networkNotifier.value = 1;
