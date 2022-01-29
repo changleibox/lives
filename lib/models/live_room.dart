@@ -152,8 +152,6 @@ abstract class TRTCLiveRoom {
   Future<ActionCallback> startCapture({
     int? streamType,
     TRTCVideoEncParam? encParams,
-    String shareUserId = '',
-    String shareUserSig = '',
     String appGroup = '',
   });
 
@@ -1159,8 +1157,6 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
   Future<ActionCallback> startCapture({
     int? streamType,
     TRTCVideoEncParam? encParams,
-    String shareUserId = '',
-    String shareUserSig = '',
     String appGroup = '',
   }) async {
     if (!_isEnterRoom) {
@@ -1170,8 +1166,6 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
     await _cloud.startScreenCapture(
       streamType ?? TRTCCloudDef.TRTC_VIDEO_STREAM_TYPE_BIG,
       encParams ?? TRTCVideoEncParam(),
-      shareUserId: shareUserId,
-      shareUserSig: shareUserSig,
       appGroup: appGroup,
     );
     await _cloud.startLocalAudio(TRTCCloudDef.TRTC_AUDIO_QUALITY_DEFAULT);
