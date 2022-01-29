@@ -96,15 +96,19 @@ class _TopBar extends StatelessWidget {
           horizontal: 16,
           vertical: 8,
         ),
-        child: WidgetGroup.spacing(
-          direction: Axis.vertical,
-          spacing: 10,
-          children: [
-            _AppBar(
-              userId: userId,
-            ),
-            const _LiveInfo(),
-          ],
+        child: SafeArea(
+          bottom: false,
+          right: false,
+          child: WidgetGroup.spacing(
+            direction: Axis.vertical,
+            spacing: 10,
+            children: [
+              _AppBar(
+                userId: userId,
+              ),
+              const _LiveInfo(),
+            ],
+          ),
         ),
       ),
     );
@@ -121,31 +125,28 @@ class _AppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      bottom: false,
-      child: WidgetGroup.spacing(
-        spacing: 60,
-        children: [
-          Expanded(
-            child: _UserInfo(
-              userId: userId,
-            ),
+    return WidgetGroup.spacing(
+      spacing: 60,
+      children: [
+        Expanded(
+          child: _UserInfo(
+            userId: userId,
           ),
-          CupertinoButton(
-            minSize: 32,
-            borderRadius: BorderRadius.circular(20),
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16,
-            ),
-            color: CupertinoColors.black.withOpacity(0.3),
-            child: const Icon(
-              CupertinoIcons.arrow_up_bin,
-              size: 16,
-            ),
-            onPressed: () {},
+        ),
+        CupertinoButton(
+          minSize: 32,
+          borderRadius: BorderRadius.circular(20),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 16,
           ),
-        ],
-      ),
+          color: CupertinoColors.black.withOpacity(0.3),
+          child: const Icon(
+            CupertinoIcons.arrow_up_bin,
+            size: 16,
+          ),
+          onPressed: () {},
+        ),
+      ],
     );
   }
 }
@@ -156,180 +157,178 @@ class _LiveInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final model = context.watch<LiveModel>();
-    return Container(
-      child: WidgetGroup.spacing(
-        spacing: 10,
-        children: [
-          CupertinoButton(
-            minSize: 20,
-            borderRadius: BorderRadius.circular(12),
-            padding: const EdgeInsets.only(
-              left: 10,
-              right: 4,
-            ),
-            color: CupertinoTheme.of(context).primaryColor.withOpacity(0.7),
-            child: WidgetGroup.spacing(
-              children: const [
-                Text(
-                  '热门榜',
-                  style: TextStyle(
-                    color: CupertinoColors.white,
-                    fontSize: 12,
-                  ),
-                ),
-                Icon(
-                  CupertinoIcons.forward,
-                  size: 16,
-                ),
-              ],
-            ),
-            onPressed: () {},
+    return WidgetGroup.spacing(
+      spacing: 10,
+      children: [
+        CupertinoButton(
+          minSize: 20,
+          borderRadius: BorderRadius.circular(12),
+          padding: const EdgeInsets.only(
+            left: 10,
+            right: 4,
           ),
-          Container(
-            decoration: ShapeDecoration(
-              color: CupertinoTheme.of(context).primaryColor.withOpacity(0.4),
-              shape: const StadiumBorder(),
-            ),
-            height: 20,
-            clipBehavior: Clip.antiAlias,
-            child: DefaultTextStyle(
-              style: const TextStyle(
-                color: CupertinoColors.white,
-                fontSize: 12,
+          color: CupertinoTheme.of(context).primaryColor.withOpacity(0.7),
+          child: WidgetGroup.spacing(
+            children: const [
+              Text(
+                '热门榜',
+                style: TextStyle(
+                  color: CupertinoColors.white,
+                  fontSize: 12,
+                ),
               ),
-              child: WidgetGroup.spacing(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                    ),
-                    child: WidgetGroup.spacing(
-                      spacing: 4,
-                      children: [
-                        const Text('开播分钟'),
-                        ValueListenableBuilder<int>(
-                          valueListenable: model.clockNotifier,
-                          builder: (context, value, child) {
-                            return Text.rich(
-                              TextSpan(
-                                children: [
-                                  TextSpan(
-                                    text: '${value ~/ Duration.secondsPerMinute}/',
-                                    style: const TextStyle(
-                                      color: CupertinoColors.systemYellow,
-                                    ),
-                                  ),
-                                  const TextSpan(
-                                    text: '15',
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  CupertinoButton(
-                    color: CupertinoTheme.of(context).primaryColor.withOpacity(0.6),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                    ),
-                    minSize: 20,
-                    borderRadius: BorderRadius.zero,
-                    child: WidgetGroup.spacing(
-                      spacing: 2,
-                      children: const [
-                        Icon(
-                          CupertinoIcons.gift_fill,
-                          size: 10,
-                          color: CupertinoColors.white,
-                        ),
-                        Text(
-                          '流量',
-                          style: TextStyle(
-                            color: CupertinoColors.white,
-                            fontSize: 10,
-                          ),
-                        ),
-                      ],
-                    ),
-                    onPressed: () {},
-                  ),
-                ],
+              Icon(
+                CupertinoIcons.forward,
+                size: 16,
               ),
-            ),
+            ],
           ),
-          const Spacer(),
-          Container(
-            constraints: const BoxConstraints(
-              minWidth: 44,
+          onPressed: () {},
+        ),
+        Container(
+          decoration: ShapeDecoration(
+            color: CupertinoTheme.of(context).primaryColor.withOpacity(0.4),
+            shape: const StadiumBorder(),
+          ),
+          height: 20,
+          clipBehavior: Clip.antiAlias,
+          child: DefaultTextStyle(
+            style: const TextStyle(
+              color: CupertinoColors.white,
+              fontSize: 12,
             ),
             child: WidgetGroup.spacing(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              direction: Axis.vertical,
               children: [
-                ValueListenableBuilder<int>(
-                  valueListenable: model.networkNotifier,
-                  builder: (context, quality, child) {
-                    final color = quality == 1 ? _colorGood : _colorBad;
-                    return ValueListenableBuilder<int>(
-                      valueListenable: model.speedNotifier,
-                      builder: (context, speed, child) {
-                        return WidgetGroup.spacing(
-                          spacing: 4,
-                          children: [
-                            Container(
-                              decoration: ShapeDecoration(
-                                shape: const CircleBorder(),
-                                color: color,
-                              ),
-                              width: 4,
-                              height: 4,
-                            ),
-                            Text(
-                              '${Formats.formatMemory(speed)}/s',
-                              style: TextStyle(
-                                color: color,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w500,
-                                shadows: const [
-                                  Shadow(
-                                    color: CupertinoColors.black,
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                  ),
+                  child: WidgetGroup.spacing(
+                    spacing: 4,
+                    children: [
+                      const Text('开播分钟'),
+                      ValueListenableBuilder<int>(
+                        valueListenable: model.clockNotifier,
+                        builder: (context, value, child) {
+                          return Text.rich(
+                            TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: '${value ~/ Duration.secondsPerMinute}/',
+                                  style: const TextStyle(
+                                    color: CupertinoColors.systemYellow,
                                   ),
-                                ],
-                              ),
+                                ),
+                                const TextSpan(
+                                  text: '15',
+                                ),
+                              ],
                             ),
-                          ],
-                        );
-                      },
-                    );
-                  },
-                ),
-                ValueListenableBuilder<int>(
-                  valueListenable: model.clockNotifier,
-                  builder: (context, value, child) {
-                    return Text(
-                      Formats.formatDateTime(
-                        DateTime.fromMillisecondsSinceEpoch(
-                          value * Duration.millisecondsPerSecond,
-                          isUtc: true,
-                        ),
-                        newPattern: 'HH:mm:ss',
-                      )!,
-                      style: const TextStyle(
-                        color: CupertinoColors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w500,
+                          );
+                        },
                       ),
-                    );
-                  },
+                    ],
+                  ),
+                ),
+                CupertinoButton(
+                  color: CupertinoTheme.of(context).primaryColor.withOpacity(0.6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                  ),
+                  minSize: 20,
+                  borderRadius: BorderRadius.zero,
+                  child: WidgetGroup.spacing(
+                    spacing: 2,
+                    children: const [
+                      Icon(
+                        CupertinoIcons.gift_fill,
+                        size: 10,
+                        color: CupertinoColors.white,
+                      ),
+                      Text(
+                        '流量',
+                        style: TextStyle(
+                          color: CupertinoColors.white,
+                          fontSize: 10,
+                        ),
+                      ),
+                    ],
+                  ),
+                  onPressed: () {},
                 ),
               ],
             ),
           ),
-        ],
-      ),
+        ),
+        const Spacer(),
+        Container(
+          constraints: const BoxConstraints(
+            minWidth: 44,
+          ),
+          child: WidgetGroup.spacing(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            direction: Axis.vertical,
+            children: [
+              ValueListenableBuilder<int>(
+                valueListenable: model.networkNotifier,
+                builder: (context, quality, child) {
+                  final color = quality == 1 ? _colorGood : _colorBad;
+                  return ValueListenableBuilder<int>(
+                    valueListenable: model.speedNotifier,
+                    builder: (context, speed, child) {
+                      return WidgetGroup.spacing(
+                        spacing: 4,
+                        children: [
+                          Container(
+                            decoration: ShapeDecoration(
+                              shape: const CircleBorder(),
+                              color: color,
+                            ),
+                            width: 4,
+                            height: 4,
+                          ),
+                          Text(
+                            '${Formats.formatMemory(speed)}/s',
+                            style: TextStyle(
+                              color: color,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w500,
+                              shadows: const [
+                                Shadow(
+                                  color: CupertinoColors.black,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+              ),
+              ValueListenableBuilder<int>(
+                valueListenable: model.clockNotifier,
+                builder: (context, value, child) {
+                  return Text(
+                    Formats.formatDateTime(
+                      DateTime.fromMillisecondsSinceEpoch(
+                        value * Duration.millisecondsPerSecond,
+                        isUtc: true,
+                      ),
+                      newPattern: 'HH:mm:ss',
+                    )!,
+                    style: const TextStyle(
+                      color: CupertinoColors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
@@ -412,88 +411,85 @@ class _LiveOptions extends StatelessWidget {
       padding: const EdgeInsets.symmetric(
         vertical: 8,
       ),
-      child: SafeArea(
-        top: false,
-        child: WidgetGroup.spacing(
-          children: [
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                child: WidgetGroup.spacing(
-                  spacing: 24,
-                  children: [
-                    CupertinoButton(
-                      padding: EdgeInsets.zero,
-                      minSize: 0,
-                      onPressed: () {
-                        showInteractiveTools(context);
-                      },
-                      child: const Icon(
-                        CupertinoIcons.rectangle_grid_2x2,
-                        color: CupertinoColors.white,
-                        size: 26,
-                        semanticLabel: '互动工具',
-                      ),
+      child: WidgetGroup.spacing(
+        children: [
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              child: WidgetGroup.spacing(
+                spacing: 24,
+                children: [
+                  CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    minSize: 0,
+                    onPressed: () {
+                      showInteractiveTools(context);
+                    },
+                    child: const Icon(
+                      CupertinoIcons.rectangle_grid_2x2,
+                      color: CupertinoColors.white,
+                      size: 26,
+                      semanticLabel: '互动工具',
                     ),
-                    CupertinoButton(
-                      padding: EdgeInsets.zero,
-                      minSize: 0,
-                      onPressed: () {
-                        showBeauty(context, model.beautyManager);
-                      },
-                      child: const Icon(
-                        CupertinoIcons.bandage,
-                        color: CupertinoColors.white,
-                        size: 26,
-                        semanticLabel: '美颜',
-                      ),
+                  ),
+                  CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    minSize: 0,
+                    onPressed: () {
+                      showBeauty(context, model.beautyManager);
+                    },
+                    child: const Icon(
+                      CupertinoIcons.bandage,
+                      color: CupertinoColors.white,
+                      size: 26,
+                      semanticLabel: '美颜',
                     ),
-                    CupertinoButton(
-                      padding: EdgeInsets.zero,
-                      minSize: 0,
-                      onPressed: () {
-                        showIncome(context);
-                      },
-                      child: const Icon(
-                        CupertinoIcons.rotate_right,
-                        color: CupertinoColors.white,
-                        size: 26,
-                        semanticLabel: '本场收益',
-                      ),
+                  ),
+                  CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    minSize: 0,
+                    onPressed: () {
+                      showIncome(context);
+                    },
+                    child: const Icon(
+                      CupertinoIcons.rotate_right,
+                      color: CupertinoColors.white,
+                      size: 26,
+                      semanticLabel: '本场收益',
                     ),
-                    CupertinoButton(
-                      padding: EdgeInsets.zero,
-                      minSize: 0,
-                      onPressed: () {
-                        showPopularize(context);
-                      },
-                      child: const Icon(
-                        CupertinoIcons.arrow_3_trianglepath,
-                        color: CupertinoColors.white,
-                        size: 26,
-                        semanticLabel: '推广',
-                      ),
+                  ),
+                  CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    minSize: 0,
+                    onPressed: () {
+                      showPopularize(context);
+                    },
+                    child: const Icon(
+                      CupertinoIcons.arrow_3_trianglepath,
+                      color: CupertinoColors.white,
+                      size: 26,
+                      semanticLabel: '推广',
                     ),
-                    CupertinoButton(
-                      padding: EdgeInsets.zero,
-                      minSize: 0,
-                      onPressed: () {
-                        showCompetition(context);
-                      },
-                      child: const Icon(
-                        CupertinoIcons.app_badge,
-                        color: CupertinoColors.white,
-                        size: 26,
-                        semanticLabel: 'pk',
-                      ),
+                  ),
+                  CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    minSize: 0,
+                    onPressed: () {
+                      showCompetition(context);
+                    },
+                    child: const Icon(
+                      CupertinoIcons.app_badge,
+                      color: CupertinoColors.white,
+                      size: 26,
+                      semanticLabel: 'pk',
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-            const _BackButton(),
-          ],
-        ),
+          ),
+          const _BackButton(),
+        ],
       ),
     );
   }
@@ -521,16 +517,20 @@ class _BottomBar extends StatelessWidget {
       padding: const EdgeInsets.only(
         top: 20,
       ),
-      child: WidgetGroup.spacing(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        direction: Axis.vertical,
-        spacing: 8,
-        children: [
-          TextChatRoom(
-            messages: model.messages,
-          ),
-          const _LiveOptions(),
-        ],
+      child: SafeArea(
+        top: false,
+        right: false,
+        child: WidgetGroup.spacing(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          direction: Axis.vertical,
+          spacing: 8,
+          children: [
+            TextChatRoom(
+              messages: model.messages,
+            ),
+            const _LiveOptions(),
+          ],
+        ),
       ),
     );
   }
