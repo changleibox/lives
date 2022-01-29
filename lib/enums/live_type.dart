@@ -1,5 +1,6 @@
 // Copyright (c) 2022 CHANGLEI. All rights reserved.
 
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
@@ -42,7 +43,7 @@ extension LiveTypeName on LiveType {
   }
 
   /// 显示屏幕分享Window
-  Future<void> start() async {
+  Future<void> start(FutureOr<void> Function() onStarted) async {
     if (this != LiveType.game) {
       return;
     }
@@ -68,13 +69,7 @@ extension LiveTypeName on LiveType {
         );
       }
     }
-  }
-
-  /// 显示屏幕分享Window
-  Future<void> started() async {
-    if (this != LiveType.game) {
-      return;
-    }
+    await onStarted();
     await SystemChromes.setPreferredOrientations(this);
   }
 

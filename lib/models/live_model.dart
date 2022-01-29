@@ -139,11 +139,7 @@ class LiveModel extends LivesModel implements LiveModule {
       appGroup: 'group.me.box.lives',
       type: _liveType,
     );
-    await _liveType.start();
-    if (_liveType == LiveType.game) {
-      await _startPendingLive(exitLive);
-    }
-    await _liveType.started();
+    await _liveType.start(() => _startPendingLive(exitLive));
     _setupMessages();
     _startDownTimer();
     await _refreshRoomInfo();
