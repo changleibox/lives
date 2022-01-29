@@ -100,15 +100,18 @@ class _TopBar extends StatelessWidget {
         padding: const EdgeInsets.symmetric(
           vertical: 8,
         ),
-        child: WidgetGroup.spacing(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          direction: Axis.vertical,
-          spacing: 16,
-          children: const [
-            _AppBar(),
-            _RoomInfo(),
-            _Advertisement(),
-          ],
+        child: SafeArea(
+          bottom: false,
+          child: WidgetGroup.spacing(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            direction: Axis.vertical,
+            spacing: 16,
+            children: const [
+              _AppBar(),
+              _RoomInfo(),
+              _Advertisement(),
+            ],
+          ),
         ),
       ),
     );
@@ -149,60 +152,57 @@ class _AppBarState extends State<_AppBar> {
   @override
   Widget build(BuildContext context) {
     final model = context.watch<LiveModel>();
-    return SafeArea(
-      bottom: false,
-      child: Container(
-        height: 40,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            const Positioned(
-              left: 0,
-              child: _BackButton(),
-            ),
-            Positioned(
-              right: 0,
-              child: CupertinoButton(
-                minSize: 0,
-                padding: const EdgeInsets.all(16),
-                onPressed: () {},
-                child: WidgetGroup.spacing(
-                  spacing: 2,
-                  children: const [
-                    Icon(
-                      CupertinoIcons.person,
-                      size: 14,
+    return Container(
+      height: 40,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          const Positioned(
+            left: 0,
+            child: _BackButton(),
+          ),
+          Positioned(
+            right: 0,
+            child: CupertinoButton(
+              minSize: 0,
+              padding: const EdgeInsets.all(16),
+              onPressed: () {},
+              child: WidgetGroup.spacing(
+                spacing: 2,
+                children: const [
+                  Icon(
+                    CupertinoIcons.person,
+                    size: 14,
+                    color: CupertinoColors.white,
+                  ),
+                  Text(
+                    '主播中心',
+                    style: TextStyle(
                       color: CupertinoColors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
                     ),
-                    Text(
-                      '主播中心',
-                      style: TextStyle(
-                        color: CupertinoColors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-            Positioned(
-              child: CupertinoSegmentedControl<LiveType>(
-                pressedColor: CupertinoColors.white.withOpacity(0),
-                borderColor: CupertinoColors.white.withOpacity(0),
-                selectedColor: CupertinoColors.white.withOpacity(0),
-                unselectedColor: CupertinoColors.white.withOpacity(0),
-                groupValue: model.liveType,
-                onValueChanged: (value) {
-                  model.liveType = value;
-                },
-                children: Map.fromEntries(LiveType.values.map((e) {
-                  return MapEntry(e, _buildItem(e, e == model.liveType));
-                })),
-              ),
+          ),
+          Positioned(
+            child: CupertinoSegmentedControl<LiveType>(
+              pressedColor: CupertinoColors.white.withOpacity(0),
+              borderColor: CupertinoColors.white.withOpacity(0),
+              selectedColor: CupertinoColors.white.withOpacity(0),
+              unselectedColor: CupertinoColors.white.withOpacity(0),
+              groupValue: model.liveType,
+              onValueChanged: (value) {
+                model.liveType = value;
+              },
+              children: Map.fromEntries(LiveType.values.map((e) {
+                return MapEntry(e, _buildItem(e, e == model.liveType));
+              })),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -434,19 +434,22 @@ class _BottomBar extends StatelessWidget {
           end: Alignment.bottomCenter,
         ),
       ),
-      padding: EdgeInsets.only(
+      padding: const EdgeInsets.only(
         top: 20,
-        bottom: MediaQuery.of(context).padding.bottom + 56,
+        bottom: 56,
       ),
-      child: WidgetGroup.spacing(
-        direction: Axis.vertical,
-        spacing: 16,
-        children: [
-          const _LiveOperators(),
-          _StartLiveButton(
-            onStart: onStart,
-          ),
-        ],
+      child: SafeArea(
+        top: false,
+        child: WidgetGroup.spacing(
+          direction: Axis.vertical,
+          spacing: 16,
+          children: [
+            const _LiveOperators(),
+            _StartLiveButton(
+              onStart: onStart,
+            ),
+          ],
+        ),
       ),
     );
   }
