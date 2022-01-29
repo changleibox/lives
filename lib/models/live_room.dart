@@ -4,26 +4,10 @@
 
 import 'dart:convert';
 
+import 'package:lives/models/live_im.dart';
 import 'package:lives/models/live_room_def.dart';
-import 'package:lives/models/live_room_delegate.dart';
-import 'package:tencent_im_sdk_plugin/enum/V2TimGroupListener.dart';
-import 'package:tencent_im_sdk_plugin/enum/V2TimSDKListener.dart';
-import 'package:tencent_im_sdk_plugin/enum/V2TimSignalingListener.dart';
-import 'package:tencent_im_sdk_plugin/enum/V2TimSimpleMsgListener.dart';
-import 'package:tencent_im_sdk_plugin/enum/group_add_opt_type.dart';
-import 'package:tencent_im_sdk_plugin/enum/group_member_filter_enum.dart';
-import 'package:tencent_im_sdk_plugin/enum/log_level_enum.dart';
-import 'package:tencent_im_sdk_plugin/enum/message_priority.dart';
-import 'package:tencent_im_sdk_plugin/enum/message_priority_enum.dart';
 import 'package:tencent_im_sdk_plugin/manager/v2_tim_group_manager.dart';
-import 'package:tencent_im_sdk_plugin/manager/v2_tim_manager.dart';
 import 'package:tencent_im_sdk_plugin/manager/v2_tim_signaling_manager.dart';
-import 'package:tencent_im_sdk_plugin/models/v2_tim_callback.dart';
-import 'package:tencent_im_sdk_plugin/models/v2_tim_group_info.dart';
-import 'package:tencent_im_sdk_plugin/models/v2_tim_group_member_info.dart';
-import 'package:tencent_im_sdk_plugin/models/v2_tim_user_full_info.dart';
-import 'package:tencent_im_sdk_plugin/models/v2_tim_value_callback.dart';
-import 'package:tencent_im_sdk_plugin/tencent_im_sdk_plugin.dart';
 import 'package:tencent_trtc_cloud/trtc_cloud.dart';
 import 'package:tencent_trtc_cloud/trtc_cloud_def.dart';
 import 'package:tencent_trtc_cloud/trtc_cloud_listener.dart';
@@ -31,17 +15,7 @@ import 'package:tencent_trtc_cloud/tx_audio_effect_manager.dart';
 import 'package:tencent_trtc_cloud/tx_beauty_manager.dart';
 import 'package:tencent_trtc_cloud/tx_device_manager.dart';
 
-const String _logTag = 'TRTCLiveRoomImpl';
-const String _requestAnchorCMD = 'requestJoinAnchor'; //请求成为主播信令
-const String _kickOutAnchorCMD = 'kickOutJoinAnchor'; //踢出主播信令
-const String _requestRoomPKCMD = 'requestRoomPK'; //请求跨房信令
-const String _quitRoomPKCMD = 'quitRoomPK'; //退出跨房PK信令
-const int _liveCustomCmd = 301;
 const int _codeErr = -1;
-const int _timeOutCount = 30;
-
-/// 事件回调
-typedef VoiceListener<P> = void Function(TRTCLiveRoomDelegate type, P params);
 
 /// 自己封装的聊天室工具类
 abstract class TRTCLiveRoom {
@@ -233,53 +207,34 @@ abstract class TRTCLiveRoom {
 }
 
 class _TRTCLiveRoom extends TRTCLiveRoom {
-  _TRTCLiveRoom() {
-    //获取腾讯即时通信IM manager
-    _timManager = TencentImSDKPlugin.v2TIMManager;
-  }
-
   static _TRTCLiveRoom? _instance;
 
-  late final V2TIMManager _timManager;
   late final TRTCCloud _cloud;
   late final TXAudioEffectManager _txAudioManager;
   late final TXDeviceManager _txDeviceManager;
+  late final LiveIM _imManager;
 
-  final Set<VoiceListener> _listeners = {};
-  final Set<ListenerValue> _trtcListeners = {};
+  final Set<ListenerValue> _rtcListeners = {};
 
   late int _sdkAppId;
   late String _userId;
   late String _userSig;
 
-  late String _ownerUserId; // 群主用户id
   late int _originRole;
 
-  bool _isInitIMSDK = false;
-  bool _isLogin = false;
-  bool _isEnterRoom = false; //超时时间，默认30s
   String? _roomIdPK;
-  String? _userIdPK;
-  String? _roomId;
-  String? _selfUserName;
-  String? _selfAvatar;
   String? _streamId;
-  String _curCallID = '';
-  String _curPKCallID = '';
-  bool _isPk = false;
   bool _isStartCapture = false;
   bool _isStartAudio = false;
 
   // ignore: unused_field
   TRTCLiveRoomConfig? _roomConfig;
 
-  final List<String> _anchorList = [];
-  final List<String> _audienceList = [];
-
   Future<void> _initTRTC() async {
     _cloud = (await TRTCCloud.sharedInstance())!;
     _txDeviceManager = _cloud.getDeviceManager();
     _txAudioManager = _cloud.getAudioEffectManager();
+    _imManager = await LiveIM.sharedInstance();
   }
 
   static Future<_TRTCLiveRoom> sharedInstance() async {
@@ -295,220 +250,89 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
       _instance = null;
     }
     await TRTCCloud.destroySharedInstance();
+    await LiveIM.destroySharedInstance();
   }
 
-  V2TIMGroupManager get groupManager => _timManager.getGroupManager();
+  V2TIMGroupManager get groupManager => _imManager.groupManager;
 
-  V2TIMSignalingManager get signalingManager => _timManager.getSignalingManager();
+  V2TIMSignalingManager get signalingManager => _imManager.signalingManager;
 
   TXAudioEffectManager get audioEffectManager => _txAudioManager;
 
   @override
   Future<ActionCallback> createRoom(int roomId, RoomParam roomParam, {int? scene}) async {
-    if (!_isLogin) {
-      return const ActionCallback(code: _codeErr, desc: 'im not login yet, create room fail.');
-    }
-    if (_isEnterRoom) {
-      return ActionCallback(
-        code: _codeErr,
-        desc: 'you have been in room:' + _roomId! + " can't create another room:" + roomId.toString(),
-      );
-    }
-    final res = await groupManager.createGroup(
-      groupType: 'AVChatRoom',
-      groupName: roomParam.roomName,
-      groupID: roomId.toString(),
-    );
-    var msg = res.desc;
-    var code = res.code;
-    if (code == 0) {
-      msg = 'create room success';
-    } else if (code == 10036) {
-      msg =
-          '您当前使用的云通讯账号未开通音视频聊天室功能，创建聊天室数量超过限额，请前往腾讯云官网开通【IM音视频聊天室】，地址：https://cloud.tencent.com/document/product/269/11673';
-    } else if (code == 10037) {
-      msg = '单个用户可创建和加入的群组数量超过了限制，请购买相关套餐,价格地址：https://cloud.tencent.com/document/product/269/11673';
-    } else if (code == 10038) {
-      msg = '群成员数量超过限制，请参考，请购买相关套餐，价格地址：https://cloud.tencent.com/document/product/269/11673';
-    } else if (code == 10025 || code == 10021) {
-      // 10025 表明群主是自己，那么认为创建房间成功
-      // 群组 ID 已被其他人使用，此时走进房逻辑
-      final joinRes = await _timManager.joinGroup(groupID: roomId.toString(), message: '');
-      if (joinRes.code == 0) {
-        code = 0;
-        msg = 'group has been created.join group success.';
-      } else {
-        code = joinRes.code;
-        msg = joinRes.desc;
-      }
-    }
-    //setGroupInfo
-    if (code == 0) {
-      _roomId = roomId.toString();
-      _isEnterRoom = true;
-      _originRole = TRTCCloudDef.TRTCRoleAnchor;
-      await _cloud.enterRoom(
-        TRTCParams(
-          sdkAppId: _sdkAppId,
-          //应用Id
-          userId: _userId,
-          // 用户Id
-          userSig: _userSig,
-          // 用户签名
-          role: TRTCCloudDef.TRTCRoleAnchor,
-          roomId: roomId,
-        ),
-        scene ?? TRTCCloudDef.TRTC_APP_SCENE_LIVE,
-      );
-      // 默认打开麦克风
-      // await enableAudioVolumeEvaluation(true);
-      if (roomParam.quality != null) {
-        await _cloud.startLocalAudio(roomParam.quality!);
-      } else {
-        await _cloud.startLocalAudio(TRTCCloudDef.TRTC_AUDIO_QUALITY_MUSIC);
-      }
-
-      // _anchorList.add(IMAnchorInfo(
-      //   userId: _userId,
-      //   name: _selfUserName,
-      //   streamId: _streamId,
-      // ));
-      _anchorList.add(_userId);
-      await groupManager.setGroupInfo(
-        info: V2TimGroupInfo(
-          groupAddOpt: GroupAddOptType.V2TIM_GROUP_ADD_ANY,
-          groupID: roomId.toString(),
-          groupName: roomParam.roomName,
-          faceUrl: roomParam.coverUrl,
-          introduction: _selfUserName,
-          groupType: 'AVChatRoom',
-        ),
-      );
-    }
-    return ActionCallback(code: code, desc: msg);
-  }
-
-  @override
-  Future<ActionCallback> destroyRoom() async {
-    final dismissRes = await _timManager.dismissGroup(groupID: _roomId!);
-    if (dismissRes.code == 0) {
-      _destroyData();
-      await _cloud.exitRoom();
-      return const ActionCallback(code: 0, desc: 'dismiss room success.');
-    } else {
-      return const ActionCallback(code: _codeErr, desc: 'dismiss room fail.');
-    }
-  }
-
-  void _destroyData() {
-    _isEnterRoom = false;
-    _isPk = false;
-    _curCallID = '';
-    _curPKCallID = '';
-    _anchorList.clear();
-  }
-
-  @override
-  Future<ActionCallback> enterRoom(int roomId, {int? scene}) async {
-    if (_isEnterRoom) {
-      return ActionCallback(
-        code: _codeErr,
-        desc: 'you have been in room:' + _roomId! + " can't create another room:" + roomId.toString(),
-      );
-    }
-    final joinRes = await _timManager.joinGroup(groupID: roomId.toString(), message: '');
-    if (joinRes.code == 0 || joinRes.code == 10013) {
-      _roomId = roomId.toString();
-      _isEnterRoom = true;
-      _originRole = TRTCCloudDef.TRTCRoleAudience;
-      await _cloud.enterRoom(
-        TRTCParams(
-          sdkAppId: _sdkAppId,
-          //应用Id
-          userId: _userId,
-          // 用户Id
-          userSig: _userSig,
-          // 用户签名
-          role: TRTCCloudDef.TRTCRoleAudience,
-          roomId: roomId,
-        ),
-        scene ?? TRTCCloudDef.TRTC_APP_SCENE_LIVE,
-      );
-      final res = await groupManager.getGroupsInfo(groupIDList: [roomId.toString()]);
-      final groupResult = res.data!;
-      _ownerUserId = groupResult[0].groupInfo!.owner!;
-    }
-
-    return ActionCallback(code: joinRes.code, desc: joinRes.desc);
-  }
-
-  @override
-  Future<ActionCallback> exitRoom() async {
-    if (_roomId == null) {
-      return const ActionCallback(code: _codeErr, desc: 'not enter room yet');
-    }
-    _destroyData();
-    await _cloud.exitRoom();
-
-    final quitRes = await _timManager.quitGroup(groupID: _roomId!);
-    if (quitRes.code != 0) {
-      return ActionCallback(code: quitRes.code, desc: quitRes.desc);
-    }
-
-    return const ActionCallback(code: 0, desc: 'quit room success.');
-  }
-
-  @override
-  Future<UserListCallback> getAnchorInfo() async {
-    final res = await _timManager.getUsersInfo(userIDList: _anchorList);
-
-    if (res.code == 0) {
-      final userInfo = res.data!;
-      final newInfo = <UserInfo>[];
-      for (var i = 0; i < userInfo.length; i++) {
-        newInfo.add(
-          UserInfo(
-            userId: userInfo[i].userID!,
-            userName: userInfo[i].nickName!,
-            userAvatar: userInfo[i].faceUrl!,
+    return await _imManager.createRoom(
+      roomId: roomId,
+      roomParam: roomParam,
+      callback: () async {
+        _originRole = TRTCCloudDef.TRTCRoleAnchor;
+        await _cloud.enterRoom(
+          TRTCParams(
+            sdkAppId: _sdkAppId,
+            //应用Id
+            userId: _userId,
+            // 用户Id
+            userSig: _userSig,
+            // 用户签名
+            role: TRTCCloudDef.TRTCRoleAnchor,
+            roomId: roomId,
           ),
+          scene ?? TRTCCloudDef.TRTC_APP_SCENE_LIVE,
         );
-      }
-      return UserListCallback(code: 0, desc: 'get anchorInfo success.', list: newInfo);
-    } else {
-      return UserListCallback(code: res.code, desc: res.desc);
-    }
+        // 默认打开麦克风
+        // await enableAudioVolumeEvaluation(true);
+        if (roomParam.quality != null) {
+          await _cloud.startLocalAudio(roomParam.quality!);
+        } else {
+          await _cloud.startLocalAudio(TRTCCloudDef.TRTC_AUDIO_QUALITY_MUSIC);
+        }
+      },
+      scene: scene,
+    );
   }
 
   @override
-  Future<UserListCallback> getRoomMemberInfo(int nextSeq) async {
-    print('==nextSeq=' + nextSeq.toString());
-    print('==mRoomId=' + _roomId.toString());
-    final memberRes = await groupManager.getGroupMemberList(
-      groupID: _roomId!,
-      filter: GroupMemberFilterTypeEnum.V2TIM_GROUP_MEMBER_FILTER_ALL,
-      nextSeq: nextSeq.toString(),
+  Future<ActionCallback> destroyRoom() {
+    return _imManager.destroyRoom(_cloud.exitRoom);
+  }
+
+  @override
+  Future<ActionCallback> enterRoom(int roomId, {int? scene}) {
+    return _imManager.enterRoom(
+      roomId: roomId,
+      scene: scene,
+      callback: () async {
+        _originRole = TRTCCloudDef.TRTCRoleAudience;
+        await _cloud.enterRoom(
+          TRTCParams(
+            sdkAppId: _sdkAppId,
+            //应用Id
+            userId: _userId,
+            // 用户Id
+            userSig: _userSig,
+            // 用户签名
+            role: TRTCCloudDef.TRTCRoleAudience,
+            roomId: roomId,
+          ),
+          scene ?? TRTCCloudDef.TRTC_APP_SCENE_LIVE,
+        );
+      },
     );
-    if (memberRes.code != 0) {
-      return UserListCallback(code: memberRes.code, desc: memberRes.desc);
-    }
-    final memberInfoList = memberRes.data!.memberInfoList!;
-    final newInfo = <UserInfo>[];
-    for (var i = 0; i < memberInfoList.length; i++) {
-      newInfo.add(
-        UserInfo(
-          userId: memberInfoList[i]!.userID,
-          userName: memberInfoList[i]!.nickName,
-          userAvatar: memberInfoList[i]!.faceUrl,
-        ),
-      );
-    }
-    return UserListCallback(
-      code: 0,
-      desc: 'get member list success',
-      nextSeq: int.parse(memberRes.data!.nextSeq!),
-      list: newInfo,
-    );
+  }
+
+  @override
+  Future<ActionCallback> exitRoom() {
+    return _imManager.exitRoom(_cloud.exitRoom);
+  }
+
+  @override
+  Future<UserListCallback> getAnchorInfo() {
+    return _imManager.getAnchorInfo();
+  }
+
+  @override
+  Future<UserListCallback> getRoomMemberInfo(int nextSeq) {
+    return _imManager.getRoomMemberInfo(nextSeq);
   }
 
   @override
@@ -522,111 +346,31 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
   }
 
   @override
-  Future<RoomInfoCallback> getRoomInfo(List<String> roomIdList) async {
-    print('==roomIdList=' + roomIdList.toString());
-
-    final res = await groupManager.getGroupsInfo(groupIDList: roomIdList);
-    if (res.code != 0) {
-      return RoomInfoCallback(code: res.code, desc: res.desc);
-    }
-
-    final listInfo = res.data!;
-
-    final newInfo = <RoomInfo>[];
-    for (var i = 0; i < listInfo.length; i++) {
-      print(listInfo[i].toJson());
-      if (listInfo[i].resultCode == 0) {
-        //兼容获取不到群id信息的情况
-        final groupInfo = listInfo[i].groupInfo!;
-        newInfo.add(
-          RoomInfo(
-            roomId: int.parse(groupInfo.groupID),
-            roomName: groupInfo.groupName,
-            coverUrl: groupInfo.faceUrl,
-            ownerId: groupInfo.owner!,
-            ownerName: groupInfo.introduction,
-            memberCount: groupInfo.memberCount,
-          ),
-        );
-      }
-    }
-
-    return RoomInfoCallback(code: 0, desc: 'getRoomInfoList success', list: newInfo);
+  Future<RoomInfoCallback> getRoomInfo(List<String> roomIdList) {
+    return _imManager.getRoomInfo(roomIdList);
   }
 
   @override
-  Future<ActionCallback> kickOutJoinAnchor(String userId) async {
-    final V2TimValueCallback res = await signalingManager.invite(
-      invitee: userId,
-      data: jsonEncode(_getCustomMap(_kickOutAnchorCMD)),
-      timeout: 0,
-      onlineUserOnly: false,
-    );
-    return ActionCallback(code: res.code, desc: res.desc);
+  Future<ActionCallback> kickOutJoinAnchor(String userId) {
+    return _imManager.kickOutJoinAnchor(userId);
   }
 
   @override
-  Future<ActionCallback> login(int sdkAppId, String userId, String userSig, TRTCLiveRoomConfig config) async {
+  Future<ActionCallback> login(int sdkAppId, String userId, String userSig, TRTCLiveRoomConfig config) {
     _sdkAppId = sdkAppId;
     _userId = userId;
     _userSig = userSig;
     _roomConfig = config;
 
-    if (!_isInitIMSDK) {
-      //初始化SDK
-      final initRes = await _timManager.initSDK(
-        sdkAppID: sdkAppId, //填入在控制台上申请的sdkAppId
-        loglevel: LogLevelEnum.V2TIM_LOG_ERROR,
-        listener: V2TimSDKListener(
-          onKickedOffline: () {
-            const type = TRTCLiveRoomDelegate.onKickedOffline;
-            emitEvent(type, <String, dynamic>{});
-          },
-        ),
-      );
-      if (initRes.code != 0) {
-        //初始化sdk错误
-        return const ActionCallback(code: 0, desc: 'init im sdk error');
-      }
-    }
-    _isInitIMSDK = true;
-
-    // 登陆到 IM
-    final loggedInUserId = (await _timManager.getLoginUser()).data;
-
-    if (loggedInUserId != null && loggedInUserId == userId) {
-      _isLogin = true;
-      return const ActionCallback(code: 0, desc: 'login im success');
-    }
-    final loginRes = await _timManager.login(
-      userID: userId,
-      userSig: userSig,
-    );
-    if (loginRes.code == 0) {
-      _isLogin = true;
-      return const ActionCallback(code: 0, desc: 'login im success');
-    } else {
-      return ActionCallback(code: _codeErr, desc: loginRes.desc);
-    }
+    return _imManager.login(sdkAppId, userId, userSig);
   }
 
   @override
-  Future<ActionCallback> logout() async {
+  Future<ActionCallback> logout() {
     _sdkAppId = 0;
     _userId = '';
     _userSig = '';
-    _isLogin = false;
-    final loginRes = await _timManager.logout();
-    return ActionCallback(
-      code: loginRes.code,
-      desc: loginRes.desc,
-    );
-  }
-
-  void emitEvent(TRTCLiveRoomDelegate type, dynamic params) {
-    for (var item in _listeners) {
-      item(type, params);
-    }
+    return _imManager.logout();
   }
 
   @override
@@ -645,436 +389,87 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
   }
 
   @override
-  Future<ActionCallback> quitRoomPK() async {
-    final V2TimValueCallback res = await signalingManager.invite(
-      invitee: _userIdPK!,
-      data: jsonEncode(_getCustomMap(_quitRoomPKCMD)),
-      timeout: 0,
-      onlineUserOnly: false,
-    );
-    if (res.code == 0) {
-      _isPk = false;
-      //退出跨房通话
-      await _cloud.disconnectOtherRoom();
-    }
-    return ActionCallback(code: res.code, desc: res.desc);
+  Future<ActionCallback> quitRoomPK() {
+    return _imManager.quitRoomPK(_cloud.disconnectOtherRoom);
   }
 
   @override
   void addListener(VoiceListener listener) {
-    if (_listeners.isEmpty) {
-      //监听im事件
-      signalingManager.addSignalingListener(listener: _signalingListener);
-      _timManager.setGroupListener(listener: _groupListener);
-      _timManager.addSimpleMsgListener(listener: _simpleMsgListener);
-    }
-    if (_trtcListeners.isEmpty && _listeners.isEmpty) {
-      //监听trtc事件
-      _cloud.registerListener(_trtcListener);
-    }
-    _listeners.add(listener);
+    _imManager.addListener(listener, (value) {
+      if (_rtcListeners.isEmpty && value) {
+        // 监听rtc事件
+        _cloud.registerListener(_rtcListener);
+      }
+    });
   }
 
   @override
   void removeListener(VoiceListener listener) {
-    _listeners.remove(listener);
-    if (_listeners.isEmpty) {
-      _timManager.removeSimpleMsgListener();
-      signalingManager.removeSignalingListener(listener: _signalingListener);
-    }
-    if (_trtcListeners.isEmpty && _listeners.isEmpty) {
-      _cloud.unRegisterListener(_trtcListener);
-    }
+    _imManager.removeListener(listener, (value) {
+      if (_rtcListeners.isEmpty && value) {
+        _cloud.unRegisterListener(_rtcListener);
+      }
+    });
   }
 
   @override
   void addTRTCListener(ListenerValue listener) {
-    if (_trtcListeners.isEmpty && _listeners.isEmpty) {
-      //监听trtc事件
-      _cloud.registerListener(_trtcListener);
+    if (_rtcListeners.isEmpty && !_imManager.hasListeners) {
+      // 监听rtc事件
+      _cloud.registerListener(_rtcListener);
     }
-    _trtcListeners.add(listener);
+    _rtcListeners.add(listener);
   }
 
   @override
   void removeTRTCListener(ListenerValue listener) {
-    _trtcListeners.remove(_trtcListeners);
-    if (_trtcListeners.isEmpty && _listeners.isEmpty) {
-      _cloud.unRegisterListener(_trtcListener);
+    _rtcListeners.remove(_rtcListeners);
+    if (_rtcListeners.isEmpty && !_imManager.hasListeners) {
+      _cloud.unRegisterListener(_rtcListener);
     }
   }
 
-  // im 相关事件绑定
-  V2TimSimpleMsgListener get _simpleMsgListener {
-    TRTCLiveRoomDelegate type;
-    return V2TimSimpleMsgListener(
-      onRecvGroupCustomMessage: (msgID, groupID, sender, customData) {
-        try {
-          final customMap = jsonDecode(customData) as Map<String, dynamic>?;
-          if (customMap == null) {
-            print(_logTag + 'onReceiveGroupCustomMessage extraMap is null, ignore');
-            return;
-          }
-          if (customMap.containsKey('action') &&
-              customMap.containsKey('command') &&
-              customMap['action'] == _liveCustomCmd) {
-            //群自定义消息
-            type = TRTCLiveRoomDelegate.onReceiveRoomCustomMsg;
-            emitEvent(type, <String, dynamic>{
-              'message': customMap['message'],
-              'command': customMap['command'],
-              'user': {
-                'userID': sender.userID,
-                'userAvatar': sender.faceUrl,
-                'userName': sender.nickName,
-              },
-            });
-          }
-        } catch (e) {
-          print(_logTag + ' onReceiveGroupCustomMessage error log.' + e.toString());
-        }
-      },
-      onRecvGroupTextMessage: (msgID, groupID, sender, text) {
-        //群文本消息
-        type = TRTCLiveRoomDelegate.onReceiveRoomTextMsg;
-        emitEvent(type, {
-          'message': text,
-          'userID': sender.userID,
-          'userAvatar': sender.faceUrl,
-          'userName': sender.nickName,
-        });
-      },
-    );
-  }
-
-  // trtc相关事件
-  void _trtcListener(TRTCCloudListener rtcType, Object? param) {
-    var typeStr = rtcType.toString();
-    TRTCLiveRoomDelegate type;
-    typeStr = typeStr.replaceFirst('TRTCCloudListener.', '');
-    if (typeStr == 'onEnterRoom') {
-      if ((param as int) < 0) {
-        _isEnterRoom = false;
-      } else {
-        _isEnterRoom = true;
-      }
-    } else if (typeStr == 'onUserVideoAvailable') {
-      type = TRTCLiveRoomDelegate.onUserVideoAvailable;
-      emitEvent(type, param);
-    } else if (typeStr == 'onError') {
-      type = TRTCLiveRoomDelegate.onError;
-      emitEvent(type, param);
-    } else if (typeStr == 'onWarning') {
-      type = TRTCLiveRoomDelegate.onWarning;
-      emitEvent(type, param);
-    } else if (typeStr == 'onUserVoiceVolume') {
-      // type = TRTCLiveRoomDelegate.onUserVoiceVolume;
-      // emitEvent(type, param);
-    } else if (typeStr == 'onRemoteUserEnterRoom') {
-      // updateMixConfig();
-      _anchorList.add(param as String);
-      type = TRTCLiveRoomDelegate.onAnchorEnter;
-      emitEvent(type, param);
-    } else if (typeStr == 'onRemoteUserLeaveRoom') {
-      // updateMixConfig();
-      _anchorList.remove((param as Map)['userId']);
-      type = TRTCLiveRoomDelegate.onAnchorExit;
-      emitEvent(type, param['userId']);
-    } else if (typeStr == 'onDisconnectOtherRoom') {
-      print('==onDisconnectOtherRoom=' + param.toString());
-    } else if (typeStr == 'onStartPublishing') {
-      print('==onStartPublishing=' + param.toString());
-    }
-    for (var trtcListener in _trtcListeners) {
-      trtcListener(rtcType, param);
-    }
-  }
-
-  // im群事件绑定
-  V2TimGroupListener get _groupListener {
-    TRTCLiveRoomDelegate type;
-    return V2TimGroupListener(
-      onMemberEnter: (String groupId, List<V2TimGroupMemberInfo> list) {
-        type = TRTCLiveRoomDelegate.onAudienceEnter;
-        final memberList = list;
-        for (var i = 0; i < memberList.length; i++) {
-          if (_audienceList.contains(memberList[i].userID)) {
-            return;
-          }
-          _audienceList.add(memberList[i].userID!);
-          emitEvent(type, {
-            'userId': memberList[i].userID,
-            'userName': memberList[i].nickName,
-            'userAvatar': memberList[i].faceUrl
-          });
-        }
-      },
-      onMemberLeave: (String groupId, V2TimGroupMemberInfo member) {
-        _audienceList.remove(member.userID);
-        type = TRTCLiveRoomDelegate.onAudienceExit;
-        emitEvent(type, {
-          'userId': member.userID,
-          'userName': member.nickName,
-          'userAvatar': member.faceUrl,
-        });
-      },
-      onGroupDismissed: (groupID, opUser) {
-        //房间被群主解散
-        type = TRTCLiveRoomDelegate.onRoomDestroy;
-        emitEvent(type, <String, dynamic>{});
-      },
-    );
-  }
-
-  //im信令事件绑定
-  V2TimSignalingListener get _signalingListener {
-    return V2TimSignalingListener(
-      onInvitationCancelled: (inviteID, inviter, data) {},
-      onInvitationTimeout: (inviteID, inviteeList) {
-        if (inviteID == _curCallID || inviteID == _curPKCallID) {
-          emitEvent(TRTCLiveRoomDelegate.onInvitationTimeout, {
-            'inviteeList': inviteeList,
-          });
-        }
-      },
-      onInviteeAccepted: (inviteID, invitee, data) {
-        if (_userId == invitee) {
-          return;
-        }
-        try {
-          final customMap = jsonDecode(data) as Map<String, dynamic>?;
-          print('==customMap onInviteeRejected=' + customMap.toString());
-          if (customMap == null) {
-            print(_logTag + 'onReceiveNewInvitation extraMap is null, ignore');
-            return;
-          }
-          if (customMap.containsKey('data') && customMap['data']['cmd'] == _requestAnchorCMD) {
-            emitEvent(TRTCLiveRoomDelegate.onAnchorAccepted, {
-              'userId': invitee,
-            });
-          } else if (customMap.containsKey('data') && customMap['data']['cmd'] == _requestRoomPKCMD) {
-            _isPk = true;
-            emitEvent(TRTCLiveRoomDelegate.onRoomPKAccepted, {
-              'userId': invitee,
-            });
-          }
-        } catch (e) {
-          print(_logTag + ' signalingListener error log.');
-        }
-      },
-      onInviteeRejected: (inviteID, invitee, data) {
-        if (_userId == invitee) {
-          return;
-        }
-        try {
-          final customMap = jsonDecode(data) as Map<String, dynamic>?;
-          print('==customMap onInviteeRejected=' + customMap.toString());
-          if (customMap == null) {
-            print(_logTag + 'onReceiveNewInvitation extraMap is null, ignore');
-            return;
-          }
-          if (customMap.containsKey('data') && customMap['data']['cmd'] == _requestAnchorCMD) {
-            emitEvent(TRTCLiveRoomDelegate.onAnchorRejected, {
-              'userId': invitee,
-            });
-          } else if (customMap.containsKey('data') && customMap['data']['cmd'] == _requestRoomPKCMD) {
-            emitEvent(TRTCLiveRoomDelegate.onRoomPKRejected, {
-              'userId': invitee,
-            });
-          }
-        } catch (e) {
-          print(_logTag + ' signalingListener error log.');
-        }
-      },
-      onReceiveNewInvitation: (inviteID, inviter, groupID, inviteeList, data) async {
-        try {
-          final customMap = jsonDecode(data) as Map<String, dynamic>?;
-          print('==customMap=' + customMap.toString());
-
-          if (customMap == null) {
-            print(_logTag + 'onReceiveNewInvitation extraMap is null, ignore');
-            return;
-          }
-
-          if (customMap.containsKey('data') && customMap['data']['cmd'] == _requestAnchorCMD) {
-            if (_isPk) {
-              //在pk通话中，直接拒绝观众的主播请求
-              await signalingManager.reject(
-                inviteID: inviteID,
-                data: jsonEncode(_getCustomMap(_requestAnchorCMD)),
-              );
-            } else {
-              _curCallID = inviteID;
-              emitEvent(TRTCLiveRoomDelegate.onRequestJoinAnchor, <String, dynamic>{
-                'userId': inviter,
-                'userName': customMap['data']['cmdInfo']['userName'],
-                'userAvatar': customMap['data']['cmdInfo']['userAvatar'],
-                'callId': inviteID
-              });
-            }
-          } else if (customMap.containsKey('data') && customMap['data']['cmd'] == _kickOutAnchorCMD) {
-            _curCallID = inviteID;
-            emitEvent(TRTCLiveRoomDelegate.onKickOutJoinAnchor, <String, dynamic>{
-              'userId': inviter,
-              'userName': customMap['data']['cmdInfo']['userName'],
-              'userAvatar': customMap['data']['cmdInfo']['userAvatar'],
-            });
-          } else if (customMap.containsKey('data') && customMap['data']['cmd'] == _requestRoomPKCMD) {
-            // 当前有两个主播直接拒绝跨房通话
-            if (_anchorList.length >= 2) {
-              await signalingManager.reject(
-                inviteID: inviteID,
-                data: jsonEncode(_getCustomMap(_requestRoomPKCMD)),
-              );
-            } else {
-              _curPKCallID = inviteID;
-              _userIdPK = inviter;
-              _roomIdPK = customMap['data']['cmdInfo']['roomId'] as String?;
-              emitEvent(TRTCLiveRoomDelegate.onRequestRoomPK, <String, dynamic>{
-                'userId': inviter,
-                'userName': customMap['data']['cmdInfo']['userName'],
-                'userAvatar': customMap['data']['cmdInfo']['userAvatar'],
-              });
-            }
-          } else if (customMap.containsKey('data') && customMap['data']['cmd'] == _quitRoomPKCMD) {
-            _isPk = false;
-            emitEvent(TRTCLiveRoomDelegate.onQuitRoomPK, {
-              'userId': inviter,
-            });
-          }
-        } catch (e) {
-          print(_logTag + ' signalingListener error log.');
-        }
-      },
-    );
-  }
-
-  @override
-  Future<ActionCallback> requestJoinAnchor() async {
-    final V2TimValueCallback res = await signalingManager.invite(
-      invitee: _ownerUserId,
-      data: jsonEncode(_getCustomMap(_requestAnchorCMD)),
-      timeout: _timeOutCount,
-      onlineUserOnly: false,
-    );
-    _curCallID = res.data as String;
-    return ActionCallback(code: res.code, desc: res.desc);
-  }
-
-  Map<String, dynamic> _getCustomMap(String cmd) {
-    final customMap = <String, dynamic>{};
-    customMap['version'] = 1;
-    customMap['businessID'] = 'Live';
-    customMap['platform'] = 'flutter';
-    customMap['extInfo'] = '';
-    customMap['data'] = {
-      'roomId': _roomId,
-      'cmd': cmd,
-      'cmdInfo': {
-        'userId': _userId,
-        'userName': _selfUserName,
-        'userAvatar': _selfAvatar,
-        'roomId': _roomId,
-      },
-      'message': ''
-    };
-    return customMap;
-  }
-
-  @override
-  Future<ActionCallback> requestRoomPK(int roomId, String userId) async {
-    if (_anchorList.length >= 2) {
-      return const ActionCallback(
-        code: _codeErr,
-        desc: 'There are two anchors in the room. Cross room calls are not allowed',
-      );
-    }
-    _roomIdPK = roomId.toString();
-    _userIdPK = userId;
-    final V2TimValueCallback res = await signalingManager.invite(
-      invitee: userId,
-      data: jsonEncode(_getCustomMap(_requestRoomPKCMD)),
-      timeout: _timeOutCount,
-      onlineUserOnly: false,
-    );
-    _curPKCallID = res.data as String;
-    return ActionCallback(code: res.code, desc: res.desc);
-  }
-
-  @override
-  Future<ActionCallback> responseJoinAnchor(String userId, bool agree, String callId) async {
-    V2TimCallback res;
-    if (agree) {
-      res = await signalingManager.accept(
-        inviteID: callId,
-        data: jsonEncode(_getCustomMap(_requestAnchorCMD)),
-      );
-    } else {
-      res = await signalingManager.reject(
-        inviteID: callId,
-        data: jsonEncode(_getCustomMap(_requestAnchorCMD)),
-      );
-    }
-
-    return ActionCallback(code: res.code, desc: res.desc);
-  }
-
-  @override
-  Future<ActionCallback> responseRoomPK(String userId, bool agree) async {
-    V2TimCallback res;
-    if (agree) {
-      res = await signalingManager.accept(
-        inviteID: _curPKCallID,
-        data: jsonEncode(_getCustomMap(_requestRoomPKCMD)),
-      );
-      if (res.code == 0 && _roomIdPK != null) {
-        _isPk = true;
-        await _cloud.connectOtherRoom(jsonEncode({
-          'roomId': int.parse(_roomIdPK!),
-          'userId': userId,
-        }));
-      }
-    } else {
-      res = await signalingManager.reject(
-        inviteID: _curPKCallID,
-        data: jsonEncode(_getCustomMap(_requestRoomPKCMD)),
-      );
-    }
-
-    return ActionCallback(code: res.code, desc: res.desc);
-  }
-
-  @override
-  Future<ActionCallback> sendRoomTextMsg(String message) async {
-    final res = await _timManager.sendGroupTextMessage(
-      text: message,
-      groupID: _roomId.toString(),
-      priority: MessagePriority.V2TIM_PRIORITY_NORMAL,
-    );
-    if (res.code == 0) {
-      return const ActionCallback(code: 0, desc: 'send group message success.');
-    } else {
-      return ActionCallback(code: res.code, desc: 'send room text fail, not enter room yet.');
+  // rtc相关事件
+  void _rtcListener(TRTCCloudListener rtcType, Object? param) {
+    _imManager.rtcListener(rtcType, param);
+    for (var rtcListener in _rtcListeners) {
+      rtcListener(rtcType, param);
     }
   }
 
   @override
-  Future<ActionCallback> sendRoomCustomMsg(String cmd, String message) async {
-    final res = await _timManager.sendGroupCustomMessage(
-      customData: jsonEncode({
-        'command': cmd,
-        'message': message,
-        'version': '1.0.0',
-        'action': _liveCustomCmd,
-      }),
-      groupID: _roomId.toString(),
-      priority: MessagePriorityEnum.V2TIM_PRIORITY_NORMAL,
-    );
-    if (res.code == 0) {
-      return const ActionCallback(code: 0, desc: 'send group message success.');
-    } else {
-      return ActionCallback(code: res.code, desc: 'send room custom msg fail, not enter room yet.');
-    }
+  Future<ActionCallback> requestJoinAnchor() {
+    return _imManager.requestJoinAnchor();
+  }
+
+  @override
+  Future<ActionCallback> requestRoomPK(int roomId, String userId) {
+    return _imManager.requestRoomPK(roomId, userId);
+  }
+
+  @override
+  Future<ActionCallback> responseJoinAnchor(String userId, bool agree, String callId) {
+    return _imManager.responseJoinAnchor(userId, agree, callId);
+  }
+
+  @override
+  Future<ActionCallback> responseRoomPK(String userId, bool agree) {
+    return _imManager.responseRoomPK(userId, agree, () async {
+      await _cloud.connectOtherRoom(jsonEncode({
+        'roomId': int.parse(_roomIdPK!),
+        'userId': userId,
+      }));
+    });
+  }
+
+  @override
+  Future<ActionCallback> sendRoomTextMsg(String message) {
+    return _imManager.sendRoomTextMsg(message);
+  }
+
+  @override
+  Future<ActionCallback> sendRoomCustomMsg(String cmd, String message) {
+    return _imManager.sendRoomCustomMsg(cmd, message);
   }
 
   @override
@@ -1091,20 +486,8 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
   }
 
   @override
-  Future<ActionCallback> setSelfProfile(String? userName, String? avatarURL) async {
-    _selfUserName = userName;
-    _selfAvatar = avatarURL;
-    final res = await _timManager.setSelfInfo(
-      userFullInfo: V2TimUserFullInfo(
-        nickName: userName,
-        faceUrl: avatarURL,
-      ),
-    );
-    if (res.code == 0) {
-      return const ActionCallback(code: 0, desc: 'set profile success.');
-    } else {
-      return ActionCallback(code: res.code, desc: 'set profile fail.');
-    }
+  Future<ActionCallback> setSelfProfile(String? userName, String? avatarURL) {
+    return _imManager.setSelfProfile(userName, avatarURL);
   }
 
   @override
@@ -1129,7 +512,7 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
 
   @override
   Future<ActionCallback> startPublish(String? streamId) async {
-    if (!_isEnterRoom) {
+    if (!_imManager.isEnterRoom) {
       return const ActionCallback(code: _codeErr, desc: 'not enter room yet.');
     }
     await _handleVideoEncoderParams();
@@ -1211,7 +594,7 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
     TRTCVideoEncParam? encParams,
     String appGroup = '',
   }) async {
-    if (!_isEnterRoom) {
+    if (!_imManager.isEnterRoom) {
       return const ActionCallback(code: _codeErr, desc: 'not enter room yet.');
     }
     _isStartCapture = true;
@@ -1241,7 +624,7 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
 
   @override
   Future<ActionCallback> startVoice() async {
-    if (!_isEnterRoom) {
+    if (!_imManager.isEnterRoom) {
       return const ActionCallback(code: _codeErr, desc: 'not enter room yet.');
     }
     _isStartAudio = true;
