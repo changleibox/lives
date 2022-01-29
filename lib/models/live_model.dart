@@ -2,7 +2,7 @@
 
 part of 'lives.dart';
 
-const _timeLimit = Duration(seconds: 5);
+const _timeLimit = Duration(seconds: 30);
 
 /// Created by changlei on 2022/1/18.
 ///
