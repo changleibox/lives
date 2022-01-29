@@ -234,7 +234,7 @@ class _LiveProxy {
             minVideoBitrate: 3000,
             videoFps: 20,
             videoResolution: TRTCCloudDef.TRTC_VIDEO_RESOLUTION_1920_1080,
-            videoResolutionMode: TRTCCloudDef.TRTC_VIDEO_RESOLUTION_MODE_PORTRAIT,
+            videoResolutionMode: TRTCCloudDef.TRTC_VIDEO_RESOLUTION_MODE_LANDSCAPE,
           ),
         );
         break;
