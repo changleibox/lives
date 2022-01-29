@@ -12,6 +12,7 @@ import 'package:lives/widgets/more.dart';
 import 'package:lives/widgets/popularize.dart';
 import 'package:lives/widgets/share.dart';
 import 'package:lives/widgets/widget_group.dart';
+import 'package:oktoast/oktoast.dart';
 import 'package:provider/provider.dart';
 
 const _animationDuration = Duration(
@@ -213,6 +214,7 @@ class _RoomInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final model = context.watch<LiveModel>();
     return Container(
       decoration: BoxDecoration(
         color: CupertinoColors.black.withOpacity(0.3),
@@ -306,16 +308,16 @@ class _RoomInfo extends StatelessWidget {
                         alignment: Alignment.centerLeft,
                         child: WidgetGroup.spacing(
                           spacing: 4,
-                          children: const [
-                            Icon(
+                          children: [
+                            const Icon(
                               CupertinoIcons.square_list,
                               size: 12,
                               color: CupertinoColors.white,
                             ),
                             Flexible(
                               child: Text(
-                                '视频聊天',
-                                style: TextStyle(
+                                model.liveType.theme,
+                                style: const TextStyle(
                                   color: CupertinoColors.white,
                                   fontSize: 10,
                                 ),
@@ -493,7 +495,9 @@ class _LiveOperators extends StatelessWidget {
             _OperationButton(
               icon: CupertinoIcons.device_phone_landscape,
               label: '横屏',
-              onPressed: () {},
+              onPressed: () {
+                showToast('您选择的游戏为横屏');
+              },
             ),
           if (model.liveType == LiveType.game)
             _OperationButton(

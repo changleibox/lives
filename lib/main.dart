@@ -31,7 +31,13 @@ class LivesApp extends StatelessWidget {
         return AnnotatedRegion<SystemUiOverlayStyle>(
           value: SystemChromes.overlayStyle,
           child: OKToast(
-            position: ToastPosition.bottom,
+            position: ToastPosition.center,
+            backgroundColor: CupertinoColors.black.withOpacity(0.8),
+            radius: 8,
+            textPadding: const EdgeInsets.symmetric(
+              horizontal: 10,
+              vertical: 10,
+            ),
             child: child!,
           ),
         );

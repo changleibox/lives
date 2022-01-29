@@ -42,6 +42,18 @@ extension LiveTypeName on LiveType {
     return this == LiveType.voice ? TRTCCloudDef.TRTC_APP_SCENE_VOICE_CHATROOM : TRTCCloudDef.TRTC_APP_SCENE_LIVE;
   }
 
+  /// 对应的直播主题
+  String get theme {
+    switch (this) {
+      case LiveType.video:
+        return '视频聊天';
+      case LiveType.game:
+        return '和平精英';
+      case LiveType.voice:
+        return '聊天电台';
+    }
+  }
+
   /// 显示屏幕分享Window
   Future<void> start([FutureOr<void> Function()? onStarted]) async {
     if (this != LiveType.game) {
