@@ -38,7 +38,7 @@ class _WatchOverlayState extends State<WatchOverlay> {
       value: SystemChromes.liveOverlayStyle,
       child: AnimatedPadding(
         duration: const Duration(
-          milliseconds: 300,
+          milliseconds: 250,
         ),
         curve: Curves.easeInOut,
         padding: MediaQuery.of(context).viewInsets,
@@ -301,16 +301,19 @@ class _BottomBar extends StatelessWidget {
       padding: const EdgeInsets.only(
         top: 20,
       ),
-      child: WidgetGroup.spacing(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        direction: Axis.vertical,
-        spacing: 8,
-        children: [
-          TextChatRoom(
-            messages: model.messages,
-          ),
-          const _ChatInput(),
-        ],
+      child: SafeArea(
+        top: false,
+        child: WidgetGroup.spacing(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          direction: Axis.vertical,
+          spacing: 8,
+          children: [
+            TextChatRoom(
+              messages: model.messages,
+            ),
+            const _ChatInput(),
+          ],
+        ),
       ),
     );
   }
@@ -341,87 +344,84 @@ class _ChatInputState extends State<_ChatInput> {
         horizontal: 16,
         vertical: 8,
       ),
-      child: SafeArea(
-        top: false,
-        child: WidgetGroup.spacing(
-          spacing: 8,
-          children: [
-            Container(
-              decoration: ShapeDecoration(
-                shape: const CircleBorder(),
-                color: CupertinoTheme.of(context).primaryColor,
-              ),
-              child: CupertinoButton(
-                padding: EdgeInsets.zero,
-                minSize: 32,
-                onPressed: () {},
-                child: WidgetGroup(
-                  direction: Axis.vertical,
-                  children: const [
-                    Icon(
-                      CupertinoIcons.brightness,
-                      color: CupertinoColors.white,
-                      size: 14,
-                    ),
-                    Text(
-                      '66',
-                      style: TextStyle(
-                        color: CupertinoColors.white,
-                        fontSize: 8,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+      child: WidgetGroup.spacing(
+        spacing: 8,
+        children: [
+          Container(
+            decoration: ShapeDecoration(
+              shape: const CircleBorder(),
+              color: CupertinoTheme.of(context).primaryColor,
             ),
-            Expanded(
-              child: Container(
-                height: 32,
-                child: CupertinoTextField(
-                  controller: _controller,
-                  placeholder: '聊点什么吧~',
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    color: CupertinoColors.black.withOpacity(0.2),
-                  ),
-                  placeholderStyle: TextStyle(
-                    color: CupertinoColors.white.withOpacity(0.6),
-                    fontSize: 14,
-                  ),
-                  style: const TextStyle(
+            child: CupertinoButton(
+              padding: EdgeInsets.zero,
+              minSize: 32,
+              onPressed: () {},
+              child: WidgetGroup(
+                direction: Axis.vertical,
+                children: const [
+                  Icon(
+                    CupertinoIcons.brightness,
                     color: CupertinoColors.white,
-                    fontSize: 14,
+                    size: 14,
                   ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
+                  Text(
+                    '66',
+                    style: TextStyle(
+                      color: CupertinoColors.white,
+                      fontSize: 8,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                  textInputAction: TextInputAction.send,
-                  onSubmitted: (value) {
-                    _controller.clear();
-                    context.read<WatchModel>().sendMessage(value);
-                  },
-                ),
+                ],
               ),
             ),
-            Container(
-              decoration: ShapeDecoration(
-                shape: const CircleBorder(),
-                color: CupertinoTheme.of(context).primaryColor,
-              ),
-              child: CupertinoButton(
-                padding: EdgeInsets.zero,
-                minSize: 32,
-                onPressed: () {},
-                child: const Icon(
-                  CupertinoIcons.ant_fill,
+          ),
+          Expanded(
+            child: Container(
+              height: 32,
+              child: CupertinoTextField(
+                controller: _controller,
+                placeholder: '聊点什么吧~',
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  color: CupertinoColors.black.withOpacity(0.2),
+                ),
+                placeholderStyle: TextStyle(
+                  color: CupertinoColors.white.withOpacity(0.6),
+                  fontSize: 14,
+                ),
+                style: const TextStyle(
                   color: CupertinoColors.white,
-                  size: 20,
+                  fontSize: 14,
                 ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                ),
+                textInputAction: TextInputAction.send,
+                onSubmitted: (value) {
+                  _controller.clear();
+                  context.read<WatchModel>().sendMessage(value);
+                },
               ),
             ),
-          ],
-        ),
+          ),
+          Container(
+            decoration: ShapeDecoration(
+              shape: const CircleBorder(),
+              color: CupertinoTheme.of(context).primaryColor,
+            ),
+            child: CupertinoButton(
+              padding: EdgeInsets.zero,
+              minSize: 32,
+              onPressed: () {},
+              child: const Icon(
+                CupertinoIcons.ant_fill,
+                color: CupertinoColors.white,
+                size: 20,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

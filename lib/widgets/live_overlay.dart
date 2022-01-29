@@ -43,7 +43,7 @@ class _LiveOverlayState extends State<LiveOverlay> {
       value: SystemChromes.liveOverlayStyle,
       child: AnimatedPadding(
         duration: const Duration(
-          milliseconds: 300,
+          milliseconds: 250,
         ),
         curve: Curves.easeInOut,
         padding: MediaQuery.of(context).viewInsets,
