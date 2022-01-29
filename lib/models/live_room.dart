@@ -429,10 +429,10 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
   }
 
   // rtc相关事件
-  void _rtcListener(TRTCCloudListener rtcType, Object? param) {
-    _imManager.rtcListener(rtcType, param);
+  void _rtcListener(TRTCCloudListener type, Object? param) {
+    _imManager.rtcListener(type, param);
     for (var rtcListener in _rtcListeners) {
-      rtcListener(rtcType, param);
+      rtcListener(type, param);
     }
   }
 

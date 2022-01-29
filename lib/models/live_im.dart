@@ -326,32 +326,45 @@ class _LiveIM extends LiveIM {
   }
 
   @override
-  void rtcListener(TRTCCloudListener rtcType, Object? param) {
-    if (rtcType == TRTCCloudListener.onEnterRoom) {
-      if ((param as int) < 0) {
-        _isEnterRoom = false;
-      } else {
-        _isEnterRoom = true;
-      }
-    } else if (rtcType == TRTCCloudListener.onUserVideoAvailable) {
-      _emitEvent(TRTCLiveRoomDelegate.onUserVideoAvailable, param);
-    } else if (rtcType == TRTCCloudListener.onError) {
-      _emitEvent(TRTCLiveRoomDelegate.onError, param);
-    } else if (rtcType == TRTCCloudListener.onWarning) {
-      _emitEvent(TRTCLiveRoomDelegate.onWarning, param);
-    } else if (rtcType == TRTCCloudListener.onUserVoiceVolume) {
-      // type = TRTCLiveRoomDelegate.onUserVoiceVolume;
-      // emitEvent(type, param);
-    } else if (rtcType == TRTCCloudListener.onRemoteUserEnterRoom) {
-      _anchorList.add(param as String);
-      _emitEvent(TRTCLiveRoomDelegate.onAnchorEnter, param);
-    } else if (rtcType == TRTCCloudListener.onRemoteUserLeaveRoom) {
-      _anchorList.remove((param as Map)['userId']);
-      _emitEvent(TRTCLiveRoomDelegate.onAnchorExit, param['userId']);
-    } else if (rtcType == TRTCCloudListener.onDisConnectOtherRoom) {
-      print('==onDisconnectOtherRoom=' + param.toString());
-    } else if (rtcType == TRTCCloudListener.onStartPublishing) {
-      print('==onStartPublishing=' + param.toString());
+  void rtcListener(TRTCCloudListener type, Object? param) {
+    switch (type) {
+      case TRTCCloudListener.onEnterRoom:
+        if ((param as int) < 0) {
+          _isEnterRoom = false;
+        } else {
+          _isEnterRoom = true;
+        }
+        _emitEvent(TRTCLiveRoomDelegate.onEnterRoom, param);
+        break;
+      case TRTCCloudListener.onUserVideoAvailable:
+        _emitEvent(TRTCLiveRoomDelegate.onUserVideoAvailable, param);
+        break;
+      case TRTCCloudListener.onError:
+        _emitEvent(TRTCLiveRoomDelegate.onError, param);
+        break;
+      case TRTCCloudListener.onWarning:
+        _emitEvent(TRTCLiveRoomDelegate.onWarning, param);
+        break;
+      case TRTCCloudListener.onUserVoiceVolume:
+        // type = TRTCLiveRoomDelegate.onUserVoiceVolume;
+        // emitEvent(type, param);
+        break;
+      case TRTCCloudListener.onRemoteUserEnterRoom:
+        _anchorList.add(param as String);
+        _emitEvent(TRTCLiveRoomDelegate.onAnchorEnter, param);
+        break;
+      case TRTCCloudListener.onRemoteUserLeaveRoom:
+        _anchorList.remove((param as Map)['userId']);
+        _emitEvent(TRTCLiveRoomDelegate.onAnchorExit, param['userId']);
+        break;
+      case TRTCCloudListener.onDisConnectOtherRoom:
+        print('==onDisconnectOtherRoom=' + param.toString());
+        break;
+      case TRTCCloudListener.onStartPublishing:
+        print('==onStartPublishing=' + param.toString());
+        break;
+      default:
+        break;
     }
   }
 
