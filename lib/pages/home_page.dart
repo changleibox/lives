@@ -90,7 +90,12 @@ class _HomePresenter extends Presenter<HomePage> {
     if (!await _checkPermission()) {
       return;
     }
-    await Routes.live.pushNamed(context);
+    await Routes.live.pushNamed(
+      context,
+      arguments: <String, dynamic>{
+        'liveType': LiveType.video,
+      },
+    );
   }
 
   Future<void> _startWatch() async {

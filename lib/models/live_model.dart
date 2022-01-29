@@ -29,6 +29,12 @@ class LiveModel extends LivesModel implements LiveModule {
   bool _remoteMute = false;
   LiveType _liveType = LiveType.video;
 
+  @override
+  Future<void> setup([LiveType? liveType]) async {
+    _liveType = liveType ?? LiveType.video;
+    await super.setup();
+  }
+
   /// 直播类型
   LiveType get liveType => _liveType;
 

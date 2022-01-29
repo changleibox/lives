@@ -114,7 +114,9 @@ class _LivePresenter extends VoidPresenter<LivePage> {
 
   @override
   Future<void> onLoad(bool showProgress, CancelToken? cancelToken) {
-    return _model.setup();
+    final arguments = this.arguments as Map<String, dynamic>?;
+    final liveType = arguments?['liveType'] as LiveType?;
+    return _model.setup(liveType);
   }
 
   Future<void> _startPreview(int viewId) async {
