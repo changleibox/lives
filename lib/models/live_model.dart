@@ -129,6 +129,7 @@ class LiveModel extends LivesModel implements LiveModule {
   Future<void> startLive({String? roomName, String? cover}) async {
     _LiveProxy.addListener(this);
     _LiveProxy.addTRTCListener(_onEvent);
+    await _liveType.start();
     if (_liveType == LiveType.game) {
       await _startPendingLive();
     }
@@ -161,6 +162,7 @@ class LiveModel extends LivesModel implements LiveModule {
       await startPreview(_isFront!, _viewId!);
     }
     _stopPendingLive();
+    await _liveType.stop();
     _speedNotifier.value = 0;
     _lastSendBytes = 0;
     _networkNotifier.value = 1;

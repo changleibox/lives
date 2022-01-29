@@ -70,7 +70,7 @@ extension LiveTypeName on LiveType {
   }
 
   /// 关闭
-  Future<void> exit() async {
+  Future<void> stop() async {
     if (this != LiveType.game) {
       return;
     }

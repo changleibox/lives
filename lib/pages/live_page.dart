@@ -136,7 +136,6 @@ class _LivePresenter extends VoidPresenter<LivePage> {
 
   Future<void> _startLive() async {
     try {
-      await _model.liveType.start();
       await FutureWrapper.wrapLoading(
         context: context,
         computation: _model.startLive,
@@ -152,7 +151,6 @@ class _LivePresenter extends VoidPresenter<LivePage> {
         context: context,
         computation: _model.exitLive,
       );
-      await _model.liveType.exit();
     } on LiveError catch (e) {
       showToast(e.message);
     }
