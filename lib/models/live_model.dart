@@ -141,7 +141,7 @@ class LiveModel extends LivesModel implements LiveModule {
     );
     await _liveType.start();
     if (_liveType == LiveType.game) {
-      await _startPendingLive();
+      await _startPendingLive(exitLive);
     }
     _setupMessages();
     _startDownTimer();
