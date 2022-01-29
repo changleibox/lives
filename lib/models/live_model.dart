@@ -183,26 +183,30 @@ class LiveModel extends LivesModel implements LiveModule {
   }
 
   void _onEvent(TRTCCloudListener type, Object? params) {
-    if (type == TRTCCloudListener.onStatistics) {
-      final sendBytes = parseInt(
-        (params as Map<String, dynamic>)['sendBytes'],
-        defaultValue: 0,
-      )!;
-      _speedNotifier.value = max(sendBytes - _lastSendBytes, 0) ~/ 2;
-      _lastSendBytes = sendBytes;
-    } else if (type == TRTCCloudListener.onNetworkQuality) {
-      final localQuality = (params as Map<String, dynamic>)['localQuality'] as Map<String, dynamic>;
-      _networkNotifier.value = parseInt(localQuality['quality'], defaultValue: 0)!;
-    } else if (type == TRTCCloudListener.onScreenCaptureStarted) {
-      _pendingCompleter?.complete();
-      _pendingCompleter = null;
-    } else if (type == TRTCCloudListener.onScreenCaptureStoped) {
-      exitLive();
-    } else if (type == TRTCCloudListener.onStartPublishing) {
-      _pendingCompleter?.complete();
-      _pendingCompleter = null;
-    } else if (type == TRTCCloudListener.onStopPublishing) {
-      exitLive();
+    switch (type) {
+      case TRTCCloudListener.onStatistics:
+        final sendBytes = parseInt(
+          (params as Map<String, dynamic>)['sendBytes'],
+          defaultValue: 0,
+        )!;
+        _speedNotifier.value = max(sendBytes - _lastSendBytes, 0) ~/ 2;
+        _lastSendBytes = sendBytes;
+        break;
+      case TRTCCloudListener.onNetworkQuality:
+        final localQuality = (params as Map<String, dynamic>)['localQuality'] as Map<String, dynamic>;
+        _networkNotifier.value = parseInt(localQuality['quality'], defaultValue: 0)!;
+        break;
+      case TRTCCloudListener.onScreenCaptureStarted:
+      case TRTCCloudListener.onStartPublishing:
+        _pendingCompleter?.complete();
+        _pendingCompleter = null;
+        break;
+      case TRTCCloudListener.onScreenCaptureStoped:
+      case TRTCCloudListener.onStopPublishing:
+        exitLive();
+        break;
+      default:
+        break;
     }
   }
 
