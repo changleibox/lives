@@ -37,9 +37,9 @@ class WatchModel extends LivesModel {
       viewId: viewId,
       type: _liveType,
     );
-    _started = true;
     await _refreshRoomInfo();
     await _refreshUserInfo();
+    _started = true;
     notifyListeners();
   }
 
@@ -47,9 +47,6 @@ class WatchModel extends LivesModel {
   Future<void> exitWatch() async {
     _LiveProxy.removeListener(this);
     await _LiveProxy.exitWatch(_anchorId);
-    if (!_started) {
-      return;
-    }
     _started = false;
     notifyListeners();
   }

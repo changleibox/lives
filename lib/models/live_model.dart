@@ -141,9 +141,6 @@ class LiveModel extends LivesModel implements LiveModule {
     _startDownTimer();
     await _refreshRoomInfo();
     await _refreshUserInfo();
-    if (_started) {
-      return;
-    }
     _started = true;
     notifyListeners();
   }
@@ -162,9 +159,6 @@ class LiveModel extends LivesModel implements LiveModule {
     _lastSendBytes = 0;
     _networkNotifier.value = 1;
     _stopDownTimer();
-    if (!_started) {
-      return;
-    }
     _started = false;
     notifyListeners();
   }
