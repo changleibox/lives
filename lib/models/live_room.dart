@@ -15,8 +15,6 @@ import 'package:tencent_trtc_cloud/tx_audio_effect_manager.dart';
 import 'package:tencent_trtc_cloud/tx_beauty_manager.dart';
 import 'package:tencent_trtc_cloud/tx_device_manager.dart';
 
-const int _codeErr = -1;
-
 /// 自己封装的聊天室工具类
 abstract class TRTCLiveRoom {
   /// 获取 TRTCLiveRoom 单例对象
@@ -519,7 +517,7 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
   @override
   Future<ActionCallback> startPublish(String? streamId) async {
     if (!_imManager.isEnterRoom) {
-      return const ActionCallback(code: _codeErr, desc: 'not enter room yet.');
+      return notEnterRoomYetError;
     }
     await _handleVideoEncoderParams();
     if (!_isEmpty(streamId)) {
@@ -601,7 +599,7 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
     String appGroup = '',
   }) async {
     if (!_imManager.isEnterRoom) {
-      return const ActionCallback(code: _codeErr, desc: 'not enter room yet.');
+      return notEnterRoomYetError;
     }
     _isStartCapture = true;
     await _cloud.startScreenCapture(
@@ -631,7 +629,7 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
   @override
   Future<ActionCallback> startVoice() async {
     if (!_imManager.isEnterRoom) {
-      return const ActionCallback(code: _codeErr, desc: 'not enter room yet.');
+      return notEnterRoomYetError;
     }
     _isStartAudio = true;
     await _cloud.startLocalAudio(TRTCCloudDef.TRTC_AUDIO_QUALITY_MUSIC);

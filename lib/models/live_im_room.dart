@@ -37,6 +37,9 @@ const int _liveCustomCmd = 301;
 const int _codeErr = -1;
 const int _timeOutCount = 30;
 
+/// 未进入直播间
+const notEnterRoomYetError = ActionCallback(code: _codeErr, desc: 'not enter room yet.');
+
 /// FutureOr
 typedef FutureOrVoidCallback = FutureOr<void> Function();
 
@@ -396,7 +399,7 @@ class _LiveIMRoom extends LiveIMRoom {
   @override
   Future<ActionCallback> exitRoom(FutureOrVoidCallback callback) async {
     if (_roomId == null) {
-      return const ActionCallback(code: _codeErr, desc: 'not enter room yet');
+      return notEnterRoomYetError;
     }
     _destroyData();
     await callback();
