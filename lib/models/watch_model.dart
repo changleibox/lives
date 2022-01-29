@@ -7,19 +7,14 @@ part of 'lives.dart';
 /// 直播
 class WatchModel extends LivesModel {
   late String _anchorId;
-  late LiveType _liveType;
 
   @override
   String get _roomId => _anchorId;
 
-  /// 直播类型
-  LiveType get liveType => _liveType;
-
   @override
-  Future<void> setup([String? anchorId, LiveType? liveType]) async {
+  Future<void> setup([LiveType? liveType, String? anchorId]) {
     _anchorId = anchorId ?? userId;
-    _liveType = liveType ?? LiveType.video;
-    await super.setup();
+    return super.setup(liveType ?? LiveType.video);
   }
 
   /// 主播id

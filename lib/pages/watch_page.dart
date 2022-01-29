@@ -107,9 +107,9 @@ class _WatchPresenter extends VoidPresenter<WatchPage> {
   @override
   Future<void> onLoad(bool showProgress, CancelToken? cancelToken) {
     final arguments = this.arguments as Map<String, dynamic>?;
-    final anchorId = arguments?['anchorId'] as String?;
     final liveType = arguments?['liveType'] as LiveType?;
-    return _model.setup(anchorId, liveType);
+    final anchorId = arguments?['anchorId'] as String?;
+    return _model.setup(liveType, anchorId);
   }
 
   @override

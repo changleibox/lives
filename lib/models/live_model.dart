@@ -27,23 +27,16 @@ class LiveModel extends LivesModel implements LiveModule {
   bool _isMirror = false;
   bool _localMute = false;
   bool _remoteMute = false;
-  LiveType _liveType = LiveType.video;
 
+  /// 初始化
   @override
-  Future<void> setup([LiveType? liveType]) async {
-    _liveType = liveType ?? LiveType.video;
-    await super.setup();
+  Future<void> setup([LiveType? liveType]) {
+    return super.setup(liveType ?? LiveType.video);
   }
 
-  /// 直播类型
-  LiveType get liveType => _liveType;
-
+  @override
   set liveType(LiveType value) {
-    assert(!started);
-    if (value == liveType) {
-      return;
-    }
-    _liveType = value;
+    super.liveType = value;
     switch (value) {
       case LiveType.video:
         if (_isFront != null && _viewId != null) {
@@ -57,7 +50,6 @@ class LiveModel extends LivesModel implements LiveModule {
         stopPreview();
         break;
     }
-    notifyListeners();
   }
 
   /// 网速

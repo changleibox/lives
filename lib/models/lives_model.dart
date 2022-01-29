@@ -9,17 +9,33 @@ abstract class LivesModel extends ChangeNotifier with LiveObserver {
   final _messages = Queue<BulletChat>();
   final _listeners = <VoidCallback>{};
 
-  RoomInfo? _roomInfo;
-  Map<String, UserInfo>? _memberInfo;
+  LiveType _liveType = LiveType.video;
+
   bool _mounted = false;
   bool _started = false;
+  RoomInfo? _roomInfo;
+  Map<String, UserInfo>? _memberInfo;
   int _memberCount = 0;
   Completer<void>? _pendingCompleter;
 
   /// 初始化
-  Future<void> setup() async {
+  Future<void> setup(LiveType liveType) async {
+    _liveType = liveType;
     _mounted = true;
     _setupMessages();
+    notifyListeners();
+  }
+
+  /// 直播类型
+  LiveType get liveType => _liveType;
+
+  @mustCallSuper
+  set liveType(LiveType value) {
+    assert(!started);
+    if (value == liveType) {
+      return;
+    }
+    _liveType = value;
     notifyListeners();
   }
 
