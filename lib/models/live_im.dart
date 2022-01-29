@@ -208,6 +208,10 @@ class _LiveIM extends LiveIM {
   final List<String> _anchorList = [];
   final List<String> _audienceList = [];
 
+  V2TimSignalingListener? _signalingListener;
+  V2TimGroupListener? _groupListener;
+  V2TimSimpleMsgListener? _simpleMsgListener;
+
   /// 单例
   static Future<_LiveIM> sharedInstance() async {
     _instance ??= _LiveIM();
@@ -570,10 +574,26 @@ class _LiveIM extends LiveIM {
   @override
   void addListener(VoiceListener listener, ValueChanged<bool> callback) {
     if (_listeners.isEmpty) {
+      _signalingListener ??= V2TimSignalingListener(
+        onInvitationCancelled: _onInvitationCancelled,
+        onInvitationTimeout: _onInvitationTimeout,
+        onInviteeAccepted: _onInviteeAccepted,
+        onInviteeRejected: _onInviteeRejected,
+        onReceiveNewInvitation: _onReceiveNewInvitation,
+      );
       //监听im事件
-      signalingManager.addSignalingListener(listener: _signalingListener);
-      _timManager.setGroupListener(listener: _groupListener);
-      _timManager.addSimpleMsgListener(listener: _simpleMsgListener);
+      signalingManager.addSignalingListener(listener: _signalingListener!);
+      _groupListener ??= V2TimGroupListener(
+        onMemberEnter: _onMemberEnter,
+        onMemberLeave: _onMemberLeave,
+        onGroupDismissed: _onGroupDismissed,
+      );
+      _timManager.setGroupListener(listener: _groupListener!);
+      _simpleMsgListener ??= V2TimSimpleMsgListener(
+        onRecvGroupTextMessage: _onRecvGroupTextMessage,
+        onRecvGroupCustomMessage: _onRecvGroupCustomMessage,
+      );
+      _timManager.addSimpleMsgListener(listener: _simpleMsgListener!);
     }
     callback(_listeners.isEmpty);
     _listeners.add(listener);
@@ -583,216 +603,16 @@ class _LiveIM extends LiveIM {
   void removeListener(VoiceListener listener, ValueChanged<bool> callback) {
     _listeners.remove(listener);
     if (_listeners.isEmpty) {
-      _timManager.removeSimpleMsgListener();
+      _timManager.removeSimpleMsgListener(listener: _simpleMsgListener);
+      _simpleMsgListener = null;
       signalingManager.removeSignalingListener(listener: _signalingListener);
+      _signalingListener = null;
     }
     callback(_listeners.isEmpty);
   }
 
   @override
   bool get hasListeners => _listeners.isNotEmpty;
-
-  // im 相关事件绑定
-  V2TimSimpleMsgListener get _simpleMsgListener {
-    TRTCLiveRoomDelegate type;
-    return V2TimSimpleMsgListener(
-      onRecvGroupCustomMessage: (msgID, groupID, sender, customData) {
-        try {
-          final customMap = jsonDecode(customData) as Map<String, dynamic>?;
-          if (customMap == null) {
-            print(_logTag + 'onReceiveGroupCustomMessage extraMap is null, ignore');
-            return;
-          }
-          if (customMap.containsKey('action') &&
-              customMap.containsKey('command') &&
-              customMap['action'] == _liveCustomCmd) {
-            //群自定义消息
-            type = TRTCLiveRoomDelegate.onReceiveRoomCustomMsg;
-            _emitEvent(type, <String, dynamic>{
-              'message': customMap['message'],
-              'command': customMap['command'],
-              'user': {
-                'userID': sender.userID,
-                'userAvatar': sender.faceUrl,
-                'userName': sender.nickName,
-              },
-            });
-          }
-        } catch (e) {
-          print(_logTag + ' onReceiveGroupCustomMessage error log.' + e.toString());
-        }
-      },
-      onRecvGroupTextMessage: (msgID, groupID, sender, text) {
-        //群文本消息
-        type = TRTCLiveRoomDelegate.onReceiveRoomTextMsg;
-        _emitEvent(type, {
-          'message': text,
-          'userID': sender.userID,
-          'userAvatar': sender.faceUrl,
-          'userName': sender.nickName,
-        });
-      },
-    );
-  }
-
-  // im群事件绑定
-  V2TimGroupListener get _groupListener {
-    TRTCLiveRoomDelegate type;
-    return V2TimGroupListener(
-      onMemberEnter: (String groupId, List<V2TimGroupMemberInfo> list) {
-        type = TRTCLiveRoomDelegate.onAudienceEnter;
-        final memberList = list;
-        for (var i = 0; i < memberList.length; i++) {
-          if (_audienceList.contains(memberList[i].userID)) {
-            return;
-          }
-          _audienceList.add(memberList[i].userID!);
-          _emitEvent(type, {
-            'userId': memberList[i].userID,
-            'userName': memberList[i].nickName,
-            'userAvatar': memberList[i].faceUrl
-          });
-        }
-      },
-      onMemberLeave: (String groupId, V2TimGroupMemberInfo member) {
-        _audienceList.remove(member.userID);
-        type = TRTCLiveRoomDelegate.onAudienceExit;
-        _emitEvent(type, {
-          'userId': member.userID,
-          'userName': member.nickName,
-          'userAvatar': member.faceUrl,
-        });
-      },
-      onGroupDismissed: (groupID, opUser) {
-        //房间被群主解散
-        type = TRTCLiveRoomDelegate.onRoomDestroy;
-        _emitEvent(type, <String, dynamic>{});
-      },
-    );
-  }
-
-  //im信令事件绑定
-  V2TimSignalingListener get _signalingListener {
-    return V2TimSignalingListener(
-      onInvitationCancelled: (inviteID, inviter, data) {},
-      onInvitationTimeout: (inviteID, inviteeList) {
-        if (inviteID == _curCallID || inviteID == _curPKCallID) {
-          _emitEvent(TRTCLiveRoomDelegate.onInvitationTimeout, {
-            'inviteeList': inviteeList,
-          });
-        }
-      },
-      onInviteeAccepted: (inviteID, invitee, data) {
-        if (_userId == invitee) {
-          return;
-        }
-        try {
-          final customMap = jsonDecode(data) as Map<String, dynamic>?;
-          print('==customMap onInviteeRejected=' + customMap.toString());
-          if (customMap == null) {
-            print(_logTag + 'onReceiveNewInvitation extraMap is null, ignore');
-            return;
-          }
-          if (customMap.containsKey('data') && customMap['data']['cmd'] == _requestAnchorCMD) {
-            _emitEvent(TRTCLiveRoomDelegate.onAnchorAccepted, {
-              'userId': invitee,
-            });
-          } else if (customMap.containsKey('data') && customMap['data']['cmd'] == _requestRoomPKCMD) {
-            _isPk = true;
-            _emitEvent(TRTCLiveRoomDelegate.onRoomPKAccepted, {
-              'userId': invitee,
-            });
-          }
-        } catch (e) {
-          print(_logTag + ' signalingListener error log.');
-        }
-      },
-      onInviteeRejected: (inviteID, invitee, data) {
-        if (_userId == invitee) {
-          return;
-        }
-        try {
-          final customMap = jsonDecode(data) as Map<String, dynamic>?;
-          print('==customMap onInviteeRejected=' + customMap.toString());
-          if (customMap == null) {
-            print(_logTag + 'onReceiveNewInvitation extraMap is null, ignore');
-            return;
-          }
-          if (customMap.containsKey('data') && customMap['data']['cmd'] == _requestAnchorCMD) {
-            _emitEvent(TRTCLiveRoomDelegate.onAnchorRejected, {
-              'userId': invitee,
-            });
-          } else if (customMap.containsKey('data') && customMap['data']['cmd'] == _requestRoomPKCMD) {
-            _emitEvent(TRTCLiveRoomDelegate.onRoomPKRejected, {
-              'userId': invitee,
-            });
-          }
-        } catch (e) {
-          print(_logTag + ' signalingListener error log.');
-        }
-      },
-      onReceiveNewInvitation: (inviteID, inviter, groupID, inviteeList, data) async {
-        try {
-          final customMap = jsonDecode(data) as Map<String, dynamic>?;
-          print('==customMap=' + customMap.toString());
-
-          if (customMap == null) {
-            print(_logTag + 'onReceiveNewInvitation extraMap is null, ignore');
-            return;
-          }
-
-          if (customMap.containsKey('data') && customMap['data']['cmd'] == _requestAnchorCMD) {
-            if (_isPk) {
-              //在pk通话中，直接拒绝观众的主播请求
-              await signalingManager.reject(
-                inviteID: inviteID,
-                data: jsonEncode(_getCustomMap(_requestAnchorCMD)),
-              );
-            } else {
-              _curCallID = inviteID;
-              _emitEvent(TRTCLiveRoomDelegate.onRequestJoinAnchor, <String, dynamic>{
-                'userId': inviter,
-                'userName': customMap['data']['cmdInfo']['userName'],
-                'userAvatar': customMap['data']['cmdInfo']['userAvatar'],
-                'callId': inviteID
-              });
-            }
-          } else if (customMap.containsKey('data') && customMap['data']['cmd'] == _kickOutAnchorCMD) {
-            _curCallID = inviteID;
-            _emitEvent(TRTCLiveRoomDelegate.onKickOutJoinAnchor, <String, dynamic>{
-              'userId': inviter,
-              'userName': customMap['data']['cmdInfo']['userName'],
-              'userAvatar': customMap['data']['cmdInfo']['userAvatar'],
-            });
-          } else if (customMap.containsKey('data') && customMap['data']['cmd'] == _requestRoomPKCMD) {
-            // 当前有两个主播直接拒绝跨房通话
-            if (_anchorList.length >= 2) {
-              await signalingManager.reject(
-                inviteID: inviteID,
-                data: jsonEncode(_getCustomMap(_requestRoomPKCMD)),
-              );
-            } else {
-              _curPKCallID = inviteID;
-              _userIdPK = inviter;
-              _roomIdPK = customMap['data']['cmdInfo']['roomId'] as String?;
-              _emitEvent(TRTCLiveRoomDelegate.onRequestRoomPK, <String, dynamic>{
-                'userId': inviter,
-                'userName': customMap['data']['cmdInfo']['userName'],
-                'userAvatar': customMap['data']['cmdInfo']['userAvatar'],
-              });
-            }
-          } else if (customMap.containsKey('data') && customMap['data']['cmd'] == _quitRoomPKCMD) {
-            _isPk = false;
-            _emitEvent(TRTCLiveRoomDelegate.onQuitRoomPK, {
-              'userId': inviter,
-            });
-          }
-        } catch (e) {
-          print(_logTag + ' signalingListener error log.');
-        }
-      },
-    );
-  }
 
   @override
   Future<ActionCallback> requestJoinAnchor() async {
@@ -933,6 +753,229 @@ class _LiveIM extends LiveIM {
       return const ActionCallback(code: 0, desc: 'set profile success.');
     } else {
       return ActionCallback(code: res.code, desc: 'set profile fail.');
+    }
+  }
+
+  void _onRecvGroupCustomMessage(
+    String msgID,
+    String groupID,
+    V2TimGroupMemberInfo sender,
+    String customData,
+  ) {
+    try {
+      final customMap = jsonDecode(customData) as Map<String, dynamic>?;
+      if (customMap == null) {
+        print(_logTag + 'onReceiveGroupCustomMessage extraMap is null, ignore');
+        return;
+      }
+      if (customMap.containsKey('action') &&
+          customMap.containsKey('command') &&
+          customMap['action'] == _liveCustomCmd) {
+        //群自定义消息
+        const type = TRTCLiveRoomDelegate.onReceiveRoomCustomMsg;
+        _emitEvent(type, <String, dynamic>{
+          'message': customMap['message'],
+          'command': customMap['command'],
+          'user': {
+            'userID': sender.userID,
+            'userAvatar': sender.faceUrl,
+            'userName': sender.nickName,
+          },
+        });
+      }
+    } catch (e) {
+      print(_logTag + ' onReceiveGroupCustomMessage error log.' + e.toString());
+    }
+  }
+
+  void _onRecvGroupTextMessage(
+    String msgID,
+    String groupID,
+    V2TimGroupMemberInfo sender,
+    String text,
+  ) {
+    //群文本消息
+    const type = TRTCLiveRoomDelegate.onReceiveRoomTextMsg;
+    _emitEvent(type, <String, dynamic>{
+      'message': text,
+      'userID': sender.userID,
+      'userAvatar': sender.faceUrl,
+      'userName': sender.nickName,
+    });
+  }
+
+  void _onMemberEnter(String groupId, List<V2TimGroupMemberInfo> list) {
+    const type = TRTCLiveRoomDelegate.onAudienceEnter;
+    final memberList = list;
+    for (var i = 0; i < memberList.length; i++) {
+      if (_audienceList.contains(memberList[i].userID)) {
+        return;
+      }
+      _audienceList.add(memberList[i].userID!);
+      _emitEvent(type, {
+        'userId': memberList[i].userID,
+        'userName': memberList[i].nickName,
+        'userAvatar': memberList[i].faceUrl,
+      });
+    }
+  }
+
+  void _onMemberLeave(String groupId, V2TimGroupMemberInfo member) {
+    _audienceList.remove(member.userID);
+    const type = TRTCLiveRoomDelegate.onAudienceExit;
+    _emitEvent(type, {
+      'userId': member.userID,
+      'userName': member.nickName,
+      'userAvatar': member.faceUrl,
+    });
+  }
+
+  void _onGroupDismissed(String groupID, V2TimGroupMemberInfo opUser) {
+    //房间被群主解散
+    const type = TRTCLiveRoomDelegate.onRoomDestroy;
+    _emitEvent(type, <String, dynamic>{});
+  }
+
+  void _onInvitationCancelled(
+    String inviteID,
+    String inviter,
+    String data,
+  ) {}
+
+  void _onInvitationTimeout(
+    String inviteID,
+    List<String> inviteeList,
+  ) {
+    if (inviteID == _curCallID || inviteID == _curPKCallID) {
+      _emitEvent(TRTCLiveRoomDelegate.onInvitationTimeout, {
+        'inviteeList': inviteeList,
+      });
+    }
+  }
+
+  void _onInviteeAccepted(
+    String inviteID,
+    String invitee,
+    String data,
+  ) {
+    if (_userId == invitee) {
+      return;
+    }
+    try {
+      final customMap = jsonDecode(data) as Map<String, dynamic>?;
+      print('==customMap onInviteeRejected=' + customMap.toString());
+      if (customMap == null) {
+        print(_logTag + 'onReceiveNewInvitation extraMap is null, ignore');
+        return;
+      }
+      if (customMap.containsKey('data') && customMap['data']['cmd'] == _requestAnchorCMD) {
+        _emitEvent(TRTCLiveRoomDelegate.onAnchorAccepted, {
+          'userId': invitee,
+        });
+      } else if (customMap.containsKey('data') && customMap['data']['cmd'] == _requestRoomPKCMD) {
+        _isPk = true;
+        _emitEvent(TRTCLiveRoomDelegate.onRoomPKAccepted, {
+          'userId': invitee,
+        });
+      }
+    } catch (e) {
+      print(_logTag + ' signalingListener error log.');
+    }
+  }
+
+  void _onInviteeRejected(
+    String inviteID,
+    String invitee,
+    String data,
+  ) {
+    if (_userId == invitee) {
+      return;
+    }
+    try {
+      final customMap = jsonDecode(data) as Map<String, dynamic>?;
+      print('==customMap onInviteeRejected=' + customMap.toString());
+      if (customMap == null) {
+        print(_logTag + 'onReceiveNewInvitation extraMap is null, ignore');
+        return;
+      }
+      if (customMap.containsKey('data') && customMap['data']['cmd'] == _requestAnchorCMD) {
+        _emitEvent(TRTCLiveRoomDelegate.onAnchorRejected, {
+          'userId': invitee,
+        });
+      } else if (customMap.containsKey('data') && customMap['data']['cmd'] == _requestRoomPKCMD) {
+        _emitEvent(TRTCLiveRoomDelegate.onRoomPKRejected, {
+          'userId': invitee,
+        });
+      }
+    } catch (e) {
+      print(_logTag + ' signalingListener error log.');
+    }
+  }
+
+  Future<void> _onReceiveNewInvitation(
+    String inviteID,
+    String inviter,
+    String groupID,
+    List<String> inviteeList,
+    String data,
+  ) async {
+    try {
+      final customMap = jsonDecode(data) as Map<String, dynamic>?;
+      print('==customMap=' + customMap.toString());
+
+      if (customMap == null) {
+        print(_logTag + 'onReceiveNewInvitation extraMap is null, ignore');
+        return;
+      }
+
+      if (customMap.containsKey('data') && customMap['data']['cmd'] == _requestAnchorCMD) {
+        if (_isPk) {
+          //在pk通话中，直接拒绝观众的主播请求
+          await signalingManager.reject(
+            inviteID: inviteID,
+            data: jsonEncode(_getCustomMap(_requestAnchorCMD)),
+          );
+        } else {
+          _curCallID = inviteID;
+          _emitEvent(TRTCLiveRoomDelegate.onRequestJoinAnchor, <String, dynamic>{
+            'userId': inviter,
+            'userName': customMap['data']['cmdInfo']['userName'],
+            'userAvatar': customMap['data']['cmdInfo']['userAvatar'],
+            'callId': inviteID
+          });
+        }
+      } else if (customMap.containsKey('data') && customMap['data']['cmd'] == _kickOutAnchorCMD) {
+        _curCallID = inviteID;
+        _emitEvent(TRTCLiveRoomDelegate.onKickOutJoinAnchor, <String, dynamic>{
+          'userId': inviter,
+          'userName': customMap['data']['cmdInfo']['userName'],
+          'userAvatar': customMap['data']['cmdInfo']['userAvatar'],
+        });
+      } else if (customMap.containsKey('data') && customMap['data']['cmd'] == _requestRoomPKCMD) {
+        // 当前有两个主播直接拒绝跨房通话
+        if (_anchorList.length >= 2) {
+          await signalingManager.reject(
+            inviteID: inviteID,
+            data: jsonEncode(_getCustomMap(_requestRoomPKCMD)),
+          );
+        } else {
+          _curPKCallID = inviteID;
+          _userIdPK = inviter;
+          _roomIdPK = customMap['data']['cmdInfo']['roomId'] as String?;
+          _emitEvent(TRTCLiveRoomDelegate.onRequestRoomPK, <String, dynamic>{
+            'userId': inviter,
+            'userName': customMap['data']['cmdInfo']['userName'],
+            'userAvatar': customMap['data']['cmdInfo']['userAvatar'],
+          });
+        }
+      } else if (customMap.containsKey('data') && customMap['data']['cmd'] == _quitRoomPKCMD) {
+        _isPk = false;
+        _emitEvent(TRTCLiveRoomDelegate.onQuitRoomPK, {
+          'userId': inviter,
+        });
+      }
+    } catch (e) {
+      print(_logTag + ' signalingListener error log.');
     }
   }
 }
