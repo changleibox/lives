@@ -1094,6 +1094,29 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
     return ActionCallback(code: 0, desc: 'startPublish success');
   }
 
+  Future<void> _handleVideoEncoderParams() async {
+    // 如果是观众，那么则切换到主播
+    if (_originRole == TRTCCloudDef.TRTCRoleAudience) {
+      await _cloud.switchRole(TRTCCloudDef.TRTCRoleAnchor);
+      // 观众切换到主播是小主播，小主播设置一下分辨率
+      final param = TRTCVideoEncParam();
+      param.videoResolution = TRTCCloudDef.TRTC_VIDEO_RESOLUTION_480_270;
+      param.videoBitrate = 400;
+      param.videoFps = 15;
+      param.videoResolutionMode = TRTCCloudDef.TRTC_VIDEO_RESOLUTION_MODE_PORTRAIT;
+      await _cloud.setVideoEncoderParam(param);
+    } else if (_originRole == TRTCCloudDef.TRTCRoleAnchor) {
+      // 大主播的时候切换分辨率
+      final param = TRTCVideoEncParam();
+      param.videoResolution = TRTCCloudDef.TRTC_VIDEO_RESOLUTION_1280_720;
+      param.videoBitrate = 1800;
+      param.videoFps = 15;
+      param.enableAdjustRes = true;
+      param.videoResolutionMode = TRTCCloudDef.TRTC_VIDEO_RESOLUTION_MODE_PORTRAIT;
+      await _cloud.setVideoEncoderParam(param);
+    }
+  }
+
   bool _isEmpty(String? data) {
     return data == null || data == '';
   }
@@ -1143,7 +1166,6 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
     if (!_isEnterRoom) {
       return ActionCallback(code: _codeErr, desc: 'not enter room yet.');
     }
-    await _handleVideoEncoderParams();
     _isStartCapture = true;
     await _cloud.startScreenCapture(
       streamType ?? TRTCCloudDef.TRTC_VIDEO_STREAM_TYPE_BIG,
@@ -1176,7 +1198,6 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
     if (!_isEnterRoom) {
       return ActionCallback(code: _codeErr, desc: 'not enter room yet.');
     }
-    await _handleVideoEncoderParams();
     _isStartAudio = true;
     await _cloud.startLocalAudio(TRTCCloudDef.TRTC_AUDIO_QUALITY_DEFAULT);
 
@@ -1193,29 +1214,6 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
 
     if (_isStartAudio) {
       await _cloud.stopLocalAudio();
-    }
-  }
-
-  Future<void> _handleVideoEncoderParams() async {
-    // 如果是观众，那么则切换到主播
-    if (_originRole == TRTCCloudDef.TRTCRoleAudience) {
-      await _cloud.switchRole(TRTCCloudDef.TRTCRoleAnchor);
-      // 观众切换到主播是小主播，小主播设置一下分辨率
-      final param = TRTCVideoEncParam();
-      param.videoResolution = TRTCCloudDef.TRTC_VIDEO_RESOLUTION_480_270;
-      param.videoBitrate = 400;
-      param.videoFps = 15;
-      param.videoResolutionMode = TRTCCloudDef.TRTC_VIDEO_RESOLUTION_MODE_PORTRAIT;
-      await _cloud.setVideoEncoderParam(param);
-    } else if (_originRole == TRTCCloudDef.TRTCRoleAnchor) {
-      // 大主播的时候切换分辨率
-      final param = TRTCVideoEncParam();
-      param.videoResolution = TRTCCloudDef.TRTC_VIDEO_RESOLUTION_1280_720;
-      param.videoBitrate = 1800;
-      param.videoFps = 15;
-      param.enableAdjustRes = true;
-      param.videoResolutionMode = TRTCCloudDef.TRTC_VIDEO_RESOLUTION_MODE_PORTRAIT;
-      await _cloud.setVideoEncoderParam(param);
     }
   }
 }
