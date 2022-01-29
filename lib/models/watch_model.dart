@@ -31,7 +31,6 @@ class WatchModel extends LivesModel {
   /// 观看直播
   Future<void> startWatch([int? viewId]) async {
     _LiveProxy.addListener(this);
-    await _liveType.startWatch();
     await _LiveProxy.startWatch(
       _anchorId,
       _roomId,
@@ -51,5 +50,15 @@ class WatchModel extends LivesModel {
     await _liveType.stopWatch();
     _started = false;
     notifyListeners();
+  }
+
+  @override
+  void onUserVideoAvailable(Object? params) {
+    if ((params as Map<String, dynamic>?)?['available'] == true) {
+      _liveType.startWatch();
+    } else {
+      _liveType.stopWatch();
+    }
+    super.onUserVideoAvailable(params);
   }
 }
