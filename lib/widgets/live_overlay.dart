@@ -538,6 +538,7 @@ class _BottomBar extends StatelessWidget {
       child: SafeArea(
         top: false,
         right: false,
+        bottom: portrait,
         child: WidgetGroup.spacing(
           crossAxisAlignment: portrait ? CrossAxisAlignment.stretch : CrossAxisAlignment.end,
           direction: portrait ? Axis.vertical : Axis.horizontal,
@@ -547,7 +548,12 @@ class _BottomBar extends StatelessWidget {
               chatRoom
             else
               Expanded(
-                child: chatRoom,
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                    vertical: portrait ? 0 : 16,
+                  ),
+                  child: chatRoom,
+                ),
               ),
             const _LiveOptions(),
           ],
