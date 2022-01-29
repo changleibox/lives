@@ -214,7 +214,6 @@ class _LiveProxy {
       RoomParam(
         roomName: roomName ?? '',
         coverUrl: cover,
-        quality: TRTCCloudDef.TRTC_AUDIO_QUALITY_DEFAULT,
       ),
       scene: type.scene,
     );
