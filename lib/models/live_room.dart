@@ -368,8 +368,11 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
         await _cloud.startLocalAudio(TRTCCloudDef.TRTC_AUDIO_QUALITY_MUSIC);
       }
 
-      // mAnchorList.add(IMAnchorInfo(
-      //     userId: mUserId, name: mSelfUserName, streamId: mStreamId));
+      // _anchorList.add(IMAnchorInfo(
+      //   userId: _userId,
+      //   name: _selfUserName,
+      //   streamId: _streamId,
+      // ));
       _anchorList.add(_userId);
       await groupManager.setGroupInfo(
         info: V2TimGroupInfo(
