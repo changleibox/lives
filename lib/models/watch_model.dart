@@ -42,18 +42,13 @@ class WatchModel extends LivesModel {
   Future<void> exitWatch() async {
     _LiveProxy.removeListener(this);
     await _LiveProxy.exitWatch(_anchorId);
-    await _liveType.stopWatch();
     _started = false;
     notifyListeners();
   }
 
   @override
-  void onUserVideoAvailable(Object? params) {
-    if ((params as Map<String, dynamic>?)?['available'] == true) {
-      _liveType.startWatch();
-    } else {
-      _liveType.stopWatch();
-    }
-    super.onUserVideoAvailable(params);
+  void onRoomDestroy(Object? params) {
+    _LiveProxy.removeListener(this);
+    super.onRoomDestroy(params);
   }
 }

@@ -22,6 +22,7 @@ import 'package:lives/models/live_room.dart';
 import 'package:lives/models/live_room_def.dart';
 import 'package:lives/models/live_room_delegate.dart';
 import 'package:lives/utils/nums.dart';
+import 'package:lives/utils/system_chromes.dart';
 import 'package:tencent_trtc_cloud/trtc_cloud_def.dart';
 import 'package:tencent_trtc_cloud/trtc_cloud_listener.dart';
 import 'package:tencent_trtc_cloud/tx_audio_effect_manager.dart';
@@ -39,6 +40,10 @@ const String _secretKey = '4b0cb9f65a743a2e52134f008f963510e0d3716e9af36f6f36fa2
 const String _userIdKey = 'userId';
 const String _signKey = 'sign';
 const String _streamId = 'stream';
+
+const _renderParams = TRTCRenderParams(
+  fillMode: TRTCCloudDef.TRTC_VIDEO_RENDER_MODE_FIT,
+);
 
 /// 时间回调
 typedef LiveListener = void Function(TRTCLiveRoomDelegate type, Object? params);
@@ -284,6 +289,7 @@ class _LiveProxy {
     if (callback.code != 0) {
       throw LiveError(callback.code, callback.desc);
     }
+    await _room.setLocalRenderParams(_renderParams);
     assert(type == LiveType.voice || viewId != null);
     if (type != LiveType.voice) {
       await _room.startPlay(anchorId, viewId!);
