@@ -127,13 +127,7 @@ abstract class LivesModel extends ChangeNotifier with LiveObserver {
   }
 
   Future<void> _refreshUserInfo() async {
-    final userCallback = await _LiveProxy.getMembers();
-    final users = userCallback.list;
-    Map<String, UserInfo>? userMap;
-    if (users != null && users.isNotEmpty) {
-      userMap = Map.fromEntries(users.map((e) => MapEntry(e.userId, e)));
-    }
-    _memberInfo = userMap;
+    _memberInfo = await _LiveProxy.getMembers();
   }
 
   Future<void> _onMemberEnterExit(UserInfo member, String message) async {

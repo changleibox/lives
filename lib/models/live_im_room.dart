@@ -263,6 +263,9 @@ class _LiveIMRoom extends LiveIMRoom {
       groupType: 'AVChatRoom',
       groupName: roomParam.roomName,
       groupID: roomId,
+      faceUrl: roomParam.coverUrl,
+      introduction: roomParam.introduction,
+      notification: roomParam.notification,
     );
     var msg = res.desc;
     var code = res.code;
@@ -301,6 +304,7 @@ class _LiveIMRoom extends LiveIMRoom {
           groupName: roomParam.roomName,
           faceUrl: roomParam.coverUrl,
           introduction: roomParam.introduction,
+          notification: roomParam.notification,
           customInfo: <String, String>{
             'ownerName': _selfUserName ?? '',
           },
@@ -487,13 +491,14 @@ class _LiveIMRoom extends LiveIMRoom {
         final groupInfo = listInfo[i].groupInfo!;
         newInfo.add(
           RoomInfo(
-            roomId: int.parse(groupInfo.groupID),
+            roomId: groupInfo.groupID,
             roomName: groupInfo.groupName,
             coverUrl: groupInfo.faceUrl,
             ownerId: groupInfo.owner!,
             ownerName: groupInfo.customInfo?['ownerName'],
             memberCount: groupInfo.memberCount,
             introduction: groupInfo.introduction,
+            notification: groupInfo.notification,
           ),
         );
       }

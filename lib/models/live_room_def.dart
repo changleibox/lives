@@ -35,7 +35,7 @@ class IMAnchorInfo {
 
 class RoomInfo {
   /// 【字段含义】房间唯一标识
-  final int roomId;
+  final String roomId;
 
   /// 【字段含义】房间名称
   final String? roomName;
@@ -55,6 +55,9 @@ class RoomInfo {
   /// 简介
   final String? introduction;
 
+  /// 通知
+  final String? notification;
+
   const RoomInfo({
     required this.roomId,
     this.roomName,
@@ -63,6 +66,7 @@ class RoomInfo {
     required this.ownerId,
     this.ownerName,
     this.introduction,
+    this.notification,
   });
 }
 
@@ -95,11 +99,15 @@ class RoomParam {
   /// 简介
   final String? introduction;
 
+  /// 通知
+  final String? notification;
+
   const RoomParam({
     required this.roomName,
     this.coverUrl,
     this.quality,
     this.introduction,
+    this.notification,
   });
 }
 

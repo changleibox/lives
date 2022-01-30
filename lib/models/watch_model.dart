@@ -61,13 +61,7 @@ class WatchModel extends LivesModel {
   }
 
   Future<void> _refreshRoomInfo() async {
-    final roomCallback = await _LiveProxy.getRooms(_roomId);
-    final rooms = roomCallback.list;
-    Map<int, RoomInfo>? roomMap;
-    if (rooms != null && rooms.isNotEmpty) {
-      roomMap = Map.fromEntries(rooms.map((e) => MapEntry(e.roomId, e)));
-    }
-    _roomInfo = roomMap?[_roomId];
+    _roomInfo = await _LiveProxy.getRoom(_roomId);
   }
 
   @override

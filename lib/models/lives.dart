@@ -68,6 +68,11 @@ class Lives {
   /// userAvatar
   static String? get userAvatar => _LiveProxy.userAvatar;
 
+  /// 获取直播间列表
+  static Future<List<RoomInfo>> getRooms(List<String> roomIds) async {
+    return (await _LiveProxy.getRooms(roomIds)).values.toList();
+  }
+
   /// 初始化
   static Future<void> setup({bool ignoreException = true}) {
     return _LiveProxy.setup(ignoreException: ignoreException);
@@ -318,13 +323,32 @@ class _LiveProxy {
   }
 
   /// 获取直播间信息
-  static Future<RoomInfoCallback> getRooms(String roomId) async {
-    return await _room.getRoomInfo([roomId]);
+  static Future<RoomInfo?> getRoom(String roomId) async {
+    return (await getRooms([roomId]))[roomId];
+  }
+
+  /// 获取直播间信息
+  static Future<Map<String, RoomInfo>> getRooms(List<String> roomIds) async {
+    final result = await _room.getRoomInfo(roomIds);
+    final rooms = [...?result.list];
+    return Map.fromEntries(rooms.map((e) => MapEntry(e.roomId, e)));
   }
 
   /// 获取成员信息
-  static Future<UserListCallback> getMembers() async {
-    return await _room.getRoomMemberInfo(0);
+  static Future<Map<String, UserInfo>?> getMembers() async {
+    Stream<UserInfo> requestMembers(int nextSeq) async* {
+      final result = await _room.getRoomMemberInfo(nextSeq);
+      if (result.nextSeq > 0) {
+        yield* requestMembers(result.nextSeq);
+      } else {
+        for (var member in [...?result.list]) {
+          yield member;
+        }
+      }
+    }
+
+    final members = await requestMembers(0).toList();
+    return Map.fromEntries(members.map((e) => MapEntry(e.userId, e)));
   }
 
   /// 聊天
