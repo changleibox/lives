@@ -98,7 +98,6 @@ class _TopBar extends StatelessWidget {
         ),
         child: SafeArea(
           bottom: false,
-          right: false,
           child: WidgetGroup.spacing(
             direction: Axis.vertical,
             spacing: 10,
@@ -537,7 +536,6 @@ class _BottomBar extends StatelessWidget {
       ),
       child: SafeArea(
         top: false,
-        right: false,
         bottom: portrait,
         child: Container(
           padding: EdgeInsets.only(
