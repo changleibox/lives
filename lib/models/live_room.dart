@@ -172,9 +172,6 @@ abstract class TRTCLiveRoom {
   /// 开关闪光灯
   Future<void> enableCameraTorch(bool enable);
 
-  /// 设置是否镜像展示。
-  Future<void> setMirror(bool isMirror);
-
   /// 开启本地静音。
   /// @param mute 是否静音
   Future<void> muteLocalAudio(bool mute);
@@ -501,19 +498,6 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
   @override
   Future<ActionCallback> sendRoomCustomMsg(String cmd, String message) {
     return _imManager.sendRoomCustomMsg(cmd, message);
-  }
-
-  @override
-  Future<void> setMirror(bool isMirror) {
-    if (isMirror) {
-      return _cloud.setLocalRenderParams(const TRTCRenderParams(
-        mirrorType: TRTCCloudDef.TRTC_VIDEO_MIRROR_TYPE_ENABLE,
-      ));
-    } else {
-      return _cloud.setLocalRenderParams(const TRTCRenderParams(
-        mirrorType: TRTCCloudDef.TRTC_VIDEO_MIRROR_TYPE_DISABLE,
-      ));
-    }
   }
 
   @override
