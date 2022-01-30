@@ -203,8 +203,11 @@ abstract class TRTCLiveRoom {
   /// @param message 文本消息
   Future<ActionCallback> sendRoomCustomMsg(String cmd, String message);
 
-  /// 发送消息
+  /// 发送消息[TRTCCloud.sendSEIMessage]
   Future<bool?> sendSEIMessage(String data, int repeatCount);
+
+  /// 发送消息[TRTCCloud.sendCustomCmdMsg]
+  Future<bool?> sendCustomCmdMsg(int cmdID, String data, bool reliable, bool ordered);
 }
 
 class _TRTCLiveRoom extends TRTCLiveRoom {
@@ -495,6 +498,11 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
   @override
   Future<bool?> sendSEIMessage(String data, int repeatCount) {
     return _cloud.sendSEIMsg(data, repeatCount);
+  }
+
+  @override
+  Future<bool?> sendCustomCmdMsg(int cmdID, String data, bool reliable, bool ordered) {
+    return _cloud.sendCustomCmdMsg(cmdID, data, reliable, ordered);
   }
 
   @override
