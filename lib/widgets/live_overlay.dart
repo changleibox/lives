@@ -539,7 +539,7 @@ class _BottomBar extends StatelessWidget {
         bottom: portrait,
         child: Container(
           padding: EdgeInsets.only(
-            bottom: portrait ? 0 : 24,
+            bottom: portrait ? 0 : 10,
           ),
           child: WidgetGroup.spacing(
             crossAxisAlignment: portrait ? CrossAxisAlignment.stretch : CrossAxisAlignment.end,
