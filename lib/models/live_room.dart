@@ -202,6 +202,9 @@ abstract class TRTCLiveRoom {
   /// @param cmd 命令字，由开发者自定义，主要用于区分不同消息类型。
   /// @param message 文本消息
   Future<ActionCallback> sendRoomCustomMsg(String cmd, String message);
+
+  /// 发送消息
+  Future<bool?> sendSEIMessage(String data, int repeatCount);
 }
 
 class _TRTCLiveRoom extends TRTCLiveRoom {
@@ -487,6 +490,11 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
         mirrorType: TRTCCloudDef.TRTC_VIDEO_MIRROR_TYPE_DISABLE,
       ));
     }
+  }
+
+  @override
+  Future<bool?> sendSEIMessage(String data, int repeatCount) {
+    return _cloud.sendSEIMsg(data, repeatCount);
   }
 
   @override
