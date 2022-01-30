@@ -208,6 +208,27 @@ abstract class TRTCLiveRoom {
 
   /// 发送消息[TRTCCloud.sendCustomCmdMsg]
   Future<bool?> sendCustomCmdMsg(int cmdID, String data, bool reliable, bool ordered);
+
+  /// 设置本地图像的渲染模式。
+  ///
+  /// 参数：
+  ///
+  /// renderParams 渲染参数（平铺模式、旋转角度、左右镜像等)，详情请参考 trtc_cloud.def.dart 中的 TRTCRenderParams参数定义
+  Future<void> setLocalRenderParams(TRTCRenderParams renderParams);
+
+  /// 设置远端图像相关参数。
+  ///
+  /// 参数：
+  ///
+  /// userId 用户 ID
+  ///
+  /// streamType 视频流类型：
+  ///* 高清大画面：TRTCCloudDef.TRTC_VIDEO_STREAM_TYPE_BIG
+  ///* 低清大画面：TRTCCloudDef.TRTC_VIDEO_STREAM_TYPE_SMALL
+  ///* 辅流（屏幕分享）：TRTCCloudDef.TRTC_VIDEO_STREAM_TYPE_SUB
+  ///
+  /// renderParams 渲染参数（平铺模式、旋转角度、左右镜像等)，详情请参考 trtc_cloud.def.dart 中的 TRTCRemoteRenderParams参数定义
+  Future<void> setRemoteRenderParams(String userId, int streamType, TRTCRenderParams renderParams);
 }
 
 class _TRTCLiveRoom extends TRTCLiveRoom {
@@ -664,5 +685,32 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
     if (_isStartAudio) {
       await _cloud.stopLocalAudio();
     }
+  }
+
+  /// 设置本地图像的渲染模式。
+  ///
+  /// 参数：
+  ///
+  /// renderParams 渲染参数（平铺模式、旋转角度、左右镜像等)，详情请参考 trtc_cloud.def.dart 中的 TRTCRenderParams参数定义
+  @override
+  Future<void> setLocalRenderParams(TRTCRenderParams renderParams) {
+    return _cloud.setLocalRenderParams(renderParams);
+  }
+
+  /// 设置远端图像相关参数。
+  ///
+  /// 参数：
+  ///
+  /// userId 用户 ID
+  ///
+  /// streamType 视频流类型：
+  ///* 高清大画面：TRTCCloudDef.TRTC_VIDEO_STREAM_TYPE_BIG
+  ///* 低清大画面：TRTCCloudDef.TRTC_VIDEO_STREAM_TYPE_SMALL
+  ///* 辅流（屏幕分享）：TRTCCloudDef.TRTC_VIDEO_STREAM_TYPE_SUB
+  ///
+  /// renderParams 渲染参数（平铺模式、旋转角度、左右镜像等)，详情请参考 trtc_cloud.def.dart 中的 TRTCRemoteRenderParams参数定义
+  @override
+  Future<void> setRemoteRenderParams(String userId, int streamType, TRTCRenderParams renderParams) {
+    return _cloud.setRemoteRenderParams(userId, streamType, renderParams);
   }
 }

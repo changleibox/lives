@@ -79,7 +79,7 @@ abstract class LiveObserver {
 extension LiverObservers on Iterable<LiveObserver> {
   /// 事件
   void notify(TRTCLiveRoomDelegate type, dynamic params) {
-    for (var listener in this) {
+    for (var listener in List.of(this)) {
       switch (type) {
         case TRTCLiveRoomDelegate.onError:
           listener.onError(params);
