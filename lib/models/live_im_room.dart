@@ -37,6 +37,8 @@ const String _quitRoomPKCMD = 'quitRoomPK'; //退出跨房PK信令
 const int _liveCustomCmd = 301;
 const int _codeErr = -1;
 const int _timeOutCount = 30;
+const String _ownerNameKey = 'ownerName';
+const String _liveTypeKey = 'liveType';
 
 /// 未进入直播间
 const notEnterRoomYetError = ActionCallback(code: _codeErr, desc: 'not enter room yet.');
@@ -307,8 +309,8 @@ class _LiveIMRoom extends LiveIMRoom {
           introduction: roomParam.introduction,
           notification: roomParam.notification,
           customInfo: <String, String>{
-            'ownerName': _selfUserName ?? '',
-            'liveType': roomParam.liveType.name,
+            _ownerNameKey: _selfUserName ?? '',
+            _liveTypeKey: roomParam.liveType.name,
           },
           groupType: 'AVChatRoom',
         ),
@@ -429,13 +431,11 @@ class _LiveIMRoom extends LiveIMRoom {
       final userInfo = res.data!;
       final newInfo = <UserInfo>[];
       for (var i = 0; i < userInfo.length; i++) {
-        newInfo.add(
-          UserInfo(
-            userId: userInfo[i].userID!,
-            userName: userInfo[i].nickName!,
-            userAvatar: userInfo[i].faceUrl!,
-          ),
-        );
+        newInfo.add(UserInfo(
+          userId: userInfo[i].userID!,
+          userName: userInfo[i].nickName!,
+          userAvatar: userInfo[i].faceUrl!,
+        ));
       }
       return UserListCallback(code: 0, desc: 'get anchorInfo success.', list: newInfo);
     } else {
@@ -446,7 +446,7 @@ class _LiveIMRoom extends LiveIMRoom {
   @override
   Future<UserListCallback> getRoomMemberInfo(int nextSeq) async {
     print('==nextSeq=' + nextSeq.toString());
-    print('==mRoomId=' + _roomId.toString());
+    print('==roomId=' + _roomId.toString());
     final memberRes = await groupManager.getGroupMemberList(
       groupID: _roomId!,
       filter: GroupMemberFilterTypeEnum.V2TIM_GROUP_MEMBER_FILTER_ALL,
@@ -456,21 +456,19 @@ class _LiveIMRoom extends LiveIMRoom {
       return UserListCallback(code: memberRes.code, desc: memberRes.desc);
     }
     final memberInfoList = memberRes.data!.memberInfoList!;
-    final newInfo = <UserInfo>[];
+    final users = <UserInfo>[];
     for (var i = 0; i < memberInfoList.length; i++) {
-      newInfo.add(
-        UserInfo(
-          userId: memberInfoList[i]!.userID,
-          userName: memberInfoList[i]!.nickName,
-          userAvatar: memberInfoList[i]!.faceUrl,
-        ),
-      );
+      users.add(UserInfo(
+        userId: memberInfoList[i]!.userID,
+        userName: memberInfoList[i]!.nickName,
+        userAvatar: memberInfoList[i]!.faceUrl,
+      ));
     }
     return UserListCallback(
       code: 0,
       desc: 'get member list success',
       nextSeq: int.parse(memberRes.data!.nextSeq!),
-      list: newInfo,
+      list: users,
     );
   }
 
@@ -491,13 +489,13 @@ class _LiveIMRoom extends LiveIMRoom {
         //兼容获取不到群id信息的情况
         final groupInfo = listInfo[i].groupInfo!;
         final customInfo = groupInfo.customInfo;
-        final liveTypeName = customInfo?['liveType'] ?? LiveType.video.name;
+        final liveTypeName = customInfo?[_liveTypeKey] ?? LiveType.video.name;
         newInfo.add(RoomInfo(
           roomId: groupInfo.groupID,
           roomName: groupInfo.groupName,
           coverUrl: groupInfo.faceUrl,
           ownerId: groupInfo.owner!,
-          ownerName: customInfo?['ownerName'],
+          ownerName: customInfo?[_ownerNameKey],
           memberCount: groupInfo.memberCount,
           introduction: groupInfo.introduction,
           notification: groupInfo.notification,
