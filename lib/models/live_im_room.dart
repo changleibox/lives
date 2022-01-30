@@ -491,6 +491,7 @@ class _LiveIMRoom extends LiveIMRoom {
         //兼容获取不到群id信息的情况
         final groupInfo = listInfo[i].groupInfo!;
         final customInfo = groupInfo.customInfo;
+        final liveTypeName = customInfo?['liveType'] ?? LiveType.video.name;
         newInfo.add(RoomInfo(
           roomId: groupInfo.groupID,
           roomName: groupInfo.groupName,
@@ -500,7 +501,7 @@ class _LiveIMRoom extends LiveIMRoom {
           memberCount: groupInfo.memberCount,
           introduction: groupInfo.introduction,
           notification: groupInfo.notification,
-          liveType: LiveType.values.byName(customInfo?['liveType'] ?? LiveType.video.name),
+          liveType: LiveType.values.byName(liveTypeName),
         ));
       }
     }
