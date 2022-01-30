@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
+import 'package:lives/enums/live_type.dart';
 import 'package:lives/models/live_room_def.dart';
 import 'package:lives/models/live_room_delegate.dart';
 import 'package:tencent_im_sdk_plugin/enum/V2TimGroupListener.dart';
@@ -307,6 +308,7 @@ class _LiveIMRoom extends LiveIMRoom {
           notification: roomParam.notification,
           customInfo: <String, String>{
             'ownerName': _selfUserName ?? '',
+            'liveType': roomParam.liveType.name,
           },
           groupType: 'AVChatRoom',
         ),
@@ -485,22 +487,21 @@ class _LiveIMRoom extends LiveIMRoom {
 
     final newInfo = <RoomInfo>[];
     for (var i = 0; i < listInfo.length; i++) {
-      print(listInfo[i].toJson());
       if (listInfo[i].resultCode == 0) {
         //兼容获取不到群id信息的情况
         final groupInfo = listInfo[i].groupInfo!;
-        newInfo.add(
-          RoomInfo(
-            roomId: groupInfo.groupID,
-            roomName: groupInfo.groupName,
-            coverUrl: groupInfo.faceUrl,
-            ownerId: groupInfo.owner!,
-            ownerName: groupInfo.customInfo?['ownerName'],
-            memberCount: groupInfo.memberCount,
-            introduction: groupInfo.introduction,
-            notification: groupInfo.notification,
-          ),
-        );
+        final customInfo = groupInfo.customInfo;
+        newInfo.add(RoomInfo(
+          roomId: groupInfo.groupID,
+          roomName: groupInfo.groupName,
+          coverUrl: groupInfo.faceUrl,
+          ownerId: groupInfo.owner!,
+          ownerName: customInfo?['ownerName'],
+          memberCount: groupInfo.memberCount,
+          introduction: groupInfo.introduction,
+          notification: groupInfo.notification,
+          liveType: LiveType.values.byName(customInfo?['liveType'] ?? LiveType.video.name),
+        ));
       }
     }
 

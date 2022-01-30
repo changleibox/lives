@@ -248,6 +248,7 @@ class _LiveProxy {
         roomName: roomName ?? '',
         coverUrl: roomCover,
         introduction: roomIntroduction,
+        liveType: type,
       ),
       scene: type.scene,
     );

@@ -4,6 +4,8 @@
 
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 
+import 'package:lives/enums/live_type.dart';
+
 class ActionCallback {
   /// 错误码
   final int code;
@@ -58,8 +60,12 @@ class RoomInfo {
   /// 通知
   final String? notification;
 
+  /// 直播类型
+  final LiveType liveType;
+
   const RoomInfo({
     required this.roomId,
+    required this.liveType,
     this.roomName,
     this.coverUrl,
     this.memberCount,
@@ -102,8 +108,12 @@ class RoomParam {
   /// 通知
   final String? notification;
 
+  /// 直播类型
+  final LiveType liveType;
+
   const RoomParam({
     required this.roomName,
+    required this.liveType,
     this.coverUrl,
     this.quality,
     this.introduction,
