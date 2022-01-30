@@ -159,6 +159,7 @@ class LiveModel extends LivesModel implements LiveModule {
       type: _liveType,
     );
     await _liveType.startLive(() => _startPendingLive(exitLive));
+    await _refreshUserInfo();
     _speedNotifier.value = 0;
     _lastSendBytes = 0;
     _networkNotifier.value = 1;

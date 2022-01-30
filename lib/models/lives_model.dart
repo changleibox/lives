@@ -14,7 +14,6 @@ abstract class LivesModel extends ChangeNotifier with LiveObserver {
   bool _mounted = false;
   bool _started = false;
   Map<String, UserInfo>? _memberInfo;
-  int _memberCount = 0;
   Completer<void>? _pendingCompleter;
 
   /// 初始化
@@ -53,7 +52,7 @@ abstract class LivesModel extends ChangeNotifier with LiveObserver {
   UserInfo? getMemberInfo(String userId) => _memberInfo?[userId];
 
   /// 成员数量
-  int get memberCount => _memberCount;
+  int get memberCount => _memberInfo?.length ?? 0;
 
   /// 监听直播间解散
   void addDestroyListener(VoidCallback listener) {
@@ -135,7 +134,6 @@ abstract class LivesModel extends ChangeNotifier with LiveObserver {
       userMap = Map.fromEntries(users.map((e) => MapEntry(e.userId, e)));
     }
     _memberInfo = userMap;
-    _memberCount = userMap?.length ?? 0;
   }
 
   Future<void> _onMemberEnterExit(UserInfo member, String message) async {
@@ -148,12 +146,15 @@ abstract class LivesModel extends ChangeNotifier with LiveObserver {
       );
     }
     await onMemberChanged(member);
-    await _refreshUserInfo();
-    notifyListeners();
   }
 
   /// 成员发生变化
-  Future<void> onMemberChanged(UserInfo member) async {}
+  @protected
+  @mustCallSuper
+  Future<void> onMemberChanged(UserInfo member) async {
+    await _refreshUserInfo();
+    notifyListeners();
+  }
 
   @override
   void onReceiveRoomTextMsg(BulletChat bulletChat) {

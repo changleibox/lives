@@ -73,6 +73,6 @@ class WatchModel extends LivesModel {
   @override
   Future<void> onMemberChanged(UserInfo member) async {
     await _refreshRoomInfo();
-    return super.onMemberChanged(member);
+    await super.onMemberChanged(member);
   }
 }
