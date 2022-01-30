@@ -8,8 +8,7 @@
 const avatar = 'https://img0.baidu.com/it/u=1056811702,4111096278&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500';
 
 /// 封面
-const cover =
-    'https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fp8.itc.cn%2Fimages01%2F20201117%2Fab2ee51189b14dc6a167c90686f11b81.jpeg&refer=http%3A%2F%2Fp8.itc.cn&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1645847451&t=4c146d00a363d530736607957c7024eb';
+const cover = 'https://img.zcool.cn/community/01b3175ebd2e20a8012148144e9925.png@1280w_1l_2o_100sh.png';
 
 /// 直播背景
 const background =

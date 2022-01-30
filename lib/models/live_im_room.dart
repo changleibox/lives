@@ -542,22 +542,27 @@ class _LiveIMRoom extends LiveIMRoom {
     _isInitIMSDK = true;
 
     // 登陆到 IM
-    final loggedInUserId = (await _timManager.getLoginUser()).data;
-
-    if (loggedInUserId != null && loggedInUserId == userId) {
-      _isLogin = true;
-      return const ActionCallback(code: 0, desc: 'login im success');
+    var loggedInUserId = (await _timManager.getLoginUser()).data;
+    if (loggedInUserId == null || loggedInUserId != userId) {
+      loggedInUserId = userId;
+      final loginRes = await _timManager.login(
+        userID: userId,
+        userSig: userSig,
+      );
+      if (loginRes.code != 0) {
+        return ActionCallback(code: _codeErr, desc: loginRes.desc);
+      }
     }
-    final loginRes = await _timManager.login(
-      userID: userId,
-      userSig: userSig,
+    final usersInfo = await _timManager.getUsersInfo(
+      userIDList: [loggedInUserId],
     );
-    if (loginRes.code == 0) {
-      _isLogin = true;
-      return const ActionCallback(code: 0, desc: 'login im success');
-    } else {
-      return ActionCallback(code: _codeErr, desc: loginRes.desc);
+    if (usersInfo.code == 0) {
+      final info = usersInfo.data?.single;
+      _selfAvatar = info?.faceUrl;
+      _selfUserName = info?.nickName;
     }
+    _isLogin = true;
+    return const ActionCallback(code: 0, desc: 'login im success');
   }
 
   @override

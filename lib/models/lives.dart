@@ -41,7 +41,10 @@ const String _userNameKey = 'userName';
 const String _userAvatarKey = 'userAvatar';
 const String _signKey = 'sign';
 
-const _renderParams = TRTCRenderParams(
+const _liveRenderParams = TRTCRenderParams(
+  fillMode: TRTCCloudDef.TRTC_VIDEO_RENDER_MODE_FILL,
+);
+const _watchRenderParams = TRTCRenderParams(
   fillMode: TRTCCloudDef.TRTC_VIDEO_RENDER_MODE_FIT,
 );
 
@@ -172,7 +175,7 @@ class _LiveProxy {
       _room.addListener(_listeners.notify);
       final userId = _LiveProxy.userId;
       if (userId != null) {
-        await login(userId);
+        await login(userId, avatar: userAvatar, name: userName);
       }
     } catch (e) {
       if (ignoreException) {
@@ -216,6 +219,7 @@ class _LiveProxy {
 
   /// 开始预览
   static Future<void> startPreview(bool isFront, int viewId) async {
+    await _room.setLocalRenderParams(_liveRenderParams);
     await _room.startCameraPreview(isFront, viewId);
   }
 
@@ -301,7 +305,7 @@ class _LiveProxy {
     if (callback.code != 0) {
       throw LiveError(callback.code, callback.desc);
     }
-    await _room.setLocalRenderParams(_renderParams);
+    await _room.setLocalRenderParams(_watchRenderParams);
     assert(type == LiveType.voice || viewId != null);
     if (type != LiveType.voice) {
       await _room.startPlay(anchorId, viewId!);
@@ -320,6 +324,7 @@ class _LiveProxy {
     if (callback.code != 0) {
       throw LiveError(callback.code, callback.desc);
     }
+    await _room.setLocalRenderParams(_liveRenderParams);
   }
 
   /// 获取直播间信息
