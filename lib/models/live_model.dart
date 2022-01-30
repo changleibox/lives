@@ -31,6 +31,7 @@ class LiveModel extends LivesModel implements LiveModule {
   /// 初始化
   @override
   Future<void> setup([LiveType? liveType]) {
+    SystemChromes.setLivePreferredOrientations();
     return super.setup(liveType);
   }
 
@@ -296,5 +297,11 @@ class LiveModel extends LivesModel implements LiveModule {
     }
     await _LiveProxy.switchCamera(_isFront = !isFont);
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    SystemChromes.setSystemPreferredOrientations();
+    super.dispose();
   }
 }

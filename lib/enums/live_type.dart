@@ -98,22 +98,4 @@ extension LiveTypeName on LiveType {
     await onStopped?.call();
     await SystemChromes.setPreferredOrientations();
   }
-
-  /// 显示屏幕分享Window
-  Future<void> startWatch([FutureOr<void> Function()? onStarted]) async {
-    if (this != LiveType.game) {
-      return;
-    }
-    await onStarted?.call();
-    await SystemChromes.setPreferredOrientations(this);
-  }
-
-  /// 关闭
-  Future<void> stopWatch([FutureOr<void> Function()? onStopped]) async {
-    if (this != LiveType.game) {
-      return;
-    }
-    await onStopped?.call();
-    await SystemChromes.setPreferredOrientations();
-  }
 }

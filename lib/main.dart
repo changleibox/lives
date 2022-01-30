@@ -8,7 +8,7 @@ import 'package:oktoast/oktoast.dart';
 
 void main() {
   runApp(const LivesApp());
-  SystemChromes.setPreferredOrientations();
+  SystemChromes.setSystemPreferredOrientations();
 }
 
 /// 启动App

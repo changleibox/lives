@@ -33,6 +33,18 @@ class SystemChromes {
     );
   }
 
+  /// 设置屏幕方向
+  static Future<void> setSystemPreferredOrientations() async {
+    await SystemChrome.setPreferredOrientations(DeviceOrientation.values);
+  }
+
+  /// 设置屏幕方向
+  static Future<void> setLivePreferredOrientations() async {
+    await SystemChrome.setPreferredOrientations(const [
+      DeviceOrientation.portraitUp,
+    ]);
+  }
+
   /// 直播方向
   static Future<void> setPreferredOrientations([LiveType? liveType]) async {
     switch (liveType) {
