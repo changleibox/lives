@@ -54,6 +54,16 @@ extension LiveTypeName on LiveType {
     }
   }
 
+  /// 初始化
+  Future<void> setup() {
+    return SystemChromes.setLivePreferredOrientations();
+  }
+
+  /// 释放
+  Future<void> dispose() {
+    return SystemChromes.setSystemPreferredOrientations();
+  }
+
   /// 显示屏幕分享Window
   Future<void> startLive([FutureOr<void> Function()? onStarted]) async {
     if (this != LiveType.game) {

@@ -113,6 +113,18 @@ class _LivePresenter extends VoidPresenter<LivePage> {
   final _model = LiveModel();
 
   @override
+  void initState() {
+    _model.liveType.setup();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _model.liveType.dispose();
+    super.dispose();
+  }
+
+  @override
   Future<void> onLoad(bool showProgress, CancelToken? cancelToken) {
     final arguments = this.arguments as Map<String, dynamic>?;
     final liveType = arguments?['liveType'] as LiveType?;

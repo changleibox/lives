@@ -22,7 +22,6 @@ import 'package:lives/models/live_room.dart';
 import 'package:lives/models/live_room_def.dart';
 import 'package:lives/models/live_room_delegate.dart';
 import 'package:lives/utils/nums.dart';
-import 'package:lives/utils/system_chromes.dart';
 import 'package:tencent_trtc_cloud/trtc_cloud_def.dart';
 import 'package:tencent_trtc_cloud/trtc_cloud_listener.dart';
 import 'package:tencent_trtc_cloud/tx_audio_effect_manager.dart';
