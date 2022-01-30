@@ -176,9 +176,13 @@ class _AnchorIdTextFieldState extends State<_AnchorIdTextField> {
   }
 
   Future<void> _onSubmitted(String text) async {
-    final rooms = await Lives.getRooms([text]);
-    _rooms.clear();
-    _rooms.addAll(rooms);
+    if (text.isNotEmpty) {
+      final rooms = await Lives.getRooms([text]);
+      _rooms.clear();
+      _rooms.addAll(rooms.where((element) => element.ownerId != Lives.userId));
+    } else {
+      _rooms.clear();
+    }
     setState(() {});
   }
 
