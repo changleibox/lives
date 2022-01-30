@@ -17,7 +17,7 @@ class LiveError extends Error {
   final String message;
 
   /// 是否为不存在
-  bool get isNotExist => code == _groupNotExist || code == _invalidGroupId || message == 'not enter room yet';
+  bool get isNotExist => code == _groupNotExist || code == _invalidGroupId || message.contains('not enter room yet');
 
   @override
   String toString() {

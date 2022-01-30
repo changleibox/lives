@@ -31,7 +31,59 @@ class WatchOverlay extends StatefulWidget {
   _WatchOverlayState createState() => _WatchOverlayState();
 }
 
-class _WatchOverlayState extends State<WatchOverlay> {
+class _WatchOverlayState extends State<WatchOverlay> with TickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  WatchModel? _model;
+
+  @override
+  void initState() {
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(
+        milliseconds: 300,
+      ),
+    );
+    _controller.forward();
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    final model = context.read<WatchModel>();
+    if (model == _model) {
+      return;
+    }
+    model.addDestroyListener(_onRoomDestroy);
+    _model?.removeDestroyListener(_onRoomDestroy);
+    _model = model;
+    super.didChangeDependencies();
+  }
+
+  @override
+  void dispose() {
+    _model?.removeDestroyListener(_onRoomDestroy);
+    _model = null;
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onRootPressed() {
+    if (_model?.started != true) {
+      return;
+    }
+    final status = _controller.status;
+    if (status == AnimationStatus.forward || status == AnimationStatus.completed) {
+      _controller.reverse();
+    } else {
+      _controller.forward();
+    }
+  }
+
+  void _onRoomDestroy() {
+    _controller.forward();
+  }
+
   @override
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -42,20 +94,36 @@ class _WatchOverlayState extends State<WatchOverlay> {
         ),
         curve: Curves.easeInOut,
         padding: MediaQuery.of(context).viewInsets,
-        child: Stack(
-          children: [
-            const Positioned.fill(
-              top: null,
-              child: _BottomBar(),
-            ),
-            Positioned.fill(
-              bottom: null,
-              child: _TopBar(
-                anchorId: widget.anchorId,
-                userId: widget.userId,
+        child: GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: _onRootPressed,
+          child: FadeTransition(
+            opacity: _controller,
+            child: AnimatedBuilder(
+              animation: _controller,
+              builder: (context, child) {
+                return IgnorePointer(
+                  ignoring: !_controller.isCompleted,
+                  child: child!,
+                );
+              },
+              child: Stack(
+                children: [
+                  const Positioned.fill(
+                    top: null,
+                    child: _BottomBar(),
+                  ),
+                  Positioned.fill(
+                    bottom: null,
+                    child: _TopBar(
+                      anchorId: widget.anchorId,
+                      userId: widget.userId,
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
