@@ -24,8 +24,10 @@ class LiveModel extends LivesModel implements LiveModule {
   bool? _isFront;
   int _lastSendBytes = 0;
   bool _enableTorch = false;
-  bool _localMute = false;
-  bool _remoteMute = false;
+  bool _localAudioMute = false;
+  bool _remoteAudioMute = false;
+  bool _localVideoMute = false;
+  bool _remoteVideoMute = false;
 
   /// 初始化
   @override
@@ -88,10 +90,16 @@ class LiveModel extends LivesModel implements LiveModule {
   bool get enableTorch => _enableTorch;
 
   /// 本地是否静音
-  bool get localMute => _localMute;
+  bool get localAudioMute => _localAudioMute;
 
   /// 远程是否静音
-  bool get remoteMute => _remoteMute;
+  bool get remoteAudioMute => _remoteAudioMute;
+
+  /// 暂停本地是否静音
+  bool get localVideoMute => _localVideoMute;
+
+  /// 暂停远程是否静音
+  bool get remoteVideoMute => _remoteVideoMute;
 
   void _startDownTimer() {
     _timer ??= Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -215,19 +223,29 @@ class LiveModel extends LivesModel implements LiveModule {
 
   @override
   Future<void> muteAllRemoteAudio() async {
-    await _room.muteAllRemoteAudio(_remoteMute = !_remoteMute);
+    await _room.muteAllRemoteAudio(_remoteAudioMute = !_remoteAudioMute);
     notifyListeners();
   }
 
   @override
   Future<void> muteLocalAudio() async {
-    await _room.muteLocalAudio(_localMute = !_localMute);
+    await _room.muteLocalAudio(_localAudioMute = !_localAudioMute);
     notifyListeners();
   }
 
   @override
-  Future<void> muteRemoteAudio(String userId, bool mute) {
-    return _room.muteRemoteAudio(userId, mute);
+  Future<void> muteLocalVideo() {
+    return _room.muteLocalVideo(_localVideoMute = !_localVideoMute);
+  }
+
+  @override
+  Future<void> muteAllRemoteVideoStreams() {
+    return _room.muteAllRemoteVideoStreams(_remoteVideoMute = !_remoteVideoMute);
+  }
+
+  @override
+  Future<int?> setVideoMuteImage(String? assetUrl, int fps) {
+    return _room.setVideoMuteImage(assetUrl, fps);
   }
 
   @override

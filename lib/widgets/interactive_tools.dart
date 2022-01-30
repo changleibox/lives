@@ -136,7 +136,7 @@ class InteractiveTools extends StatelessWidget {
                     },
                   ),
                   _Button(
-                    text: '麦克风${model.localMute ? '关' : '开'}',
+                    text: '麦克风${model.localAudioMute ? '关' : '开'}',
                     icon: CupertinoIcons.mic_fill,
                     onPressed: () {
                       model.muteLocalAudio();

@@ -260,6 +260,35 @@ abstract class TRTCLiveRoom {
   ///
   /// TRTCCloudDef.TRTC_VIDEO_ROTATION_0，不旋转（默认值）; TRTCCloudDef.TRTC_VIDEO_ROTATION_180，顺时针旋转180度。
   Future<void> setVideoEncoderRotation(int rotation);
+
+  /// 暂停/恢复推送本地的视频数据。
+  ///
+  /// 当暂停推送本地视频后，房间里的其它成员将会收到 onUserVideoAvailable(userId, false) 回调通知 当恢复推送本地视频后，房间里的其它成员将会收到 onUserVideoAvailable(userId, true) 回调通知
+  ///
+  /// 参数：
+  ///
+  /// mute true：屏蔽；false：开启，默认值：false。
+  Future<void> muteLocalVideo(bool mute);
+
+  /// 设置暂停推送本地视频时要推送的图片
+  ///
+  /// 当暂停推送本地视频后，会继续推送该接口设置的图片
+  ///
+  /// 参数：
+  ///
+  /// assetUrl可以为flutter中定义的asset资源地址如'images/watermark_img.png'，也可以为网络图片地址
+  ///
+  /// fps	设置推送图片帧率，最小值为5，最大值为20，默认10。
+  Future<int?> setVideoMuteImage(String? assetUrl, int fps);
+
+  /// 暂停/恢复接收所有远端视频流。
+  ///
+  /// 该接口仅暂停/恢复接收所有远端用户的视频流，但并不释放显示资源，所以如果暂停，视频画面会冻屏在 mute 前的最后一帧。
+  ///
+  /// 参数：
+  ///
+  /// mute	是否暂停接收
+  Future<void> muteAllRemoteVideoStreams(bool mute);
 }
 
 class _TRTCLiveRoom extends TRTCLiveRoom {
@@ -698,5 +727,20 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
   @override
   Future<void> setVideoEncoderRotation(int rotation) {
     return _cloud.setVideoEncoderRotation(rotation);
+  }
+
+  @override
+  Future<void> muteLocalVideo(bool mute) {
+    return _cloud.muteLocalVideo(mute);
+  }
+
+  @override
+  Future<int?> setVideoMuteImage(String? assetUrl, int fps) {
+    return _cloud.setVideoMuteImage(assetUrl, fps);
+  }
+
+  @override
+  Future<void> muteAllRemoteVideoStreams(bool mute) {
+    return _cloud.muteAllRemoteVideoStreams(mute);
   }
 }
