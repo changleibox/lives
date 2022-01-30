@@ -1,7 +1,5 @@
 // Copyright (c) 2022 CHANGLEI. All rights reserved.
 
-import 'dart:async';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
@@ -37,7 +35,6 @@ class _WatchOverlayState extends State<WatchOverlay> with TickerProviderStateMix
   late final AnimationController _controller;
 
   WatchModel? _model;
-  Timer? _timer;
   bool _started = false;
 
   @override
@@ -69,8 +66,6 @@ class _WatchOverlayState extends State<WatchOverlay> with TickerProviderStateMix
 
   @override
   void dispose() {
-    _timer?.cancel();
-    _timer = null;
     _model?.removeDestroyListener(_onRoomDestroy);
     _model?.removeListener(_watchListener);
     _model = null;
@@ -89,10 +84,6 @@ class _WatchOverlayState extends State<WatchOverlay> with TickerProviderStateMix
 
   void _display() {
     _controller.forward();
-    _timer?.cancel();
-    if (_model?.started == true) {
-      _timer = Timer(const Duration(seconds: 5), _hide);
-    }
   }
 
   void _hide() {
@@ -100,8 +91,6 @@ class _WatchOverlayState extends State<WatchOverlay> with TickerProviderStateMix
       return;
     }
     _controller.reverse();
-    _timer?.cancel();
-    _timer = null;
   }
 
   void _watchListener() {
@@ -114,8 +103,6 @@ class _WatchOverlayState extends State<WatchOverlay> with TickerProviderStateMix
 
   void _onRoomDestroy() {
     _display();
-    _timer?.cancel();
-    _timer = null;
   }
 
   @override
