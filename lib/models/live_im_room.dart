@@ -262,6 +262,22 @@ class _LiveIMRoom extends LiveIMRoom {
         desc: 'you have been in room:' + _roomId! + " can't create another room:" + roomId,
       );
     }
+    final result = await _createGroup(roomId, roomParam);
+
+    //setGroupInfo
+    if (result.code == 0) {
+      _roomId = roomId.toString();
+      _isEnterRoom = true;
+      await callback();
+
+      _anchorList.add(_userId);
+      await _dismissAllGroups();
+      await _updateGroupInfo(roomId, roomParam);
+    }
+    return result;
+  }
+
+  Future<ActionCallback> _createGroup(String roomId, RoomParam roomParam) async {
     final res = await groupManager.createGroup(
       groupType: 'AVChatRoom',
       groupName: roomParam.roomName,
@@ -284,7 +300,7 @@ class _LiveIMRoom extends LiveIMRoom {
     } else if (code == 10025 || code == 10021) {
       // 10025 表明群主是自己，那么认为创建房间成功
       // 群组 ID 已被其他人使用，此时走进房逻辑
-      final joinRes = await _timManager.joinGroup(groupID: roomId.toString(), message: '');
+      final joinRes = await _timManager.joinGroup(groupID: roomId, message: '');
       if (joinRes.code == 0) {
         code = 0;
         msg = 'group has been created.join group success.';
@@ -293,30 +309,42 @@ class _LiveIMRoom extends LiveIMRoom {
         msg = joinRes.desc;
       }
     }
-    //setGroupInfo
-    if (code == 0) {
-      _roomId = roomId.toString();
-      _isEnterRoom = true;
-      await callback();
-
-      _anchorList.add(_userId);
-      await groupManager.setGroupInfo(
-        info: V2TimGroupInfo(
-          groupAddOpt: GroupAddOptType.V2TIM_GROUP_ADD_ANY,
-          groupID: roomId.toString(),
-          groupName: roomParam.roomName,
-          faceUrl: roomParam.coverUrl,
-          introduction: roomParam.introduction,
-          notification: roomParam.notification,
-          customInfo: <String, String>{
-            _ownerNameKey: _selfUserName ?? '',
-            _liveTypeKey: roomParam.liveType.name,
-          },
-          groupType: 'AVChatRoom',
-        ),
-      );
-    }
     return ActionCallback(code: code, desc: msg);
+  }
+
+  Future<void> _dismissAllGroups() async {
+    final groupResult = await groupManager.getJoinedGroupList();
+    final groups = groupResult.data;
+    final dismissGroupFutures = <Future<void>>[];
+    if (groups != null && groups.isNotEmpty) {
+      for (var value in groups) {
+        if (value.owner != _userId) {
+          continue;
+        }
+        dismissGroupFutures.add(_timManager.dismissGroup(groupID: value.groupID));
+      }
+    }
+    if (dismissGroupFutures.isNotEmpty) {
+      await Future.wait(dismissGroupFutures);
+    }
+  }
+
+  Future<V2TimCallback> _updateGroupInfo(String roomId, RoomParam roomParam) async {
+    return await groupManager.setGroupInfo(
+      info: V2TimGroupInfo(
+        groupID: roomId,
+        groupName: roomParam.roomName,
+        faceUrl: roomParam.coverUrl,
+        introduction: roomParam.introduction,
+        notification: roomParam.notification,
+        groupAddOpt: GroupAddOptType.V2TIM_GROUP_ADD_ANY,
+        customInfo: <String, String>{
+          _ownerNameKey: _selfUserName ?? '',
+          _liveTypeKey: roomParam.liveType.name,
+        },
+        groupType: 'AVChatRoom',
+      ),
+    );
   }
 
   @override

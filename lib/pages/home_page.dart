@@ -2,9 +2,11 @@
 
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:lives/enums/live_type.dart';
 import 'package:lives/frameworks/framework.dart';
+import 'package:lives/models/live_room_def.dart';
 import 'package:lives/models/lives.dart';
 import 'package:lives/routes/routes.dart';
 import 'package:lives/widgets/future_wrapper.dart';
@@ -165,86 +167,113 @@ class _AnchorIdTextField extends StatefulWidget {
 class _AnchorIdTextFieldState extends State<_AnchorIdTextField> {
   final _controller = TextEditingController();
 
+  final _rooms = <RoomInfo>[];
+
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
   }
 
-  Future<void> _onConfirm({
-    required String text,
-    LiveType liveType = LiveType.video,
-  }) async {
-    if (text.isEmpty) {
-      showToast('请输入主播ID');
+  Future<void> _onSubmitted(String text) async {
+    final rooms = await Lives.getRooms([text]);
+    _rooms.clear();
+    _rooms.addAll(rooms);
+    setState(() {});
+  }
+
+  Future<void> _onConfirm(String anchorId, LiveType liveType) async {
+    if (anchorId.isEmpty) {
+      showToast('请输入房间ID');
       return;
     }
     Navigator.pop(context, {
-      'anchorId': text,
+      'anchorId': anchorId,
       'liveType': liveType,
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoAlertDialog(
-      insetAnimationDuration: _keyboardDuration,
-      title: const Text('主播ID'),
-      content: SizedBox(
-        height: 32,
-        child: CupertinoTextField(
-          controller: _controller,
-          placeholder: '请输入主播ID',
-          autofocus: true,
-          keyboardType: TextInputType.number,
-          style: const TextStyle(
-            fontSize: 14,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final rowCount = (_rooms.length / 2).ceil();
+        return CupertinoAlertDialog(
+          insetAnimationDuration: _keyboardDuration,
+          title: const Text('选择房间'),
+          content: WidgetGroup.spacing(
+            mainAxisSize: MainAxisSize.min,
+            direction: Axis.vertical,
+            spacing: 10,
+            children: [
+              SizedBox(
+                height: 32,
+                child: CupertinoTextField(
+                  controller: _controller,
+                  placeholder: '请输入房间ID',
+                  autofocus: true,
+                  keyboardType: TextInputType.number,
+                  style: const TextStyle(
+                    fontSize: 14,
+                  ),
+                  placeholderStyle: const TextStyle(
+                    fontSize: 14,
+                    color: CupertinoColors.placeholderText,
+                  ),
+                  onChanged: _onSubmitted,
+                ),
+              ),
+              if (_rooms.isNotEmpty)
+                SizedBox(
+                  height: rowCount * (115 * 720 / 1280),
+                  child: GridView.builder(
+                    physics: const NeverScrollableScrollPhysics(),
+                    padding: EdgeInsets.zero,
+                    shrinkWrap: true,
+                    itemCount: _rooms.length,
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio: 1280 / 720,
+                      crossAxisSpacing: 5,
+                      mainAxisSpacing: 5,
+                    ),
+                    itemBuilder: (context, index) {
+                      final room = _rooms[index];
+                      return Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: CupertinoButton(
+                          padding: EdgeInsets.zero,
+                          minSize: 0,
+                          onPressed: () {
+                            _onConfirm(room.ownerId, room.liveType);
+                          },
+                          child: CachedNetworkImage(
+                            imageUrl: room.coverUrl ?? '',
+                            width: 1280,
+                            height: 720,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+            ],
           ),
-          placeholderStyle: const TextStyle(
-            fontSize: 14,
-            color: CupertinoColors.placeholderText,
-          ),
-          onSubmitted: (value) {
-            _onConfirm(text: value);
-          },
-        ),
-      ),
-      actions: [
-        CupertinoDialogAction(
-          onPressed: () {
-            _onConfirm(
-              text: _controller.text,
-              liveType: LiveType.video,
-            );
-          },
-          child: const Text('视频'),
-        ),
-        CupertinoDialogAction(
-          onPressed: () {
-            _onConfirm(
-              text: _controller.text,
-              liveType: LiveType.game,
-            );
-          },
-          child: const Text('游戏'),
-        ),
-        CupertinoDialogAction(
-          onPressed: () {
-            _onConfirm(
-              text: _controller.text,
-              liveType: LiveType.voice,
-            );
-          },
-          child: const Text('语音'),
-        ),
-        CupertinoDialogAction(
-          isDestructiveAction: true,
-          child: const Text('取消'),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ],
+          actions: [
+            CupertinoDialogAction(
+              isDestructiveAction: true,
+              child: const Text('取消'),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }
