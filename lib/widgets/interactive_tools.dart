@@ -115,7 +115,7 @@ class InteractiveTools extends StatelessWidget {
                       final manager = model.audioEffectManager;
                       manager.setAllMusicVolume(100);
                       manager.startPlayMusic(
-                        const AudioMusicParam(path: BGM, id: 0),
+                        const AudioMusicParam(path: backgroundMusic, id: 0),
                       );
                       manager.setMusicPitch(0, 1);
                       manager.setMusicPlayoutVolume(0, 100);

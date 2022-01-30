@@ -3,7 +3,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
-import 'package:lives/commons/test_data.dart';
 import 'package:lives/enums/live_type.dart';
 import 'package:lives/models/lives.dart';
 import 'package:lives/utils/system_chromes.dart';
@@ -233,11 +232,13 @@ class _RoomInfo extends StatelessWidget {
             child: CupertinoButton(
               padding: EdgeInsets.zero,
               minSize: 0,
-              onPressed: () {},
+              onPressed: () {
+                model.setVideoMuteImage(model.livePlaceholder, 10);
+              },
               child: Stack(
                 children: [
                   CachedNetworkImage(
-                    imageUrl: cover,
+                    imageUrl: model.liveCover,
                     width: 80,
                     height: 56,
                     fit: BoxFit.cover,

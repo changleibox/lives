@@ -29,6 +29,12 @@ class LiveModel extends LivesModel implements LiveModule {
   bool _localVideoMute = false;
   bool _remoteVideoMute = false;
 
+  /// 封面
+  String get liveCover => cover;
+
+  /// 直播占位图
+  String get livePlaceholder => placeholderImage;
+
   /// 初始化
   @override
   Future<void> setup([LiveType? liveType]) {
