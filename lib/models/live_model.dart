@@ -24,7 +24,6 @@ class LiveModel extends LivesModel implements LiveModule {
   bool? _isFront;
   int _lastSendBytes = 0;
   bool _enableTorch = false;
-  bool _isMirror = false;
   bool _localMute = false;
   bool _remoteMute = false;
 
@@ -87,9 +86,6 @@ class LiveModel extends LivesModel implements LiveModule {
 
   /// 是否开启闪光灯
   bool get enableTorch => _enableTorch;
-
-  /// 是否镜像显示
-  bool get isMirror => _isMirror;
 
   /// 本地是否静音
   bool get localMute => _localMute;
@@ -262,12 +258,6 @@ class LiveModel extends LivesModel implements LiveModule {
   @override
   Future<ActionCallback> sendRoomCustomMsg(String cmd, String message) {
     return _room.sendRoomCustomMsg(cmd, message);
-  }
-
-  @override
-  Future<void> setMirror() async {
-    await _room.setMirror(_isMirror = !_isMirror);
-    notifyListeners();
   }
 
   @override

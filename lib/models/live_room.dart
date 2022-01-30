@@ -226,6 +226,19 @@ abstract class TRTCLiveRoom {
   ///
   /// renderParams 渲染参数（平铺模式、旋转角度、左右镜像等)，详情请参考 trtc_cloud.def.dart 中的 TRTCRemoteRenderParams参数定义
   Future<void> setRemoteRenderParams(String userId, int streamType, TRTCRenderParams renderParams);
+
+  /// 设置视频编码输出的画面方向，即设置远端用户观看到的和服务器录制的画面方向。
+  ///
+  /// 当用户的手机或者 Android Pad 做了一个180度旋转时，由于摄像头的采集方向没有变，所以另一边的用户看到的画面是上下颠倒的， 在这种情况下，您可以通过该接口将 SDK 输出到对方的画面旋转180度，这样可以可以确保对方看到的画面依然正常。
+  ///
+  /// 注意: sdk会默认开启重力感应，开启重力感应后设置无效，关闭重力感应设置该接口才会生效
+  ///
+  /// 参数：
+  ///
+  /// rotation	顺时针旋转角度，目前仅支持0度和180度两个角度：
+  ///
+  /// TRTCCloudDef.TRTC_VIDEO_ROTATION_0，不旋转（默认值）; TRTCCloudDef.TRTC_VIDEO_ROTATION_180，顺时针旋转180度。
+  Future<void> setVideoEncoderRotation(int rotation);
 }
 
 class _TRTCLiveRoom extends TRTCLiveRoom {
@@ -679,5 +692,10 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
   @override
   Future<void> setRemoteRenderParams(String userId, int streamType, TRTCRenderParams renderParams) {
     return _cloud.setRemoteRenderParams(userId, streamType, renderParams);
+  }
+
+  @override
+  Future<void> setVideoEncoderRotation(int rotation) {
+    return _cloud.setVideoEncoderRotation(rotation);
   }
 }

@@ -61,9 +61,6 @@ abstract class LiveModule {
   /// 开关闪光灯
   Future<void> enableCameraTorch();
 
-  /// 设置是否镜像展示。
-  Future<void> setMirror();
-
   /// 开启本地静音。
   /// @param mute 是否静音
   Future<void> muteLocalAudio();
