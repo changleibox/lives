@@ -1,5 +1,7 @@
 // Copyright (c) 2022 CHANGLEI. All rights reserved.
 
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
@@ -35,6 +37,8 @@ class _WatchOverlayState extends State<WatchOverlay> with TickerProviderStateMix
   late final AnimationController _controller;
 
   WatchModel? _model;
+  Timer? _timer;
+  bool _started = false;
 
   @override
   void initState() {
@@ -44,7 +48,7 @@ class _WatchOverlayState extends State<WatchOverlay> with TickerProviderStateMix
         milliseconds: 300,
       ),
     );
-    _controller.forward();
+    _display();
     super.initState();
   }
 
@@ -55,33 +59,63 @@ class _WatchOverlayState extends State<WatchOverlay> with TickerProviderStateMix
       return;
     }
     model.addDestroyListener(_onRoomDestroy);
+    model.addListener(_watchListener);
     _model?.removeDestroyListener(_onRoomDestroy);
+    _model?.removeListener(_watchListener);
     _model = model;
+    _watchListener();
     super.didChangeDependencies();
   }
 
   @override
   void dispose() {
+    _timer?.cancel();
+    _timer = null;
     _model?.removeDestroyListener(_onRoomDestroy);
+    _model?.removeListener(_watchListener);
     _model = null;
     _controller.dispose();
     super.dispose();
   }
 
-  void _onRootPressed() {
-    if (_model?.started != true) {
-      return;
-    }
+  void _switchDisplayStatus() {
     final status = _controller.status;
     if (status == AnimationStatus.forward || status == AnimationStatus.completed) {
-      _controller.reverse();
+      _hide();
     } else {
-      _controller.forward();
+      _display();
     }
   }
 
-  void _onRoomDestroy() {
+  void _display() {
     _controller.forward();
+    _timer?.cancel();
+    if (_model?.started == true) {
+      _timer = Timer(const Duration(seconds: 5), _hide);
+    }
+  }
+
+  void _hide() {
+    if (_model?.started != true) {
+      return;
+    }
+    _controller.reverse();
+    _timer?.cancel();
+    _timer = null;
+  }
+
+  void _watchListener() {
+    final started = _model?.started == true;
+    if (_started != started) {
+      _display();
+    }
+    _started = started;
+  }
+
+  void _onRoomDestroy() {
+    _display();
+    _timer?.cancel();
+    _timer = null;
   }
 
   @override
@@ -96,7 +130,7 @@ class _WatchOverlayState extends State<WatchOverlay> with TickerProviderStateMix
         padding: MediaQuery.of(context).viewInsets,
         child: GestureDetector(
           behavior: HitTestBehavior.translucent,
-          onTap: _onRootPressed,
+          onTap: _switchDisplayStatus,
           child: FadeTransition(
             opacity: _controller,
             child: AnimatedBuilder(
