@@ -46,7 +46,7 @@ class _LiveCapturePlayerState extends State<LiveCapturePlayer> {
         padding: const EdgeInsets.all(10),
         margin: EdgeInsets.only(
           left: padding.left + 16,
-          right: 16,
+          right: padding.right + 16,
         ),
         width: double.infinity,
         child: child,
