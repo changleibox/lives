@@ -13,7 +13,6 @@ abstract class LivesModel extends ChangeNotifier with LiveObserver {
 
   bool _mounted = false;
   bool _started = false;
-  RoomInfo? _roomInfo;
   Map<String, UserInfo>? _memberInfo;
   int _memberCount = 0;
   Completer<void>? _pendingCompleter;
@@ -49,9 +48,6 @@ abstract class LivesModel extends ChangeNotifier with LiveObserver {
   String get userId => _LiveProxy.userId!;
 
   String get _roomId => userId;
-
-  /// 房间信息
-  RoomInfo? get roomInfo => _roomInfo;
 
   /// 主播信息
   UserInfo? getMemberInfo(String userId) => _memberInfo?[userId];
@@ -131,16 +127,6 @@ abstract class LivesModel extends ChangeNotifier with LiveObserver {
     ));
   }
 
-  Future<void> _refreshRoomInfo() async {
-    final roomCallback = await _LiveProxy.getRooms(_roomId);
-    final rooms = roomCallback.list;
-    Map<int, RoomInfo>? roomMap;
-    if (rooms != null && rooms.isNotEmpty) {
-      roomMap = Map.fromEntries(rooms.map((e) => MapEntry(e.roomId, e)));
-    }
-    _roomInfo = roomMap?[_roomId];
-  }
-
   Future<void> _refreshUserInfo() async {
     final userCallback = await _LiveProxy.getMembers();
     final users = userCallback.list;
@@ -153,19 +139,21 @@ abstract class LivesModel extends ChangeNotifier with LiveObserver {
   }
 
   Future<void> _onMemberEnterExit(UserInfo member, String message) async {
-    if (member.userId == userId) {
-      return;
+    if (member.userId != userId) {
+      _addBulletChar(
+        message: message,
+        userId: member.userId,
+        userName: member.userName,
+        userAvatar: member.userAvatar,
+      );
     }
-    _addBulletChar(
-      message: message,
-      userId: member.userId,
-      userName: member.userName,
-      userAvatar: member.userAvatar,
-    );
-    await _refreshRoomInfo();
+    await onMemberChanged(member);
     await _refreshUserInfo();
     notifyListeners();
   }
+
+  /// 成员发生变化
+  Future<void> onMemberChanged(UserInfo member) async {}
 
   @override
   void onReceiveRoomTextMsg(BulletChat bulletChat) {

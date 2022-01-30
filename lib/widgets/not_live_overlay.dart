@@ -232,13 +232,11 @@ class _RoomInfo extends StatelessWidget {
             child: CupertinoButton(
               padding: EdgeInsets.zero,
               minSize: 0,
-              onPressed: () {
-                model.setVideoMuteImage(model.livePlaceholder, 10);
-              },
+              onPressed: () {},
               child: Stack(
                 children: [
                   CachedNetworkImage(
-                    imageUrl: model.liveCover,
+                    imageUrl: model.roomCover,
                     width: 80,
                     height: 56,
                     fit: BoxFit.cover,
@@ -271,11 +269,11 @@ class _RoomInfo extends StatelessWidget {
               children: [
                 WidgetGroup.spacing(
                   children: [
-                    const Flexible(
+                    Flexible(
                       child: Text(
-                        '初来报到，关注一下吧～',
+                        model.roomName,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
+                        style: const TextStyle(
                           height: 1,
                           color: CupertinoColors.white,
                           fontSize: 14,

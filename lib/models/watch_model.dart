@@ -8,8 +8,13 @@ part of 'lives.dart';
 class WatchModel extends LivesModel {
   late String _anchorId;
 
+  RoomInfo? _roomInfo;
+
   @override
   String get _roomId => _anchorId;
+
+  /// 房间信息
+  RoomInfo? get roomInfo => _roomInfo;
 
   @override
   Future<void> setup([LiveType? liveType, String? anchorId]) {
@@ -53,5 +58,21 @@ class WatchModel extends LivesModel {
   void onRoomDestroy(Object? params) {
     _LiveProxy.removeListener(this);
     super.onRoomDestroy(params);
+  }
+
+  Future<void> _refreshRoomInfo() async {
+    final roomCallback = await _LiveProxy.getRooms(_roomId);
+    final rooms = roomCallback.list;
+    Map<int, RoomInfo>? roomMap;
+    if (rooms != null && rooms.isNotEmpty) {
+      roomMap = Map.fromEntries(rooms.map((e) => MapEntry(e.roomId, e)));
+    }
+    _roomInfo = roomMap?[_roomId];
+  }
+
+  @override
+  Future<void> onMemberChanged(UserInfo member) async {
+    await _refreshRoomInfo();
+    return super.onMemberChanged(member);
   }
 }

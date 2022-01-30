@@ -3,6 +3,8 @@
 part of 'lives.dart';
 
 const _timeLimit = Duration(seconds: 10);
+const _appGroup = 'group.me.box.lives';
+const _defaultRoomName = '初来报到，关注一下吧～';
 
 /// Created by changlei on 2022/1/18.
 ///
@@ -29,11 +31,18 @@ class LiveModel extends LivesModel implements LiveModule {
   bool _localVideoMute = false;
   bool _remoteVideoMute = false;
 
-  /// 封面
-  String get liveCover => cover;
+  String? _roomName;
+  String? _roomCover;
+  String? _roomPlaceholder;
+
+  /// 直播见名称
+  String get roomName => _roomName ?? _defaultRoomName;
 
   /// 直播占位图
-  String get livePlaceholder => placeholderImage;
+  String get roomCover => _roomCover ?? cover;
+
+  /// 直播暂停时的背景图
+  String? get roomPlaceholder => _roomPlaceholder;
 
   /// 初始化
   @override
@@ -134,24 +143,26 @@ class LiveModel extends LivesModel implements LiveModule {
   }
 
   /// 开始直播
-  Future<void> startLive({String? roomName, String? cover}) async {
+  Future<void> startLive() async {
     _LiveProxy.addListener(this);
     _LiveProxy.addTRTCListener(_onEvent);
     if (_isFront != null && _viewId != null) {
       await startPreview(_isFront!, _viewId!);
     }
+    await setVideoMuteImage(roomPlaceholder, 10);
     await _LiveProxy.startLive(
       roomId: _roomId,
-      roomName: '我在火星',
-      cover: cover,
-      appGroup: 'group.me.box.lives',
+      roomName: roomName,
+      cover: roomCover,
+      appGroup: _appGroup,
       type: _liveType,
     );
     await _liveType.startLive(() => _startPendingLive(exitLive));
+    _speedNotifier.value = 0;
+    _lastSendBytes = 0;
+    _networkNotifier.value = 1;
     _setupMessages();
     _startDownTimer();
-    await _refreshRoomInfo();
-    await _refreshUserInfo();
     _started = true;
     notifyListeners();
   }
@@ -171,6 +182,7 @@ class LiveModel extends LivesModel implements LiveModule {
     _speedNotifier.value = 0;
     _lastSendBytes = 0;
     _networkNotifier.value = 1;
+    _setupMessages();
     _stopDownTimer();
     _started = false;
     notifyListeners();
