@@ -233,8 +233,7 @@ class _UserInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final model = context.watch<WatchModel>();
-    final roomInfo = model.roomInfo;
-    final userInfo = model.getMemberInfo(anchorId);
+    final anchor = model.getMemberInfo(anchorId);
     return Align(
       alignment: Alignment.centerLeft,
       child: Container(
@@ -252,7 +251,7 @@ class _UserInfo extends StatelessWidget {
             ClipOval(
               clipBehavior: Clip.antiAlias,
               child: CachedNetworkImage(
-                imageUrl: userInfo?.userAvatar ?? avatar,
+                imageUrl: anchor?.userAvatar ?? avatar,
                 width: 32,
                 height: 32,
               ),
@@ -263,7 +262,7 @@ class _UserInfo extends StatelessWidget {
                 direction: Axis.vertical,
                 children: [
                   Text(
-                    userInfo?.userName ?? userInfo?.userId ?? '直播间',
+                    anchor?.userName ?? anchor?.userId ?? '直播间',
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       color: CupertinoColors.white,
@@ -272,7 +271,7 @@ class _UserInfo extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '${model.memberCount}观看｜${roomInfo?.roomName ?? '房主'}',
+                    '${model.memberCount}观看',
                     style: const TextStyle(
                       color: CupertinoColors.white,
                       fontSize: 10,

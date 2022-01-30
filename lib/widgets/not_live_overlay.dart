@@ -271,7 +271,7 @@ class _RoomInfo extends StatelessWidget {
                   children: [
                     Flexible(
                       child: Text(
-                        model.roomName,
+                        model.roomIntroduction,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           height: 1,

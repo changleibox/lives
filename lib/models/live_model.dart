@@ -4,7 +4,7 @@ part of 'lives.dart';
 
 const _timeLimit = Duration(seconds: 10);
 const _appGroup = 'group.me.box.lives';
-const _defaultRoomName = '初来报到，关注一下吧～';
+const _defaultIntroduction = '初来报到，关注一下吧～';
 
 /// Created by changlei on 2022/1/18.
 ///
@@ -31,18 +31,18 @@ class LiveModel extends LivesModel implements LiveModule {
   bool _localVideoMute = false;
   bool _remoteVideoMute = false;
 
-  String? _roomName;
   String? _roomCover;
   String? _roomPlaceholder;
-
-  /// 直播见名称
-  String get roomName => _roomName ?? _defaultRoomName;
+  String? _roomIntroduction;
 
   /// 直播占位图
   String get roomCover => _roomCover ?? cover;
 
   /// 直播暂停时的背景图
   String? get roomPlaceholder => _roomPlaceholder;
+
+  /// 直播见简介
+  String get roomIntroduction => _roomIntroduction ?? _defaultIntroduction;
 
   /// 初始化
   @override
@@ -152,8 +152,9 @@ class LiveModel extends LivesModel implements LiveModule {
     await setVideoMuteImage(roomPlaceholder, 10);
     await _LiveProxy.startLive(
       roomId: _roomId,
-      roomName: roomName,
-      cover: roomCover,
+      roomName: '${Lives.userName}的直播间',
+      roomCover: roomCover,
+      roomIntroduction: roomIntroduction,
       appGroup: _appGroup,
       type: _liveType,
     );

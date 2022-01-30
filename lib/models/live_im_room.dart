@@ -300,7 +300,10 @@ class _LiveIMRoom extends LiveIMRoom {
           groupID: roomId.toString(),
           groupName: roomParam.roomName,
           faceUrl: roomParam.coverUrl,
-          introduction: _selfUserName,
+          introduction: roomParam.introduction,
+          customInfo: <String, String>{
+            'ownerName': _selfUserName ?? '',
+          },
           groupType: 'AVChatRoom',
         ),
       );
@@ -488,8 +491,9 @@ class _LiveIMRoom extends LiveIMRoom {
             roomName: groupInfo.groupName,
             coverUrl: groupInfo.faceUrl,
             ownerId: groupInfo.owner!,
-            ownerName: groupInfo.introduction,
+            ownerName: groupInfo.customInfo?['ownerName'],
             memberCount: groupInfo.memberCount,
+            introduction: groupInfo.introduction,
           ),
         );
       }

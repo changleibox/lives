@@ -37,6 +37,8 @@ const int _sdkAppId = 1400623776;
 const int _expireTime = 604800;
 const String _secretKey = '4b0cb9f65a743a2e52134f008f963510e0d3716e9af36f6f36fa29863fb7ad19';
 const String _userIdKey = 'userId';
+const String _userNameKey = 'userName';
+const String _userAvatarKey = 'userAvatar';
 const String _signKey = 'sign';
 
 const _renderParams = TRTCRenderParams(
@@ -59,6 +61,12 @@ class Lives {
 
   /// userId
   static String? get userId => _LiveProxy.userId;
+
+  /// userName
+  static String? get userName => _LiveProxy.userName;
+
+  /// userAvatar
+  static String? get userAvatar => _LiveProxy.userAvatar;
 
   /// 初始化
   static Future<void> setup({bool ignoreException = true}) {
@@ -96,13 +104,19 @@ class _LiveProxy {
   /// 登录的userId
   static String? get userId => _storage.get(_userIdKey);
 
+  /// 登录的userName
+  static String? get userName => _storage.get(_userNameKey);
+
+  /// 登录的userAvatar
+  static String? get userAvatar => _storage.get(_userAvatarKey);
+
   static late TRTCLiveRoom _room;
 
   static bool _createdRoom = false;
 
   static final _listeners = <LiveObserver>{};
 
-  static final _trtcListeners = <ListenerValue>{};
+  static final _rtcListeners = <ListenerValue>{};
 
   /// 添加监听
   static void addListener(LiveObserver listener) {
@@ -116,22 +130,22 @@ class _LiveProxy {
 
   /// 添加监听
   static void addTRTCListener(ListenerValue listener) {
-    if (_trtcListeners.isEmpty) {
+    if (_rtcListeners.isEmpty) {
       _room.addTRTCListener(_trtcEvent);
     }
-    _trtcListeners.add(listener);
+    _rtcListeners.add(listener);
   }
 
   /// 移除监听
   static void removeTRTCListener(ListenerValue listener) {
-    _trtcListeners.remove(listener);
-    if (_trtcListeners.isEmpty) {
+    _rtcListeners.remove(listener);
+    if (_rtcListeners.isEmpty) {
       _room.removeTRTCListener(_trtcEvent);
     }
   }
 
   static void _trtcEvent(TRTCCloudListener type, Object? params) {
-    for (var listener in _trtcListeners) {
+    for (var listener in _rtcListeners) {
       listener(type, params);
     }
   }
@@ -173,6 +187,8 @@ class _LiveProxy {
   /// 登录
   static Future<void> login(String userId, {String? name, String? avatar}) async {
     await _storage.set(_userIdKey, userId);
+    await _storage.set(_userNameKey, name);
+    await _storage.set(_userAvatarKey, avatar);
     final sign = _storage.get<String>(_signKey, defaultValue: _generateSign(userId))!;
     await _storage.set(_signKey, sign);
     final callback = await _room.login(_sdkAppId, userId, sign, _config);
@@ -187,6 +203,8 @@ class _LiveProxy {
   /// 退出登录
   static Future<void> logout() async {
     await _storage.remove(_userIdKey);
+    await _storage.remove(_userNameKey);
+    await _storage.remove(_userAvatarKey);
     await _storage.remove(_signKey);
     await _room.logout();
   }
@@ -210,7 +228,8 @@ class _LiveProxy {
   static Future<void> startLive({
     required String roomId,
     String? roomName,
-    String? cover,
+    String? roomCover,
+    String? roomIntroduction,
     String? appGroup,
     LiveType type = LiveType.video,
   }) async {
@@ -218,7 +237,8 @@ class _LiveProxy {
       roomId,
       RoomParam(
         roomName: roomName ?? '',
-        coverUrl: cover,
+        coverUrl: roomCover,
+        introduction: roomIntroduction,
       ),
       scene: type.scene,
     );

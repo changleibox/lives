@@ -52,6 +52,9 @@ class RoomInfo {
   /// 【字段含义】房间人数
   final int? memberCount;
 
+  /// 简介
+  final String? introduction;
+
   const RoomInfo({
     required this.roomId,
     this.roomName,
@@ -59,6 +62,7 @@ class RoomInfo {
     this.memberCount,
     required this.ownerId,
     this.ownerName,
+    this.introduction,
   });
 }
 
@@ -88,10 +92,14 @@ class RoomParam {
   /// 音质
   final int? quality;
 
+  /// 简介
+  final String? introduction;
+
   const RoomParam({
     required this.roomName,
     this.coverUrl,
     this.quality,
+    this.introduction,
   });
 }
 
