@@ -127,7 +127,7 @@ class LiveModel extends LivesModel implements LiveModule {
       await startPreview(_isFront!, _viewId!);
     }
     await _LiveProxy.startLive(
-      _roomId,
+      roomId: _roomId,
       roomName: '我在火星',
       cover: cover,
       appGroup: 'group.me.box.lives',

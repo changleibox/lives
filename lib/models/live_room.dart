@@ -15,6 +15,27 @@ import 'package:tencent_trtc_cloud/tx_audio_effect_manager.dart';
 import 'package:tencent_trtc_cloud/tx_beauty_manager.dart';
 import 'package:tencent_trtc_cloud/tx_device_manager.dart';
 
+const _smallEncParam = TRTCVideoEncParam(
+  videoResolution: TRTCCloudDef.TRTC_VIDEO_RESOLUTION_480_270,
+  videoBitrate: 400,
+  videoFps: 15,
+  videoResolutionMode: TRTCCloudDef.TRTC_VIDEO_RESOLUTION_MODE_PORTRAIT,
+);
+const _largeEncParam = TRTCVideoEncParam(
+  videoResolution: TRTCCloudDef.TRTC_VIDEO_RESOLUTION_1280_720,
+  videoBitrate: 1800,
+  videoFps: 15,
+  enableAdjustRes: true,
+  videoResolutionMode: TRTCCloudDef.TRTC_VIDEO_RESOLUTION_MODE_PORTRAIT,
+);
+const _captureEncParams = TRTCVideoEncParam(
+  enableAdjustRes: true,
+  videoBitrate: 1800,
+  videoFps: 25,
+  videoResolution: TRTCCloudDef.TRTC_VIDEO_RESOLUTION_1280_720,
+  videoResolutionMode: TRTCCloudDef.TRTC_VIDEO_RESOLUTION_MODE_LANDSCAPE,
+);
+
 /// 自己封装的聊天室工具类
 abstract class TRTCLiveRoom {
   /// 获取 TRTCLiveRoom 单例对象
@@ -113,7 +134,7 @@ abstract class TRTCLiveRoom {
   /// 开始直播（推流），适用于以下场景：
   /// 主播开播的时候调用
   /// 观众开始连麦时调用
-  Future<void> startPublish(String? streamId);
+  Future<void> startPublish({String? streamId, TRTCVideoEncParam? encParam});
 
   /// 停止直播（推流）。
   Future<void> stopPublish();
@@ -124,7 +145,7 @@ abstract class TRTCLiveRoom {
   Future<ActionCallback> startCapture({
     int? streamType,
     TRTCVideoEncParam? encParams,
-    String appGroup = '',
+    String? appGroup,
   });
 
   /// 停止直播（推流）。
@@ -257,9 +278,7 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
   late int _originRole;
 
   String? _roomIdPK;
-  String? _streamId;
-  bool _isStartCapture = false;
-  bool _isStartAudio = false;
+  bool _started = false;
 
   // ignore: unused_field
   TRTCLiveRoomConfig? _roomConfig;
@@ -534,86 +553,8 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
   }
 
   @override
-  Future<void> updateLocalView(int viewId) {
-    return _cloud.updateLocalView(viewId);
-  }
-
-  @override
-  Future<void> startPlay(String userId, int viewId) {
-    return _cloud.startRemoteView(userId, TRTCCloudDef.TRTC_VIDEO_STREAM_TYPE_BIG, viewId);
-  }
-
-  @override
-  Future<void> updateRemoteView(String userId, int viewId) {
-    return _cloud.updateRemoteView(viewId, TRTCCloudDef.TRTC_VIDEO_STREAM_TYPE_BIG, userId);
-  }
-
-  @override
-  Future<ActionCallback> startPublish(String? streamId) async {
-    if (!_imManager.isEnterRoom) {
-      return notEnterRoomYetError;
-    }
-    await _handleVideoEncoderParams();
-    if (!_isEmpty(streamId)) {
-      _streamId = streamId;
-      await _cloud.startPublishing(streamId!, TRTCCloudDef.TRTC_VIDEO_STREAM_TYPE_BIG);
-    }
-    await _cloud.startLocalAudio(TRTCCloudDef.TRTC_AUDIO_QUALITY_DEFAULT);
-
-    return const ActionCallback(code: 0, desc: 'startPublish success');
-  }
-
-  Future<void> _handleVideoEncoderParams() async {
-    // 如果是观众，那么则切换到主播
-    if (_originRole == TRTCCloudDef.TRTCRoleAudience) {
-      await _cloud.switchRole(TRTCCloudDef.TRTCRoleAnchor);
-      // 观众切换到主播是小主播，小主播设置一下分辨率
-      const param = TRTCVideoEncParam(
-        videoResolution: TRTCCloudDef.TRTC_VIDEO_RESOLUTION_480_270,
-        videoBitrate: 400,
-        videoFps: 15,
-        videoResolutionMode: TRTCCloudDef.TRTC_VIDEO_RESOLUTION_MODE_PORTRAIT,
-      );
-      await _cloud.setVideoEncoderParam(param);
-    } else if (_originRole == TRTCCloudDef.TRTCRoleAnchor) {
-      // 大主播的时候切换分辨率
-      const param = TRTCVideoEncParam(
-        videoResolution: TRTCCloudDef.TRTC_VIDEO_RESOLUTION_1280_720,
-        videoBitrate: 1800,
-        videoFps: 15,
-        enableAdjustRes: true,
-        videoResolutionMode: TRTCCloudDef.TRTC_VIDEO_RESOLUTION_MODE_PORTRAIT,
-      );
-      await _cloud.setVideoEncoderParam(param);
-    }
-  }
-
-  bool _isEmpty(String? data) {
-    return data == null || data == '';
-  }
-
-  @override
   Future<void> stopCameraPreview() {
     return _cloud.stopLocalPreview();
-  }
-
-  @override
-  Future<void> stopPlay(String userId) {
-    return _cloud.stopRemoteView(userId, TRTCCloudDef.TRTC_VIDEO_STREAM_TYPE_BIG);
-  }
-
-  @override
-  Future<void> stopPublish() async {
-    await _cloud.stopLocalAudio();
-    if (_originRole == TRTCCloudDef.TRTCRoleAudience) {
-      await _cloud.switchRole(TRTCCloudDef.TRTCRoleAudience);
-    } else if (_originRole == TRTCCloudDef.TRTCRoleAnchor) {
-      await _cloud.exitRoom();
-    }
-
-    if (!_isEmpty(_streamId)) {
-      await _cloud.stopPublishing();
-    }
   }
 
   @override
@@ -627,19 +568,77 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
   }
 
   @override
+  Future<void> updateLocalView(int viewId) {
+    return _cloud.updateLocalView(viewId);
+  }
+
+  @override
+  Future<void> updateRemoteView(String userId, int viewId) {
+    return _cloud.updateRemoteView(viewId, TRTCCloudDef.TRTC_VIDEO_STREAM_TYPE_BIG, userId);
+  }
+
+  @override
+  Future<void> startPlay(String userId, int viewId) {
+    return _cloud.startRemoteView(userId, TRTCCloudDef.TRTC_VIDEO_STREAM_TYPE_BIG, viewId);
+  }
+
+  @override
+  Future<void> stopPlay(String userId) {
+    return _cloud.stopRemoteView(userId, TRTCCloudDef.TRTC_VIDEO_STREAM_TYPE_BIG);
+  }
+
+  @override
+  Future<ActionCallback> startPublish({String? streamId, TRTCVideoEncParam? encParam}) async {
+    if (!_imManager.isEnterRoom) {
+      return notEnterRoomYetError;
+    }
+    // 如果是观众，那么则切换到主播
+    if (_originRole == TRTCCloudDef.TRTCRoleAudience) {
+      await _cloud.switchRole(TRTCCloudDef.TRTCRoleAnchor);
+      // 观众切换到主播是小主播，小主播设置一下分辨率
+      await _cloud.setVideoEncoderParam(encParam ?? _smallEncParam);
+    } else if (_originRole == TRTCCloudDef.TRTCRoleAnchor) {
+      // 大主播的时候切换分辨率
+      await _cloud.setVideoEncoderParam(encParam ?? _largeEncParam);
+    }
+    if (streamId != null) {
+      _started = true;
+      await _cloud.startPublishing(streamId, TRTCCloudDef.TRTC_VIDEO_STREAM_TYPE_BIG);
+    }
+    await _cloud.startLocalAudio(TRTCCloudDef.TRTC_AUDIO_QUALITY_DEFAULT);
+
+    return const ActionCallback(code: 0, desc: 'startPublish success');
+  }
+
+  @override
+  Future<void> stopPublish() async {
+    await _cloud.stopLocalAudio();
+    if (_originRole == TRTCCloudDef.TRTCRoleAudience) {
+      await _cloud.switchRole(TRTCCloudDef.TRTCRoleAudience);
+    } else if (_originRole == TRTCCloudDef.TRTCRoleAnchor) {
+      await _cloud.exitRoom();
+    }
+
+    if (_started) {
+      _started = false;
+      await _cloud.stopPublishing();
+    }
+  }
+
+  @override
   Future<ActionCallback> startCapture({
     int? streamType,
     TRTCVideoEncParam? encParams,
-    String appGroup = '',
+    String? appGroup,
   }) async {
     if (!_imManager.isEnterRoom) {
       return notEnterRoomYetError;
     }
-    _isStartCapture = true;
+    _started = true;
     await _cloud.startScreenCapture(
       streamType ?? TRTCCloudDef.TRTC_VIDEO_STREAM_TYPE_BIG,
-      encParams ?? const TRTCVideoEncParam(),
-      appGroup: appGroup,
+      encParams ?? _captureEncParams,
+      appGroup: appGroup ?? '',
     );
     await _cloud.startLocalAudio(TRTCCloudDef.TRTC_AUDIO_QUALITY_MUSIC);
 
@@ -655,7 +654,8 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
       await _cloud.exitRoom();
     }
 
-    if (_isStartCapture) {
+    if (_started) {
+      _started = false;
       await _cloud.stopScreenCapture();
     }
   }
@@ -665,7 +665,7 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
     if (!_imManager.isEnterRoom) {
       return notEnterRoomYetError;
     }
-    _isStartAudio = true;
+    _started = true;
     await _cloud.startLocalAudio(TRTCCloudDef.TRTC_AUDIO_QUALITY_MUSIC);
 
     return const ActionCallback(code: 0, desc: 'startCapture success');
@@ -679,7 +679,8 @@ class _TRTCLiveRoom extends TRTCLiveRoom {
       await _cloud.exitRoom();
     }
 
-    if (_isStartAudio) {
+    if (_started) {
+      _started = false;
       await _cloud.stopLocalAudio();
     }
   }

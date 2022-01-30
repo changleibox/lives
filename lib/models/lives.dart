@@ -38,7 +38,6 @@ const int _expireTime = 604800;
 const String _secretKey = '4b0cb9f65a743a2e52134f008f963510e0d3716e9af36f6f36fa29863fb7ad19';
 const String _userIdKey = 'userId';
 const String _signKey = 'sign';
-const String _streamId = 'stream';
 
 const _renderParams = TRTCRenderParams(
   fillMode: TRTCCloudDef.TRTC_VIDEO_RENDER_MODE_FIT,
@@ -47,14 +46,6 @@ const _renderParams = TRTCRenderParams(
 /// 时间回调
 typedef LiveListener = void Function(TRTCLiveRoomDelegate type, Object? params);
 
-const _captureEncParams = TRTCVideoEncParam(
-  enableAdjustRes: false,
-  videoBitrate: 3000,
-  minVideoBitrate: 3000,
-  videoFps: 25,
-  videoResolution: TRTCCloudDef.TRTC_VIDEO_RESOLUTION_1920_1080,
-  videoResolutionMode: TRTCCloudDef.TRTC_VIDEO_RESOLUTION_MODE_LANDSCAPE,
-);
 const _config = TRTCLiveRoomConfig(useCDNFirst: false);
 
 /// Created by changlei on 2022/1/20.
@@ -216,8 +207,8 @@ class _LiveProxy {
   }
 
   /// 开始直播
-  static Future<void> startLive(
-    String roomId, {
+  static Future<void> startLive({
+    required String roomId,
     String? roomName,
     String? cover,
     String? appGroup,
@@ -237,13 +228,10 @@ class _LiveProxy {
     _createdRoom = true;
     switch (type) {
       case LiveType.video:
-        await _room.startPublish('$_streamId$userId');
+        await _room.startPublish(streamId: roomId);
         break;
       case LiveType.game:
-        await _room.startCapture(
-          appGroup: appGroup ?? '',
-          encParams: _captureEncParams,
-        );
+        await _room.startCapture(appGroup: appGroup);
         break;
       case LiveType.voice:
         await _room.startVoice();
@@ -275,9 +263,9 @@ class _LiveProxy {
   }
 
   /// 观看直播
-  static Future<void> startWatch(
-    String anchorId,
-    String roomId, {
+  static Future<void> startWatch({
+    required String anchorId,
+    required String roomId,
     int? viewId,
     LiveType type = LiveType.video,
   }) async {
@@ -296,8 +284,8 @@ class _LiveProxy {
   }
 
   /// 停止观看直播
-  static Future<void> exitWatch(
-    String anchorId, {
+  static Future<void> exitWatch({
+    required String anchorId,
     LiveType type = LiveType.video,
   }) async {
     if (type != LiveType.voice) {
