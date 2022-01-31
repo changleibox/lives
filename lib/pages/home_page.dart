@@ -12,7 +12,7 @@ import 'package:lives/models/live_room_def.dart';
 import 'package:lives/models/lives.dart';
 import 'package:lives/routes/routes.dart';
 import 'package:lives/widgets/future_wrapper.dart';
-import 'package:lives/widgets/preferred_size_persistent_header_delegate.dart';
+import 'package:lives/widgets/persistent_header_delegate.dart';
 import 'package:lives/widgets/widget_group.dart';
 import 'package:oktoast/oktoast.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -22,6 +22,7 @@ final _kBottomUpTween = Tween<Offset>(
   begin: const Offset(0.0, 1.0),
   end: Offset.zero,
 );
+const double _kNavBarPersistentHeight = kMinInteractiveDimensionCupertino;
 
 /// Created by changlei on 2022/1/18.
 ///
@@ -304,59 +305,76 @@ class _LiveRoomsState extends CompatibleState<_LiveRooms> {
 
   @override
   Widget build(BuildContext context) {
-    return MediaQuery.removePadding(
-      context: context,
-      removeTop: true,
-      child: CustomScrollView(
-        slivers: [
-          SliverPersistentHeader(
-            pinned: true,
-            delegate: PreferredSizePersistentHeaderDelegate(
-              child: CupertinoNavigationBar(
-                middle: const Text('选择房间'),
-                automaticallyImplyLeading: false,
-                padding: EdgeInsetsDirectional.zero,
-                trailing: CupertinoButton(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
+    return CustomScrollView(
+      slivers: [
+        SliverLayoutBuilder(
+          builder: (context, constraints) {
+            final mediaQueryData = MediaQuery.of(context);
+            final size = mediaQueryData.size;
+            final padding = mediaQueryData.padding;
+            final paintExtent = constraints.remainingPaintExtent;
+            final extentOffset = size.height - paintExtent;
+            final paddingTop = max(0.0, padding.top - extentOffset);
+            final extent = _kNavBarPersistentHeight + paddingTop;
+            return SliverPersistentHeader(
+              pinned: true,
+              delegate: SizedPersistentHeaderDelegate(
+                minExtent: extent,
+                maxExtent: extent,
+                child: MediaQuery(
+                  data: mediaQueryData.copyWith(
+                    padding: padding.copyWith(
+                      top: paddingTop,
+                    ),
                   ),
-                  minSize: 40,
-                  onPressed: () {
-                    Navigator.maybePop(context);
-                  },
-                  child: const Text(
-                    '关闭',
-                    style: TextStyle(
-                      fontSize: 14,
+                  child: CupertinoNavigationBar(
+                    middle: const Text('选择房间'),
+                    automaticallyImplyLeading: false,
+                    padding: EdgeInsetsDirectional.zero,
+                    trailing: CupertinoButton(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                      ),
+                      minSize: 40,
+                      onPressed: () {
+                        Navigator.maybePop(context);
+                      },
+                      child: const Text(
+                        '关闭',
+                        style: TextStyle(
+                          fontSize: 14,
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
+            );
+          },
+        ),
+        if (_isLoading || _rooms.isEmpty)
+          SliverFillRemaining(
+            child: Center(
+              child: Text(
+                _isLoading ? '正在加载～' : '暂无开播的主播噢～',
+                style: const TextStyle(
+                  color: CupertinoColors.secondaryLabel,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          )
+        else
+          SliverSafeArea(
+            top: false,
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                _buildItem,
+                childCount: max(0, _rooms.length * 2 - 1),
+              ),
             ),
           ),
-          if (_isLoading || _rooms.isEmpty)
-            SliverFillRemaining(
-              child: Center(
-                child: Text(
-                  _isLoading ? '正在加载～' : '暂无开播的主播噢～',
-                  style: const TextStyle(
-                    color: CupertinoColors.secondaryLabel,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            )
-          else
-            SliverSafeArea(
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  _buildItem,
-                  childCount: max(0, _rooms.length * 2 - 1),
-                ),
-              ),
-            ),
-        ],
-      ),
+      ],
     );
   }
 }

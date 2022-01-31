@@ -28,3 +28,34 @@ class PreferredSizePersistentHeaderDelegate extends SliverPersistentHeaderDelega
     return false;
   }
 }
+
+/// [Size]
+class SizedPersistentHeaderDelegate extends SliverPersistentHeaderDelegate {
+  /// [PreferredSizeWidget]
+  SizedPersistentHeaderDelegate({
+    required this.child,
+    required this.minExtent,
+    required this.maxExtent,
+  });
+
+  /// child
+  final Widget child;
+
+  /// minExtent
+  @override
+  final double minExtent;
+
+  /// maxExtent
+  @override
+  final double maxExtent;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return child;
+  }
+
+  @override
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
+    return minExtent != oldDelegate.minExtent || maxExtent != oldDelegate.maxExtent;
+  }
+}
