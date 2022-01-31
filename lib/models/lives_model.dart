@@ -9,10 +9,11 @@ abstract class LivesModel extends ChangeNotifier with LiveObserver {
   final _messages = Queue<BulletChat>();
   final _listeners = <VoidCallback>{};
 
+  final _startedNotifier = ValueNotifier<bool>(false);
+
   LiveType _liveType = LiveType.video;
 
   bool _mounted = false;
-  bool _started = false;
   Map<String, UserInfo>? _memberInfo;
   Completer<void>? _pendingCompleter;
 
@@ -37,8 +38,14 @@ abstract class LivesModel extends ChangeNotifier with LiveObserver {
     notifyListeners();
   }
 
+  /// 停止通知
+  ValueNotifier<bool> get startedNotifier => _startedNotifier;
+
   /// 是否开始直播或者观看直播
-  bool get started => _started;
+  bool get started => startedNotifier.value;
+
+  /// 设置是否开始
+  set started(bool value) => _startedNotifier.value = value;
 
   /// 是否已经初始化
   bool get mounted => _mounted;
@@ -152,7 +159,7 @@ abstract class LivesModel extends ChangeNotifier with LiveObserver {
 
   @override
   void onReceiveRoomTextMsg(BulletChat bulletChat) {
-    if (_started) {
+    if (started) {
       _messages.addFirst(bulletChat);
       notifyListeners();
     }
@@ -161,7 +168,7 @@ abstract class LivesModel extends ChangeNotifier with LiveObserver {
 
   @override
   void onAudienceEnter(UserInfo userInfo) {
-    if (_started) {
+    if (started) {
       _onMemberEnterExit(userInfo, '进入直播间');
     }
     super.onAudienceEnter(userInfo);
@@ -169,7 +176,7 @@ abstract class LivesModel extends ChangeNotifier with LiveObserver {
 
   @override
   void onAudienceExit(UserInfo userInfo) {
-    if (_started) {
+    if (started) {
       _onMemberEnterExit(userInfo, '离开直播间');
     }
     super.onAudienceExit(userInfo);
@@ -177,7 +184,7 @@ abstract class LivesModel extends ChangeNotifier with LiveObserver {
 
   @override
   void onRoomDestroy(Object? params) {
-    _started = false;
+    started = false;
     for (var listener in _listeners) {
       listener();
     }

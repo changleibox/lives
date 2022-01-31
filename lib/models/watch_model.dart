@@ -39,7 +39,7 @@ class WatchModel extends LivesModel {
     );
     await _refreshRoomInfo();
     await _refreshUserInfo();
-    _started = true;
+    started = true;
     notifyListeners();
   }
 
@@ -50,7 +50,7 @@ class WatchModel extends LivesModel {
       anchorId: _anchorId,
       type: _liveType,
     );
-    _started = false;
+    started = false;
     notifyListeners();
   }
 

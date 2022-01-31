@@ -7,6 +7,7 @@ import 'package:lives/frameworks/framework.dart';
 import 'package:lives/frameworks/void_presenter.dart';
 import 'package:lives/models/live_error.dart';
 import 'package:lives/models/lives.dart';
+import 'package:lives/routes/routes.dart';
 import 'package:lives/widgets/future_wrapper.dart';
 import 'package:lives/widgets/live_capture_player.dart';
 import 'package:lives/widgets/live_overlay.dart';
@@ -62,8 +63,7 @@ class _LivePageState extends HostState<LivePage, _LivePresenter> {
         builder: (context, value, child) {
           return WillPopScope(
             onWillPop: () async {
-              final result = await presenter._onExit();
-              return result == true;
+              return (await presenter._onExit()) == true;
             },
             child: CupertinoPageScaffold(
               backgroundColor: CupertinoColors.white,
@@ -115,12 +115,14 @@ class _LivePresenter extends VoidPresenter<LivePage> {
   @override
   void initState() {
     _model.liveType.setup();
+    _model.startedNotifier.addListener(_onLiveStartedListener);
     super.initState();
   }
 
   @override
   void dispose() {
     _model.liveType.dispose();
+    _model.startedNotifier.removeListener(_onLiveStartedListener);
     super.dispose();
   }
 
@@ -129,6 +131,12 @@ class _LivePresenter extends VoidPresenter<LivePage> {
     final arguments = this.arguments as Map<String, dynamic>?;
     final liveType = arguments?['liveType'] as LiveType?;
     return _model.setup(liveType);
+  }
+
+  void _onLiveStartedListener() {
+    if (!_model.started) {
+      Routes.liveStopped.pushNamed(context);
+    }
   }
 
   Future<void> _startPreview(int viewId) async {
@@ -174,7 +182,7 @@ class _LivePresenter extends VoidPresenter<LivePage> {
       await _stopPreview();
       return true;
     }
-    return await showCupertinoDialog<bool>(
+    return await showCupertinoDialog<bool?>(
       context: context,
       builder: (context) {
         return CupertinoAlertDialog(
@@ -184,14 +192,14 @@ class _LivePresenter extends VoidPresenter<LivePage> {
             CupertinoDialogAction(
               child: const Text('取消'),
               onPressed: () async {
-                Navigator.pop(context, false);
+                Navigator.pop(context);
               },
             ),
             CupertinoDialogAction(
               isDestructiveAction: true,
               onPressed: () async {
+                Navigator.pop(context);
                 await _exitLive();
-                Navigator.pop(context, false);
               },
               child: const Text('确定'),
             ),

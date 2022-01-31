@@ -165,7 +165,7 @@ class LiveModel extends LivesModel implements LiveModule {
     _networkNotifier.value = 1;
     _setupMessages();
     _startDownTimer();
-    _started = true;
+    started = true;
     notifyListeners();
   }
 
@@ -186,7 +186,7 @@ class LiveModel extends LivesModel implements LiveModule {
     _networkNotifier.value = 1;
     _setupMessages();
     _stopDownTimer();
-    _started = false;
+    started = false;
     notifyListeners();
   }
 

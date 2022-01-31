@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:lives/pages/home_page.dart';
 import 'package:lives/pages/launch_page.dart';
 import 'package:lives/pages/live_page.dart';
+import 'package:lives/pages/live_stopped_page.dart';
 import 'package:lives/pages/login_page.dart';
 import 'package:lives/pages/watch_page.dart';
 
@@ -22,6 +23,9 @@ enum Routes {
 
   /// 观看页面
   watch,
+
+  /// 直播已结束
+  liveStopped,
 }
 
 /// 路由
@@ -34,6 +38,7 @@ class RouteProvider {
     Routes.home.name: (context) => const HomePage(),
     Routes.live.name: (context) => const LivePage(),
     Routes.watch.name: (context) => const WatchPage(),
+    Routes.liveStopped.name: (context) => const LiveStoppedPage(),
   };
 
   /// 路由表
