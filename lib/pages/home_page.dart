@@ -5,7 +5,6 @@ import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
 import 'package:lives/enums/live_type.dart';
 import 'package:lives/frameworks/framework.dart';
@@ -18,7 +17,11 @@ import 'package:lives/widgets/widget_group.dart';
 import 'package:oktoast/oktoast.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-const _keyboardDuration = Duration(milliseconds: 250);
+// Offset from offscreen below to fully on screen.
+final _kBottomUpTween = Tween<Offset>(
+  begin: const Offset(0.0, 1.0),
+  end: Offset.zero,
+);
 
 /// Created by changlei on 2022/1/18.
 ///
@@ -108,9 +111,15 @@ class _HomePresenter extends Presenter<HomePage> {
     if (!await _checkPermission()) {
       return;
     }
-    final result = await showCupertinoModalPopup<Map<String, dynamic>>(
+    final result = await showGeneralDialog<Map<String, dynamic>>(
       context: context,
-      builder: (context) {
+      barrierLabel: '',
+      barrierDismissible: true,
+      barrierColor: const CupertinoDynamicColor.withBrightness(
+        color: Color(0x33000000),
+        darkColor: Color(0x7A000000),
+      ),
+      pageBuilder: (context, animation, secondaryAnimation) {
         return const _AnchorIdTextField();
       },
     );
@@ -119,7 +128,6 @@ class _HomePresenter extends Presenter<HomePage> {
     }
     final anchorId = result['anchorId'] as String?;
     final liveType = result['liveType'] as LiveType?;
-    await Future<void>.delayed(_keyboardDuration);
     await Routes.watch.pushNamed(
       context,
       arguments: <String, dynamic>{
@@ -168,49 +176,80 @@ class _AnchorIdTextField extends StatefulWidget {
   _AnchorIdTextFieldState createState() => _AnchorIdTextFieldState();
 }
 
-class _AnchorIdTextFieldState extends State<_AnchorIdTextField> {
+class _AnchorIdTextFieldState extends State<_AnchorIdTextField> with TickerProviderStateMixin {
   static final _epsilon = Tolerance.defaultTolerance.distance;
+
+  late final _controller = AnimationController(
+    duration: const Duration(milliseconds: 335),
+    vsync: this,
+  );
+  late final _animation = CurvedAnimation(
+    parent: _controller,
+    curve: Curves.linearToEaseOut,
+    reverseCurve: Curves.linearToEaseOut.flipped,
+  );
 
   bool _popped = false;
 
   @override
+  void initState() {
+    _controller.forward();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: MediaQuery.of(context).size.height / 2,
-      child: NotificationListener<DraggableScrollableNotification>(
-        onNotification: (notification) {
-          if (!_popped && nearZero(notification.extent, _epsilon)) {
-            Navigator.pop(context);
-            _popped = true;
-            return false;
-          }
-          return true;
-        },
-        child: MediaQuery.removePadding(
-          context: context,
-          removeTop: true,
-          child: DraggableScrollableSheet(
-            expand: true,
-            initialChildSize: 1,
-            maxChildSize: 1,
-            minChildSize: 0,
-            snap: true,
-            snapSizes: const [0, 1],
-            builder: (context, scrollController) {
-              return Container(
-                decoration: const BoxDecoration(
-                  color: CupertinoColors.white,
-                  borderRadius: BorderRadius.vertical(
-                    top: Radius.circular(10),
+    return WillPopScope(
+      onWillPop: () async {
+        await _controller.reverse();
+        return true;
+      },
+      child: CupertinoUserInterfaceLevel(
+        data: CupertinoUserInterfaceLevelData.elevated,
+        child: NotificationListener<DraggableScrollableNotification>(
+          onNotification: (notification) {
+            if (!_popped && nearZero(notification.extent, _epsilon)) {
+              Navigator.pop(context);
+              _popped = true;
+              return false;
+            }
+            return true;
+          },
+          child: MediaQuery.removePadding(
+            context: context,
+            removeTop: true,
+            child: DraggableScrollableSheet(
+              expand: true,
+              initialChildSize: 0.5,
+              maxChildSize: 1,
+              minChildSize: 0,
+              snap: true,
+              snapSizes: const [0, 0.5, 1],
+              builder: (context, scrollController) {
+                return SlideTransition(
+                  position: _kBottomUpTween.animate(_animation),
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      color: CupertinoColors.white,
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(10),
+                      ),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: PrimaryScrollController(
+                      controller: scrollController,
+                      child: const _LiveRooms(),
+                    ),
                   ),
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: PrimaryScrollController(
-                  controller: scrollController,
-                  child: const _LiveRooms(),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -225,20 +264,27 @@ class _LiveRooms extends StatefulWidget {
   _LiveRoomsState createState() => _LiveRoomsState();
 }
 
-class _LiveRoomsState extends State<_LiveRooms> {
+class _LiveRoomsState extends CompatibleState<_LiveRooms> {
   final _rooms = <RoomInfo>[];
+
+  bool _isLoading = true;
 
   @override
   void initState() {
-    Lives.getRooms(List.generate(100, (index) => (index + 1).toString())).then((value) {
-      _rooms.clear();
-      _rooms.addAll(value.where((element) => element.ownerId != Lives.userId));
-      if (!mounted) {
-        return;
-      }
-      setState(() {});
-    });
+    _refresh();
     super.initState();
+  }
+
+  Future<void> _refresh() async {
+    try {
+      final rooms = await Lives.getRooms(List.generate(100, (index) => (index + 1).toString()));
+      _rooms.clear();
+      _rooms.addAll(rooms.where((element) => element.ownerId != Lives.userId));
+    } finally {
+      markNeedsBuild(() {
+        _isLoading = false;
+      });
+    }
   }
 
   Widget _buildItem(BuildContext context, int index) {
@@ -288,12 +334,28 @@ class _LiveRoomsState extends State<_LiveRooms> {
             ),
           ),
         ),
-        SliverList(
-          delegate: SliverChildBuilderDelegate(
-            _buildItem,
-            childCount: max(0, _rooms.length * 2 - 1),
+        if (_isLoading || _rooms.isEmpty)
+          SliverFillRemaining(
+            child: Center(
+              child: Text(
+                _isLoading ? '正在加载～' : '暂无开播的主播噢～',
+                style: const TextStyle(
+                  color: CupertinoColors.secondaryLabel,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          )
+        else
+          SliverPadding(
+            padding: MediaQuery.of(context).padding,
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                _buildItem,
+                childCount: max(0, _rooms.length * 2 - 1),
+              ),
+            ),
           ),
-        ),
       ],
     );
   }
