@@ -2,26 +2,16 @@
 
 import 'dart:async';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/physics.dart';
 import 'package:lives/enums/live_type.dart';
 import 'package:lives/frameworks/framework.dart';
-import 'package:lives/models/live_room_def.dart';
 import 'package:lives/models/lives.dart';
 import 'package:lives/routes/routes.dart';
 import 'package:lives/widgets/future_wrapper.dart';
-import 'package:lives/widgets/persistent_header_delegate.dart';
-import 'package:lives/widgets/sliver_dynamic_safe_area.dart';
+import 'package:lives/widgets/live_room_sheet.dart';
 import 'package:lives/widgets/widget_group.dart';
 import 'package:oktoast/oktoast.dart';
 import 'package:permission_handler/permission_handler.dart';
-
-// Offset from offscreen below to fully on screen.
-final _kBottomUpTween = Tween<Offset>(
-  begin: const Offset(0.0, 1.0),
-  end: Offset.zero,
-);
 
 /// Created by changlei on 2022/1/18.
 ///
@@ -111,26 +101,17 @@ class _HomePresenter extends Presenter<HomePage> {
     if (!await _checkPermission()) {
       return;
     }
-    final result = await showGeneralDialog<Map<String, dynamic>>(
-      context: context,
-      barrierLabel: '',
-      barrierDismissible: true,
-      barrierColor: const CupertinoDynamicColor.withBrightness(
-        color: Color(0x33000000),
-        darkColor: Color(0x7A000000),
-      ),
-      pageBuilder: (context, animation, secondaryAnimation) {
-        return const _AnchorIdTextField();
-      },
-    );
-    if (result == null) {
+    final room = await showLiveRoomSheet(context);
+    if (room == null) {
       return;
     }
-    final anchorId = result['anchorId'] as String?;
-    final liveType = result['liveType'] as LiveType?;
+    final roomId = room.roomId;
+    final anchorId = room.ownerId;
+    final liveType = room.liveType;
     await Routes.watch.pushNamed(
       context,
       arguments: <String, dynamic>{
+        'roomId': roomId,
         'anchorId': anchorId,
         'liveType': liveType,
       },
@@ -165,331 +146,6 @@ class _HomePresenter extends Presenter<HomePage> {
           ],
         );
       },
-    );
-  }
-}
-
-class _AnchorIdTextField extends StatefulWidget {
-  const _AnchorIdTextField({Key? key}) : super(key: key);
-
-  @override
-  _AnchorIdTextFieldState createState() => _AnchorIdTextFieldState();
-}
-
-class _AnchorIdTextFieldState extends State<_AnchorIdTextField> with TickerProviderStateMixin {
-  static final _epsilon = Tolerance.defaultTolerance.distance;
-
-  bool _popped = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final animation = ModalRoute.of(context)?.animation;
-    final Animation<Offset> position;
-    if (animation == null) {
-      position = _kBottomUpTween.animate(const AlwaysStoppedAnimation(1));
-    } else {
-      position = _kBottomUpTween.animate(animation);
-    }
-    return CupertinoUserInterfaceLevel(
-      data: CupertinoUserInterfaceLevelData.elevated,
-      child: NotificationListener<DraggableScrollableNotification>(
-        onNotification: (notification) {
-          final extent = notification.extent;
-          if (!_popped && nearZero(extent, _epsilon)) {
-            Navigator.pop(context);
-            _popped = true;
-          }
-          return !_popped;
-        },
-        child: DraggableScrollableSheet(
-          expand: true,
-          initialChildSize: 0.5,
-          maxChildSize: 1,
-          minChildSize: 0,
-          snap: true,
-          snapSizes: const [0, 0.5, 1],
-          builder: (context, scrollController) {
-            return SlideTransition(
-              position: position,
-              child: Container(
-                decoration: const BoxDecoration(
-                  color: CupertinoColors.white,
-                  borderRadius: BorderRadius.vertical(
-                    top: Radius.circular(10),
-                  ),
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: PrimaryScrollController(
-                  controller: scrollController,
-                  child: const _LiveRooms(),
-                ),
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
-}
-
-class _LiveRooms extends StatefulWidget {
-  const _LiveRooms({Key? key}) : super(key: key);
-
-  @override
-  _LiveRoomsState createState() => _LiveRoomsState();
-}
-
-class _LiveRoomsState extends CompatibleState<_LiveRooms> {
-  final _rooms = <RoomInfo>[];
-
-  bool _isLoading = true;
-
-  @override
-  void onPostFrame(Duration timeStamp) {
-    _refresh();
-    super.onPostFrame(timeStamp);
-  }
-
-  Future<void> _refresh() async {
-    try {
-      final rooms = await Lives.getRooms(List.generate(100, (index) => (index + 1).toString()));
-      _rooms.clear();
-      _rooms.addAll(rooms.where((element) => element.ownerId != Lives.userId));
-    } finally {
-      markNeedsBuild(() {
-        _isLoading = false;
-      });
-    }
-  }
-
-  Widget _buildItem(BuildContext context, int index) {
-    return Container(
-      foregroundDecoration: const BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: CupertinoColors.separator,
-            width: 0,
-          ),
-        ),
-      ),
-      child: _RoomInfo(
-        room: _rooms[index],
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final navigationBar = CupertinoNavigationBar(
-      middle: const Text('正在直播'),
-      automaticallyImplyLeading: false,
-      padding: EdgeInsetsDirectional.zero,
-      trailing: CupertinoButton(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 10,
-        ),
-        minSize: 44,
-        onPressed: () {
-          Navigator.maybePop(context);
-        },
-        child: const Text(
-          '关闭',
-          style: TextStyle(
-            fontSize: 14,
-          ),
-        ),
-      ),
-    );
-    final navigationBarHeight = navigationBar.preferredSize.height;
-    return CustomScrollView(
-      slivers: [
-        SliverDynamicSafeArea(
-          childHeight: navigationBarHeight,
-          builder: (context, padding) {
-            final mediaQueryData = MediaQuery.of(context);
-            final extent = navigationBarHeight + padding.top;
-            return SliverPersistentHeader(
-              pinned: true,
-              delegate: SizedPersistentHeaderDelegate(
-                minExtent: extent,
-                maxExtent: extent,
-                child: MediaQuery(
-                  data: mediaQueryData.copyWith(
-                    padding: padding,
-                  ),
-                  child: navigationBar,
-                ),
-              ),
-            );
-          },
-        ),
-        if (_isLoading || _rooms.isEmpty)
-          SliverFillRemaining(
-            child: Center(
-              child: Text(
-                _isLoading ? '正在加载～' : '暂无开播的主播噢～',
-                style: const TextStyle(
-                  color: CupertinoColors.secondaryLabel,
-                  fontSize: 14,
-                ),
-              ),
-            ),
-          )
-        else
-          SliverSafeArea(
-            top: false,
-            sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                _buildItem,
-                childCount: _rooms.length,
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-}
-
-class _RoomInfo extends StatelessWidget {
-  const _RoomInfo({
-    Key? key,
-    required this.room,
-  }) : super(key: key);
-
-  final RoomInfo room;
-
-  @override
-  Widget build(BuildContext context) {
-    return CupertinoButton(
-      padding: const EdgeInsets.all(10),
-      minSize: 0,
-      onPressed: () {
-        final roomId = room.roomId;
-        final anchorId = room.ownerId;
-        final liveType = room.liveType;
-        Navigator.pop(context, <String, dynamic>{
-          'roomId': roomId,
-          'anchorId': anchorId,
-          'liveType': liveType,
-        });
-      },
-      child: WidgetGroup.spacing(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: 10,
-        children: [
-          Expanded(
-            child: AspectRatio(
-              aspectRatio: 1280 / 720,
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(5),
-                  border: Border.all(
-                    color: CupertinoColors.separator,
-                    width: 0,
-                  ),
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: CachedNetworkImage(
-                  imageUrl: room.coverUrl ?? '',
-                  width: 1280,
-                  height: 720,
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-          ),
-          Expanded(
-            child: WidgetGroup.spacing(
-              alignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              direction: Axis.vertical,
-              spacing: 4,
-              children: [
-                Container(
-                  margin: const EdgeInsets.only(
-                    bottom: 8,
-                  ),
-                  child: Text.rich(
-                    TextSpan(
-                      children: [
-                        WidgetSpan(
-                          alignment: PlaceholderAlignment.middle,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: CupertinoTheme.of(context).primaryColor,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 3,
-                              vertical: 1,
-                            ),
-                            margin: const EdgeInsets.only(
-                              right: 4,
-                            ),
-                            child: Text(
-                              room.liveType.label,
-                              style: const TextStyle(
-                                color: CupertinoColors.white,
-                                fontSize: 10,
-                              ),
-                            ),
-                          ),
-                        ),
-                        TextSpan(
-                          text: room.roomName ?? '未知',
-                        ),
-                      ],
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: CupertinoColors.label,
-                    ),
-                  ),
-                ),
-                Text(
-                  '主播：${room.ownerName ?? '未知'}',
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: CupertinoColors.secondaryLabel,
-                  ),
-                ),
-                Text(
-                  '人数：${room.memberCount}',
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: CupertinoColors.secondaryLabel,
-                  ),
-                ),
-                Text(
-                  '简介：${room.introduction}',
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: CupertinoColors.secondaryLabel,
-                  ),
-                ),
-                Text(
-                  '通知：${room.notification ?? '暂无～'}',
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: CupertinoColors.secondaryLabel,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

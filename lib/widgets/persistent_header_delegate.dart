@@ -38,6 +38,13 @@ class SizedPersistentHeaderDelegate extends SliverPersistentHeaderDelegate {
     required this.maxExtent,
   });
 
+  /// [PreferredSizeWidget]
+  SizedPersistentHeaderDelegate.extent({
+    required this.child,
+    required double extent,
+  })  : minExtent = extent,
+        maxExtent = extent;
+
   /// child
   final Widget child;
 
