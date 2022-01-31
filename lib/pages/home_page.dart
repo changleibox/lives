@@ -179,75 +179,54 @@ class _AnchorIdTextField extends StatefulWidget {
 class _AnchorIdTextFieldState extends State<_AnchorIdTextField> with TickerProviderStateMixin {
   static final _epsilon = Tolerance.defaultTolerance.distance;
 
-  late final _controller = AnimationController(
-    duration: const Duration(milliseconds: 335),
-    vsync: this,
-  );
-  late final _animation = CurvedAnimation(
-    parent: _controller,
-    curve: Curves.linearToEaseOut,
-    reverseCurve: Curves.linearToEaseOut.flipped,
-  );
-
   bool _popped = false;
 
   @override
-  void initState() {
-    _controller.forward();
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        await _controller.reverse();
-        return true;
-      },
-      child: CupertinoUserInterfaceLevel(
-        data: CupertinoUserInterfaceLevelData.elevated,
-        child: NotificationListener<DraggableScrollableNotification>(
-          onNotification: (notification) {
-            final extent = notification.extent;
-            if (!_popped && nearZero(extent, _epsilon)) {
-              Navigator.pop(context);
-              _popped = true;
-              return false;
-            }
-            return true;
-          },
-          child: DraggableScrollableSheet(
-            expand: true,
-            initialChildSize: 0.5,
-            maxChildSize: 1,
-            minChildSize: 0,
-            snap: true,
-            snapSizes: const [0, 0.5, 1],
-            builder: (context, scrollController) {
-              return SlideTransition(
-                position: _kBottomUpTween.animate(_animation),
-                child: Container(
-                  decoration: const BoxDecoration(
-                    color: CupertinoColors.white,
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(10),
-                    ),
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  child: PrimaryScrollController(
-                    controller: scrollController,
-                    child: const _LiveRooms(),
+    final animation = ModalRoute.of(context)?.animation;
+    final Animation<Offset> position;
+    if (animation == null) {
+      position = _kBottomUpTween.animate(const AlwaysStoppedAnimation(1));
+    } else {
+      position = _kBottomUpTween.animate(animation);
+    }
+    return CupertinoUserInterfaceLevel(
+      data: CupertinoUserInterfaceLevelData.elevated,
+      child: NotificationListener<DraggableScrollableNotification>(
+        onNotification: (notification) {
+          final extent = notification.extent;
+          if (!_popped && nearZero(extent, _epsilon)) {
+            Navigator.pop(context);
+            _popped = true;
+            return false;
+          }
+          return true;
+        },
+        child: DraggableScrollableSheet(
+          expand: true,
+          initialChildSize: 0.5,
+          maxChildSize: 1,
+          minChildSize: 0,
+          snap: true,
+          snapSizes: const [0, 0.5, 1],
+          builder: (context, scrollController) {
+            return SlideTransition(
+              position: position,
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: CupertinoColors.white,
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(10),
                   ),
                 ),
-              );
-            },
-          ),
+                clipBehavior: Clip.antiAlias,
+                child: PrimaryScrollController(
+                  controller: scrollController,
+                  child: const _LiveRooms(),
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
