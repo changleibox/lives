@@ -262,6 +262,7 @@ class _LiveIMRoom extends LiveIMRoom {
         desc: 'you have been in room:' + _roomId! + " can't create another room:" + roomId,
       );
     }
+    await _dismissAllGroups();
     final result = await _createGroup(roomId, roomParam);
 
     //setGroupInfo
@@ -271,7 +272,6 @@ class _LiveIMRoom extends LiveIMRoom {
       await callback();
 
       _anchorList.add(_userId);
-      await _dismissAllGroups();
       await _updateGroupInfo(roomId, roomParam);
     }
     return result;
@@ -313,8 +313,8 @@ class _LiveIMRoom extends LiveIMRoom {
   }
 
   Future<void> _dismissAllGroups() async {
-    final groupResult = await groupManager.getJoinedGroupList();
-    final groups = groupResult.data;
+    final result = await groupManager.getJoinedGroupList();
+    final groups = result.data;
     final dismissGroupFutures = <Future<void>>[];
     if (groups != null && groups.isNotEmpty) {
       for (var value in groups) {
