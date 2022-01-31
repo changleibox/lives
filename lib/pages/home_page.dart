@@ -286,7 +286,7 @@ class _LiveRoomsState extends CompatibleState<_LiveRooms> {
 
   Widget _buildItem(BuildContext context, int index) {
     return Container(
-      decoration: const BoxDecoration(
+      foregroundDecoration: const BoxDecoration(
         border: Border(
           bottom: BorderSide(
             color: CupertinoColors.separator,
