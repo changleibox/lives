@@ -12,6 +12,7 @@ class SliverMediaQueryPadding extends StatelessWidget {
   const SliverMediaQueryPadding({
     Key? key,
     required this.sliver,
+    this.dimension,
     this.left = true,
     this.top = true,
     this.right = true,
@@ -21,6 +22,9 @@ class SliverMediaQueryPadding extends StatelessWidget {
 
   /// child
   final Widget sliver;
+
+  /// viewportDimension
+  final double? dimension;
 
   /// Whether to avoid system intrusions on the left.
   final bool left;
@@ -45,11 +49,10 @@ class SliverMediaQueryPadding extends StatelessWidget {
     return SliverLayoutBuilder(
       builder: (context, constraints) {
         final mediaQueryData = MediaQuery.of(context);
-        final size = mediaQueryData.size;
         final padding = mediaQueryData.padding;
         final paintExtent = constraints.remainingPaintExtent;
-        final extentOffset = size.height - paintExtent;
-        final paddingTop = max(0.0, padding.top - extentOffset);
+        final dimension = this.dimension ?? mediaQueryData.size.height;
+        final paddingTop = max(0.0, padding.top - dimension + paintExtent);
         return MediaQuery(
           data: mediaQueryData.copyWith(
             padding: padding.copyWith(

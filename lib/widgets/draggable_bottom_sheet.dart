@@ -83,59 +83,69 @@ class _DraggableBottomSheetState extends State<DraggableBottomSheet> {
     final navigationBar = widget.navigationBar;
     final preferredSize = navigationBar?.preferredSize;
     final navigationBarHeight = preferredSize?.height ?? 0;
-    return CupertinoUserInterfaceLevel(
-      data: CupertinoUserInterfaceLevelData.elevated,
-      child: NotificationListener<DraggableScrollableNotification>(
-        onNotification: _onNotification,
-        child: DraggableScrollableSheet(
-          expand: true,
-          initialChildSize: 0.5,
-          maxChildSize: 1,
-          minChildSize: 0,
-          snap: true,
-          snapSizes: const [0, 0.5, 1],
-          builder: (context, scrollController) {
-            return SlideTransition(
-              position: position,
-              child: ClipRRect(
-                borderRadius: widget.borderRadius ?? BorderRadius.zero,
-                clipBehavior: Clip.antiAlias,
-                child: CupertinoPageScaffold(
-                  backgroundColor: widget.backgroundColor,
-                  resizeToAvoidBottomInset: widget.resizeToAvoidBottomInset,
-                  child: PrimaryScrollController(
-                    controller: scrollController,
-                    child: CustomScrollView(
-                      slivers: [
-                        if (navigationBar != null)
-                          SliverMediaQueryPadding(
-                            sliver: Builder(
-                              builder: (context) {
-                                final mediaQueryData = MediaQuery.of(context);
-                                final padding = mediaQueryData.padding;
-                                return SliverPersistentHeader(
-                                  pinned: true,
-                                  delegate: SizedPersistentHeaderDelegate.extent(
-                                    extent: navigationBarHeight + padding.top,
-                                    child: navigationBar,
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        ...widget.slivers.map((e) {
-                          return SliverMediaQueryPadding(
-                            top: navigationBar == null,
-                            sliver: e,
-                          );
-                        }),
-                      ],
+    return CupertinoPageScaffold(
+      backgroundColor: CupertinoColors.white.withOpacity(0),
+      resizeToAvoidBottomInset: widget.resizeToAvoidBottomInset,
+      child: CupertinoUserInterfaceLevel(
+        data: CupertinoUserInterfaceLevelData.elevated,
+        child: NotificationListener<DraggableScrollableNotification>(
+          onNotification: _onNotification,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final dimension = constraints.biggest.height;
+              return DraggableScrollableSheet(
+                expand: true,
+                initialChildSize: 0.5,
+                maxChildSize: 1,
+                minChildSize: 0,
+                snap: true,
+                snapSizes: const [0, 0.5, 1],
+                builder: (context, scrollController) {
+                  return SlideTransition(
+                    position: position,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: widget.borderRadius,
+                        color: widget.backgroundColor,
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: PrimaryScrollController(
+                        controller: scrollController,
+                        child: CustomScrollView(
+                          slivers: [
+                            if (navigationBar != null)
+                              SliverMediaQueryPadding(
+                                dimension: dimension,
+                                sliver: Builder(
+                                  builder: (context) {
+                                    final mediaQueryData = MediaQuery.of(context);
+                                    final padding = mediaQueryData.padding;
+                                    return SliverPersistentHeader(
+                                      pinned: true,
+                                      delegate: SizedPersistentHeaderDelegate.extent(
+                                        extent: navigationBarHeight + padding.top,
+                                        child: navigationBar,
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ...widget.slivers.map((e) {
+                              return SliverMediaQueryPadding(
+                                dimension: dimension,
+                                top: navigationBar == null,
+                                sliver: e,
+                              );
+                            }),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ),
-            );
-          },
+                  );
+                },
+              );
+            },
+          ),
         ),
       ),
     );
