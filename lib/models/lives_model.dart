@@ -18,7 +18,7 @@ abstract class LivesModel extends ChangeNotifier with LiveObserver {
   Completer<void>? _pendingCompleter;
 
   /// 初始化
-  Future<void> setup(LiveType? liveType) async {
+  Future<void> setup({LiveType? liveType}) async {
     _liveType = liveType ?? LiveType.video;
     _mounted = true;
     _setupMessages();

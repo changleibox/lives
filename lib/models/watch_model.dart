@@ -6,20 +6,21 @@ part of 'lives.dart';
 ///
 /// 直播
 class WatchModel extends LivesModel {
-  late String _anchorId;
+  late final String _anchorId;
 
   RoomInfo? _roomInfo;
 
   @override
-  String get _roomId => _anchorId;
+  late final String _roomId;
 
   /// 房间信息
   RoomInfo? get roomInfo => _roomInfo;
 
   @override
-  Future<void> setup([LiveType? liveType, String? anchorId]) {
+  Future<void> setup({LiveType? liveType, String? roomId, String? anchorId}) {
     _anchorId = anchorId ?? userId;
-    return super.setup(liveType);
+    _roomId = roomId ?? _anchorId;
+    return super.setup(liveType: liveType);
   }
 
   /// 主播id

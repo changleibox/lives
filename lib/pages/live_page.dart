@@ -130,7 +130,7 @@ class _LivePresenter extends VoidPresenter<LivePage> {
   Future<void> onLoad(bool showProgress, CancelToken? cancelToken) {
     final arguments = this.arguments as Map<String, dynamic>?;
     final liveType = arguments?['liveType'] as LiveType?;
-    return _model.setup(liveType);
+    return _model.setup(liveType: liveType);
   }
 
   void _onLiveStartedListener() {

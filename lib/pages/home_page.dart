@@ -267,9 +267,9 @@ class _LiveRoomsState extends CompatibleState<_LiveRooms> {
   bool _isLoading = true;
 
   @override
-  void initState() {
+  void onPostFrame(Duration timeStamp) {
     _refresh();
-    super.initState();
+    super.onPostFrame(timeStamp);
   }
 
   Future<void> _refresh() async {
@@ -303,7 +303,7 @@ class _LiveRoomsState extends CompatibleState<_LiveRooms> {
   @override
   Widget build(BuildContext context) {
     final navigationBar = CupertinoNavigationBar(
-      middle: const Text('选择房间'),
+      middle: const Text('正在直播'),
       automaticallyImplyLeading: false,
       padding: EdgeInsetsDirectional.zero,
       trailing: CupertinoButton(
@@ -386,9 +386,11 @@ class _RoomInfo extends StatelessWidget {
       padding: const EdgeInsets.all(10),
       minSize: 0,
       onPressed: () {
+        final roomId = room.roomId;
         final anchorId = room.ownerId;
         final liveType = room.liveType;
         Navigator.pop(context, <String, dynamic>{
+          'roomId': roomId,
           'anchorId': anchorId,
           'liveType': liveType,
         });
