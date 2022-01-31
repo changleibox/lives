@@ -155,24 +155,23 @@ class _RoomInfoItem extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         spacing: 10,
         children: [
-          Expanded(
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(5),
+              border: Border.all(
+                color: CupertinoColors.separator,
+                width: 0,
+              ),
+            ),
+            clipBehavior: Clip.antiAlias,
+            width: 200,
             child: AspectRatio(
               aspectRatio: _coverWidth / _coverHeight,
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(5),
-                  border: Border.all(
-                    color: CupertinoColors.separator,
-                    width: 0,
-                  ),
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: CachedNetworkImage(
-                  imageUrl: room.coverUrl ?? '',
-                  width: _coverWidth,
-                  height: _coverHeight,
-                  fit: BoxFit.cover,
-                ),
+              child: CachedNetworkImage(
+                imageUrl: room.coverUrl ?? '',
+                width: _coverWidth,
+                height: _coverHeight,
+                fit: BoxFit.cover,
               ),
             ),
           ),
