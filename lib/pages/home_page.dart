@@ -4,7 +4,6 @@ import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
 import 'package:lives/enums/live_type.dart';
 import 'package:lives/frameworks/framework.dart';
