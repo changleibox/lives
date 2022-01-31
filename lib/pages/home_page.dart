@@ -4,6 +4,7 @@ import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
 import 'package:lives/enums/live_type.dart';
 import 'package:lives/frameworks/framework.dart';
@@ -425,71 +426,85 @@ class _RoomInfo extends StatelessWidget {
               direction: Axis.vertical,
               spacing: 4,
               children: [
-                Text.rich(
-                  TextSpan(
-                    children: [
-                      WidgetSpan(
-                        alignment: PlaceholderAlignment.middle,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: CupertinoTheme.of(context).primaryColor,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 3,
-                            vertical: 1,
-                          ),
-                          margin: const EdgeInsets.only(
-                            right: 4,
-                          ),
-                          child: Text(
-                            room.liveType.label,
-                            style: const TextStyle(
-                              color: CupertinoColors.white,
-                              fontSize: 10,
+                Container(
+                  margin: const EdgeInsets.only(
+                    bottom: 8,
+                  ),
+                  child: Text.rich(
+                    TextSpan(
+                      children: [
+                        WidgetSpan(
+                          alignment: PlaceholderAlignment.middle,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: CupertinoTheme.of(context).primaryColor,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 3,
+                              vertical: 1,
+                            ),
+                            margin: const EdgeInsets.only(
+                              right: 4,
+                            ),
+                            child: Text(
+                              room.liveType.label,
+                              style: const TextStyle(
+                                color: CupertinoColors.white,
+                                fontSize: 10,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      TextSpan(
-                        text: room.roomName ?? '未知',
-                      ),
-                    ],
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: CupertinoColors.label,
+                        TextSpan(
+                          text: room.roomName ?? '未知',
+                        ),
+                      ],
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: CupertinoColors.label,
+                    ),
                   ),
                 ),
-                WidgetGroup.spacing(
-                  spacing: 4,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        '主播：${room.ownerName ?? '未知'}',
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: CupertinoColors.secondaryLabel,
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: Text(
-                        '人数：${room.memberCount}',
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: CupertinoColors.secondaryLabel,
-                        ),
-                      ),
-                    ),
-                  ],
+                Text(
+                  '主播：${room.ownerName ?? '未知'}',
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: CupertinoColors.secondaryLabel,
+                  ),
+                ),
+                Text(
+                  '人数：${room.memberCount}',
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: CupertinoColors.secondaryLabel,
+                  ),
+                ),
+                Text(
+                  '简介：${room.introduction}',
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: CupertinoColors.secondaryLabel,
+                  ),
+                ),
+                Text(
+                  '通知：${room.notification ?? '暂无～'}',
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: CupertinoColors.secondaryLabel,
+                  ),
                 ),
               ],
             ),
