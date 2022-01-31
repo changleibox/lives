@@ -42,7 +42,7 @@ const String _userAvatarKey = 'userAvatar';
 const String _signKey = 'sign';
 
 const _liveRenderParams = TRTCRenderParams(
-  fillMode: TRTCCloudDef.TRTC_VIDEO_RENDER_MODE_FILL,
+  fillMode: TRTCCloudDef.TRTC_VIDEO_RENDER_MODE_FIT,
 );
 const _watchRenderParams = TRTCRenderParams(
   fillMode: TRTCCloudDef.TRTC_VIDEO_RENDER_MODE_FIT,
