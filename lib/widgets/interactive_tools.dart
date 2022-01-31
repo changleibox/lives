@@ -135,7 +135,7 @@ class InteractiveTools extends StatelessWidget {
                   ),
                   _Button(
                     text: '闪光灯${model.enableTorch ? '开' : '关'}',
-                    icon: CupertinoIcons.bolt_fill,
+                    icon: model.enableTorch ? CupertinoIcons.bolt_fill : CupertinoIcons.bolt_slash_fill,
                     onPressed: () {
                       if (model.isFront == true) {
                         showToast('前置摄像头不能开启闪光灯噢～');
