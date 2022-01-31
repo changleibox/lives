@@ -39,7 +39,6 @@ class SliverDynamicSafeArea extends StatelessWidget {
           top: paddingTop,
           bottom: paddingBottom,
         );
-        print([paintExtent, newPadding]);
         return builder(context, newPadding);
       },
     );
