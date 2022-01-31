@@ -1,7 +1,6 @@
 // Copyright (c) 2022 CHANGLEI. All rights reserved.
 
 import 'package:flutter/cupertino.dart';
-import 'package:lives/widgets/player_background.dart';
 
 /// Created by changlei on 2022/1/18.
 ///
@@ -52,14 +51,12 @@ class _LiveCapturePlayerState extends State<LiveCapturePlayer> {
         child: child,
       );
     }
-    return PlayerBackground(
-      child: AnimatedAlign(
-        duration: const Duration(
-          milliseconds: 250,
-        ),
-        alignment: alignment,
-        child: child,
+    return AnimatedAlign(
+      duration: const Duration(
+        milliseconds: 250,
       ),
+      alignment: alignment,
+      child: child,
     );
   }
 }

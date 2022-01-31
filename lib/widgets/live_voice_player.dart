@@ -3,7 +3,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:lives/commons/test_data.dart';
-import 'package:lives/widgets/player_background.dart';
 
 /// Created by changlei on 2022/1/18.
 ///
@@ -60,8 +59,6 @@ class _LiveVoicePlayerState extends State<LiveVoicePlayer> {
         ),
       );
     }
-    return PlayerBackground(
-      child: child,
-    );
+    return child;
   }
 }

@@ -14,6 +14,7 @@ import 'package:lives/widgets/live_overlay.dart';
 import 'package:lives/widgets/live_video_player.dart';
 import 'package:lives/widgets/live_voice_player.dart';
 import 'package:lives/widgets/not_live_overlay.dart';
+import 'package:lives/widgets/player_background.dart';
 import 'package:oktoast/oktoast.dart';
 import 'package:provider/provider.dart';
 
@@ -35,24 +36,36 @@ class _LivePageState extends HostState<LivePage, _LivePresenter> {
   Widget _buildPlayer() {
     final model = presenter._model;
     final key = ObjectKey(model.userId);
+    final Widget child;
     switch (model.liveType) {
       case LiveType.video:
-        return LiveVideoPlayer(
+        child = LiveVideoPlayer(
           key: key,
           onViewCreated: presenter._startPreview,
         );
+        break;
       case LiveType.game:
-        return LiveCapturePlayer(
+        child = LiveCapturePlayer(
           key: key,
           started: model.started,
         );
+        break;
       case LiveType.voice:
-        return LiveVoicePlayer(
+        child = LiveVoicePlayer(
           key: key,
           alignment: model.started ? const Alignment(0.0, -0.3) : Alignment.center,
           avatar: model.getMemberInfo(model.userId)?.userAvatar,
         );
+        break;
     }
+    return PlayerBackground(
+      child: AnimatedSwitcher(
+        duration: const Duration(
+          milliseconds: 300,
+        ),
+        child: child,
+      ),
+    );
   }
 
   @override

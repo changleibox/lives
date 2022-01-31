@@ -3,7 +3,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
-import 'package:lives/widgets/player_background.dart';
 import 'package:tencent_trtc_cloud/trtc_cloud_def.dart';
 import 'package:tencent_trtc_cloud/trtc_cloud_video_view.dart';
 
@@ -31,17 +30,11 @@ class LiveVideoPlayer extends StatefulWidget {
 class _LiveVideoPlayerState extends State<LiveVideoPlayer> {
   @override
   Widget build(BuildContext context) {
-    return PlayerBackground(
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          return TRTCCloudVideoView(
-            viewType: TRTCCloudDef.TRTC_VideoView_TextureView,
-            viewMode: TRTCCloudDef.TRTC_VideoView_Model_Virtual,
-            onViewCreated: widget.onViewCreated,
-            gestureRecognizers: widget.gestureRecognizers,
-          );
-        },
-      ),
+    return TRTCCloudVideoView(
+      viewType: TRTCCloudDef.TRTC_VideoView_TextureView,
+      viewMode: TRTCCloudDef.TRTC_VideoView_Model_Virtual,
+      onViewCreated: widget.onViewCreated,
+      gestureRecognizers: widget.gestureRecognizers,
     );
   }
 }

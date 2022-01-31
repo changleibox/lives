@@ -12,6 +12,7 @@ import 'package:lives/models/lives.dart';
 import 'package:lives/widgets/future_wrapper.dart';
 import 'package:lives/widgets/live_video_player.dart';
 import 'package:lives/widgets/live_voice_player.dart';
+import 'package:lives/widgets/player_background.dart';
 import 'package:lives/widgets/watch_overlay.dart';
 import 'package:oktoast/oktoast.dart';
 import 'package:provider/provider.dart';
@@ -34,21 +35,32 @@ class _WatchPageState extends HostState<WatchPage, _WatchPresenter> {
   Widget _buildPlayer() {
     final model = presenter._model;
     final key = ObjectKey(model.userId);
+    final Widget child;
     switch (model.liveType) {
       case LiveType.video:
       case LiveType.game:
-        return LiveVideoPlayer(
+        child = LiveVideoPlayer(
           key: key,
           onViewCreated: presenter._startWatch,
         );
+        break;
       case LiveType.voice:
-        return LiveVoicePlayer(
+        child = LiveVoicePlayer(
           key: key,
           alignment: model.started ? const Alignment(0.0, -0.3) : Alignment.center,
           avatar: model.getMemberInfo(model.anchorId)?.userAvatar,
           display: model.started,
         );
+        break;
     }
+    return PlayerBackground(
+      child: AnimatedSwitcher(
+        duration: const Duration(
+          milliseconds: 300,
+        ),
+        child: child,
+      ),
+    );
   }
 
   @override
