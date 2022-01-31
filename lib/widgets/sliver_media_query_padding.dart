@@ -11,7 +11,7 @@ class SliverMediaQueryPadding extends StatelessWidget {
   /// 动态的[SafeArea]
   const SliverMediaQueryPadding({
     Key? key,
-    required this.builder,
+    required this.sliver,
     this.left = true,
     this.top = true,
     this.right = true,
@@ -20,7 +20,7 @@ class SliverMediaQueryPadding extends StatelessWidget {
   }) : super(key: key);
 
   /// child
-  final WidgetBuilder builder;
+  final Widget sliver;
 
   /// Whether to avoid system intrusions on the left.
   final bool left;
@@ -59,9 +59,7 @@ class SliverMediaQueryPadding extends StatelessWidget {
               bottom: max(bottom ? padding.bottom : 0, minimum.bottom),
             ),
           ),
-          child: Builder(
-            builder: builder,
-          ),
+          child: sliver,
         );
       },
     );

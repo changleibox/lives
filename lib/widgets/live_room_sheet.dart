@@ -9,6 +9,9 @@ import 'package:lives/models/lives.dart';
 import 'package:lives/widgets/draggable_bottom_sheet.dart';
 import 'package:lives/widgets/widget_group.dart';
 
+const _coverWidth = 1280.0;
+const _coverHeight = 720.0;
+
 /// 显示[LiveRoomSheet]
 Future<RoomInfo?> showLiveRoomSheet(BuildContext context) async {
   return await showGeneralDialog<RoomInfo>(
@@ -125,7 +128,9 @@ class _LiveRoomSheetState extends CompatibleState<LiveRoomSheet> {
           ),
         ),
       ),
-      sliver: sliver,
+      slivers: [
+        sliver,
+      ],
     );
   }
 }
@@ -152,7 +157,7 @@ class _RoomInfoItem extends StatelessWidget {
         children: [
           Expanded(
             child: AspectRatio(
-              aspectRatio: 1280 / 720,
+              aspectRatio: _coverWidth / _coverHeight,
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(5),
@@ -164,8 +169,8 @@ class _RoomInfoItem extends StatelessWidget {
                 clipBehavior: Clip.antiAlias,
                 child: CachedNetworkImage(
                   imageUrl: room.coverUrl ?? '',
-                  width: 1280,
-                  height: 720,
+                  width: _coverWidth,
+                  height: _coverHeight,
                   fit: BoxFit.cover,
                 ),
               ),

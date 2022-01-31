@@ -21,7 +21,7 @@ class DraggableBottomSheet extends StatefulWidget {
     this.navigationBar,
     this.backgroundColor,
     this.borderRadius,
-    required this.sliver,
+    required this.slivers,
   }) : super(key: key);
 
   /// [CupertinoPageScaffold.navigationBar]
@@ -41,7 +41,7 @@ class DraggableBottomSheet extends StatefulWidget {
   final BorderRadius? borderRadius;
 
   /// slivers
-  final Widget sliver;
+  final List<Widget> slivers;
 
   @override
   _DraggableBottomSheetState createState() => _DraggableBottomSheetState();
@@ -98,24 +98,26 @@ class _DraggableBottomSheetState extends State<DraggableBottomSheet> {
                       slivers: [
                         if (navigationBar != null)
                           SliverMediaQueryPadding(
-                            builder: (context) {
-                              final mediaQueryData = MediaQuery.of(context);
-                              final padding = mediaQueryData.padding;
-                              return SliverPersistentHeader(
-                                pinned: true,
-                                delegate: SizedPersistentHeaderDelegate.extent(
-                                  extent: navigationBarHeight + padding.top,
-                                  child: navigationBar,
-                                ),
-                              );
-                            },
+                            sliver: Builder(
+                              builder: (context) {
+                                final mediaQueryData = MediaQuery.of(context);
+                                final padding = mediaQueryData.padding;
+                                return SliverPersistentHeader(
+                                  pinned: true,
+                                  delegate: SizedPersistentHeaderDelegate.extent(
+                                    extent: navigationBarHeight + padding.top,
+                                    child: navigationBar,
+                                  ),
+                                );
+                              },
+                            ),
                           ),
-                        SliverMediaQueryPadding(
-                          top: navigationBar == null,
-                          builder: (context) {
-                            return widget.sliver;
-                          },
-                        ),
+                        ...widget.slivers.map((e) {
+                          return SliverMediaQueryPadding(
+                            top: navigationBar == null,
+                            sliver: e,
+                          );
+                        }),
                       ],
                     ),
                   ),
