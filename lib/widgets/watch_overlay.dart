@@ -55,9 +55,9 @@ class _WatchOverlayState extends State<WatchOverlay> with TickerProviderStateMix
     if (model == _model) {
       return;
     }
-    model.addDestroyListener(_onRoomDestroy);
+    model.destroyNotifier.addListener(_onRoomDestroy);
     model.addListener(_watchListener);
-    _model?.removeDestroyListener(_onRoomDestroy);
+    _model?.destroyNotifier.removeListener(_onRoomDestroy);
     _model?.removeListener(_watchListener);
     _model = model;
     _watchListener();
@@ -66,7 +66,7 @@ class _WatchOverlayState extends State<WatchOverlay> with TickerProviderStateMix
 
   @override
   void dispose() {
-    _model?.removeDestroyListener(_onRoomDestroy);
+    _model?.destroyNotifier.removeListener(_onRoomDestroy);
     _model?.removeListener(_watchListener);
     _model = null;
     _controller.dispose();

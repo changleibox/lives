@@ -7,8 +7,8 @@ part of 'lives.dart';
 /// 直播基类
 abstract class LivesModel extends ChangeNotifier with LiveObserver {
   final _messages = Queue<BulletChat>();
-  final _listeners = <VoidCallback>{};
 
+  final _destroyNotifier = ValueNotifier<bool>(false);
   final _startedNotifier = ValueNotifier<bool>(false);
 
   LiveType _liveType = LiveType.video;
@@ -38,7 +38,10 @@ abstract class LivesModel extends ChangeNotifier with LiveObserver {
     notifyListeners();
   }
 
-  /// 停止通知
+  /// 释放房间通知
+  ValueNotifier<bool> get destroyNotifier => _destroyNotifier;
+
+  /// 开始通知
   ValueNotifier<bool> get startedNotifier => _startedNotifier;
 
   /// 是否开始直播或者观看直播
@@ -60,16 +63,6 @@ abstract class LivesModel extends ChangeNotifier with LiveObserver {
 
   /// 成员数量
   int get memberCount => _memberInfo?.length ?? 0;
-
-  /// 监听直播间解散
-  void addDestroyListener(VoidCallback listener) {
-    _listeners.add(listener);
-  }
-
-  /// 删除直播间解散监听
-  void removeDestroyListener(VoidCallback listener) {
-    _listeners.remove(listener);
-  }
 
   Future<void> _startPendingLive([FutureOr<void> Function()? onTimeout]) async {
     final pendingCompleter = Completer<void>();
@@ -185,9 +178,7 @@ abstract class LivesModel extends ChangeNotifier with LiveObserver {
   @override
   void onRoomDestroy(Object? params) {
     started = false;
-    for (var listener in _listeners) {
-      listener();
-    }
+    _destroyNotifier.value = true;
     if (_mounted) {
       notifyListeners();
     }

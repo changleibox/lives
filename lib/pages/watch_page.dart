@@ -114,13 +114,13 @@ class _WatchPresenter extends VoidPresenter<WatchPage> {
 
   @override
   void initState() {
-    _model.addDestroyListener(_onRoomDestroy);
+    _model.destroyNotifier.addListener(_onRoomDestroy);
     super.initState();
   }
 
   @override
   void dispose() {
-    _model.removeDestroyListener(_onRoomDestroy);
+    _model.destroyNotifier.removeListener(_onRoomDestroy);
     super.dispose();
   }
 
