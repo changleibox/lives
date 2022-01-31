@@ -83,6 +83,7 @@ class _DraggableBottomSheetState extends State<DraggableBottomSheet> {
     final navigationBar = widget.navigationBar;
     final preferredSize = navigationBar?.preferredSize;
     final navigationBarHeight = preferredSize?.height ?? 0;
+    final hasViewInsets = MediaQuery.of(context).viewInsets.bottom > 0;
     return CupertinoPageScaffold(
       backgroundColor: CupertinoColors.white.withOpacity(0),
       resizeToAvoidBottomInset: widget.resizeToAvoidBottomInset,
@@ -94,12 +95,11 @@ class _DraggableBottomSheetState extends State<DraggableBottomSheet> {
             builder: (context, constraints) {
               final dimension = constraints.biggest.height;
               return DraggableScrollableSheet(
-                expand: true,
-                initialChildSize: 0.5,
                 maxChildSize: 1,
-                minChildSize: 0,
-                snap: true,
-                snapSizes: const [0, 0.5, 1],
+                minChildSize: hasViewInsets ? 1 : 0,
+                initialChildSize: hasViewInsets ? 1 : 0.5,
+                snap: !hasViewInsets,
+                snapSizes: hasViewInsets ? null : const [0, 0.5, 1],
                 builder: (context, scrollController) {
                   return SlideTransition(
                     position: position,
