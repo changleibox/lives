@@ -142,13 +142,17 @@ class LiveModel extends LivesModel implements LiveModule {
     return _LiveProxy.stopPreview();
   }
 
+  void _implicitStartPreview() {
+    if (_isFront != null && _viewId != null) {
+      startPreview(_isFront!, _viewId!);
+    }
+  }
+
   /// 开始直播
   Future<void> startLive() async {
     _LiveProxy.addListener(this);
     _LiveProxy.addTRTCListener(_onEvent);
-    if (_isFront != null && _viewId != null) {
-      await startPreview(_isFront!, _viewId!);
-    }
+    _implicitStartPreview();
     await setVideoMuteImage(roomPlaceholder, 10);
     await _LiveProxy.startLive(
       roomId: _roomId,
@@ -176,9 +180,7 @@ class LiveModel extends LivesModel implements LiveModule {
     await _LiveProxy.exitLive(
       type: _liveType,
     );
-    if (_isFront != null && _viewId != null) {
-      await startPreview(_isFront!, _viewId!);
-    }
+    _implicitStartPreview();
     _stopPendingLive();
     await _liveType.stopLive();
     _speedNotifier.value = 0;
