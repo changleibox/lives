@@ -19,18 +19,14 @@ class DraggableBottomSheet extends StatefulWidget {
   const DraggableBottomSheet({
     Key? key,
     this.navigationBar,
-    this.backgroundColor,
     this.borderRadius,
+    this.backgroundColor,
+    this.resizeToAvoidBottomInset = true,
     required this.slivers,
   }) : super(key: key);
 
   /// [CupertinoPageScaffold.navigationBar]
   final PreferredSizeWidget? navigationBar;
-
-  /// The color of the widget that underlies the entire scaffold.
-  ///
-  /// By default uses [CupertinoTheme]'s `scaffoldBackgroundColor` when null.
-  final Color? backgroundColor;
 
   /// If non-null, the corners of this box are rounded by this [BorderRadius].
   ///
@@ -39,6 +35,20 @@ class DraggableBottomSheet extends StatefulWidget {
   ///
   /// {@macro flutter.painting.BoxDecoration.clip}
   final BorderRadius? borderRadius;
+
+  /// The color of the widget that underlies the entire scaffold.
+  ///
+  /// By default uses [CupertinoTheme]'s `scaffoldBackgroundColor` when null.
+  final Color? backgroundColor;
+
+  /// Whether the [child] should size itself to avoid the window's bottom inset.
+  ///
+  /// For example, if there is an onscreen keyboard displayed above the
+  /// scaffold, the body can be resized to avoid overlapping the keyboard, which
+  /// prevents widgets inside the body from being obscured by the keyboard.
+  ///
+  /// Defaults to true and cannot be null.
+  final bool resizeToAvoidBottomInset;
 
   /// slivers
   final List<Widget> slivers;
@@ -92,6 +102,7 @@ class _DraggableBottomSheetState extends State<DraggableBottomSheet> {
                 clipBehavior: Clip.antiAlias,
                 child: CupertinoPageScaffold(
                   backgroundColor: widget.backgroundColor,
+                  resizeToAvoidBottomInset: widget.resizeToAvoidBottomInset,
                   child: PrimaryScrollController(
                     controller: scrollController,
                     child: CustomScrollView(

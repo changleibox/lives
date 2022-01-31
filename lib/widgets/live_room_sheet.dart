@@ -94,12 +94,10 @@ class _LiveRoomSheetState extends CompatibleState<LiveRoomSheet> {
         ),
       );
     } else {
-      sliver = SliverSafeArea(
-        sliver: SliverList(
-          delegate: SliverChildBuilderDelegate(
-            _buildItem,
-            childCount: _rooms.length,
-          ),
+      sliver = SliverList(
+        delegate: SliverChildBuilderDelegate(
+          _buildItem,
+          childCount: _rooms.length,
         ),
       );
     }
@@ -129,7 +127,9 @@ class _LiveRoomSheetState extends CompatibleState<LiveRoomSheet> {
         ),
       ),
       slivers: [
-        sliver,
+        SliverSafeArea(
+          sliver: sliver,
+        ),
       ],
     );
   }
