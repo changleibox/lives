@@ -139,7 +139,7 @@ class _LiveProxy {
   /// 添加监听
   static void addTRTCListener(ListenerValue listener) {
     if (_rtcListeners.isEmpty) {
-      _room.addTRTCListener(_trtcEvent);
+      _room.addTRTCListener(_rtcEvent);
     }
     _rtcListeners.add(listener);
   }
@@ -148,11 +148,11 @@ class _LiveProxy {
   static void removeTRTCListener(ListenerValue listener) {
     _rtcListeners.remove(listener);
     if (_rtcListeners.isEmpty) {
-      _room.removeTRTCListener(_trtcEvent);
+      _room.removeTRTCListener(_rtcEvent);
     }
   }
 
-  static void _trtcEvent(TRTCCloudListener type, Object? params) {
+  static void _rtcEvent(TRTCCloudListener type, Object? params) {
     for (var listener in _rtcListeners) {
       listener(type, params);
     }

@@ -191,8 +191,8 @@ class _WatchPresenter extends VoidPresenter<WatchPage> {
             CupertinoDialogAction(
               isDestructiveAction: true,
               onPressed: () async {
-                await _exitWatch();
                 Navigator.pop(context, true);
+                await _exitWatch();
               },
               child: const Text('确定'),
             ),

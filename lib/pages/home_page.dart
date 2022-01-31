@@ -208,7 +208,6 @@ class _AnchorIdTextFieldState extends State<_AnchorIdTextField> {
           content: WidgetGroup.spacing(
             mainAxisSize: MainAxisSize.min,
             direction: Axis.vertical,
-            spacing: 10,
             children: [
               SizedBox(
                 height: 32,
@@ -227,44 +226,48 @@ class _AnchorIdTextFieldState extends State<_AnchorIdTextField> {
                   onChanged: _onSubmitted,
                 ),
               ),
-              if (_rooms.isNotEmpty)
-                SizedBox(
-                  height: rowCount * (115 * 720 / 1280),
-                  child: GridView.builder(
-                    physics: const NeverScrollableScrollPhysics(),
-                    padding: EdgeInsets.zero,
-                    shrinkWrap: true,
-                    itemCount: _rooms.length,
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 1280 / 720,
-                      crossAxisSpacing: 5,
-                      mainAxisSpacing: 5,
-                    ),
-                    itemBuilder: (context, index) {
-                      final room = _rooms[index];
-                      return Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        clipBehavior: Clip.antiAlias,
-                        child: CupertinoButton(
-                          padding: EdgeInsets.zero,
-                          minSize: 0,
-                          onPressed: () {
-                            _onConfirm(room.ownerId, room.liveType);
-                          },
-                          child: CachedNetworkImage(
-                            imageUrl: room.coverUrl ?? '',
-                            width: 1280,
-                            height: 720,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+              AnimatedContainer(
+                margin: EdgeInsets.only(
+                  top: _rooms.isEmpty ? 0 : 10,
                 ),
+                duration: const Duration(milliseconds: 300),
+                height: rowCount * (115 * 720 / 1280),
+                alignment: Alignment.topCenter,
+                child: GridView.builder(
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: EdgeInsets.zero,
+                  shrinkWrap: true,
+                  itemCount: _rooms.length,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 1280 / 720,
+                    crossAxisSpacing: 5,
+                    mainAxisSpacing: 5,
+                  ),
+                  itemBuilder: (context, index) {
+                    final room = _rooms[index];
+                    return Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: CupertinoButton(
+                        padding: EdgeInsets.zero,
+                        minSize: 0,
+                        onPressed: () {
+                          _onConfirm(room.ownerId, room.liveType);
+                        },
+                        child: CachedNetworkImage(
+                          imageUrl: room.coverUrl ?? '',
+                          width: 1280,
+                          height: 720,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
             ],
           ),
           actions: [
