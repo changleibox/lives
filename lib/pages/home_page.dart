@@ -214,42 +214,39 @@ class _AnchorIdTextFieldState extends State<_AnchorIdTextField> with TickerProvi
         data: CupertinoUserInterfaceLevelData.elevated,
         child: NotificationListener<DraggableScrollableNotification>(
           onNotification: (notification) {
-            if (!_popped && nearZero(notification.extent, _epsilon)) {
+            final extent = notification.extent;
+            if (!_popped && nearZero(extent, _epsilon)) {
               Navigator.pop(context);
               _popped = true;
               return false;
             }
             return true;
           },
-          child: MediaQuery.removePadding(
-            context: context,
-            removeTop: true,
-            child: DraggableScrollableSheet(
-              expand: true,
-              initialChildSize: 0.5,
-              maxChildSize: 1,
-              minChildSize: 0,
-              snap: true,
-              snapSizes: const [0, 0.5, 1],
-              builder: (context, scrollController) {
-                return SlideTransition(
-                  position: _kBottomUpTween.animate(_animation),
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      color: CupertinoColors.white,
-                      borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(10),
-                      ),
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: PrimaryScrollController(
-                      controller: scrollController,
-                      child: const _LiveRooms(),
+          child: DraggableScrollableSheet(
+            expand: true,
+            initialChildSize: 0.5,
+            maxChildSize: 1,
+            minChildSize: 0,
+            snap: true,
+            snapSizes: const [0, 0.5, 1],
+            builder: (context, scrollController) {
+              return SlideTransition(
+                position: _kBottomUpTween.animate(_animation),
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: CupertinoColors.white,
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(10),
                     ),
                   ),
-                );
-              },
-            ),
+                  clipBehavior: Clip.antiAlias,
+                  child: PrimaryScrollController(
+                    controller: scrollController,
+                    child: const _LiveRooms(),
+                  ),
+                ),
+              );
+            },
           ),
         ),
       ),
@@ -307,56 +304,59 @@ class _LiveRoomsState extends CompatibleState<_LiveRooms> {
 
   @override
   Widget build(BuildContext context) {
-    return CustomScrollView(
-      slivers: [
-        SliverPersistentHeader(
-          pinned: true,
-          delegate: PreferredSizePersistentHeaderDelegate(
-            child: CupertinoNavigationBar(
-              middle: const Text('选择房间'),
-              automaticallyImplyLeading: false,
-              padding: EdgeInsetsDirectional.zero,
-              trailing: CupertinoButton(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                ),
-                minSize: 40,
-                onPressed: () {
-                  Navigator.maybePop(context);
-                },
-                child: const Text(
-                  '关闭',
-                  style: TextStyle(
-                    fontSize: 14,
+    return MediaQuery.removePadding(
+      context: context,
+      removeTop: true,
+      child: CustomScrollView(
+        slivers: [
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: PreferredSizePersistentHeaderDelegate(
+              child: CupertinoNavigationBar(
+                middle: const Text('选择房间'),
+                automaticallyImplyLeading: false,
+                padding: EdgeInsetsDirectional.zero,
+                trailing: CupertinoButton(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                  ),
+                  minSize: 40,
+                  onPressed: () {
+                    Navigator.maybePop(context);
+                  },
+                  child: const Text(
+                    '关闭',
+                    style: TextStyle(
+                      fontSize: 14,
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-        ),
-        if (_isLoading || _rooms.isEmpty)
-          SliverFillRemaining(
-            child: Center(
-              child: Text(
-                _isLoading ? '正在加载～' : '暂无开播的主播噢～',
-                style: const TextStyle(
-                  color: CupertinoColors.secondaryLabel,
-                  fontSize: 14,
+          if (_isLoading || _rooms.isEmpty)
+            SliverFillRemaining(
+              child: Center(
+                child: Text(
+                  _isLoading ? '正在加载～' : '暂无开播的主播噢～',
+                  style: const TextStyle(
+                    color: CupertinoColors.secondaryLabel,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            )
+          else
+            SliverSafeArea(
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  _buildItem,
+                  childCount: max(0, _rooms.length * 2 - 1),
                 ),
               ),
             ),
-          )
-        else
-          SliverPadding(
-            padding: MediaQuery.of(context).padding,
-            sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                _buildItem,
-                childCount: max(0, _rooms.length * 2 - 1),
-              ),
-            ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 }
