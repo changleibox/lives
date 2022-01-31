@@ -50,14 +50,15 @@ class SliverMediaQueryPadding extends StatelessWidget {
       builder: (context, constraints) {
         final mediaQueryData = MediaQuery.of(context);
         final padding = mediaQueryData.padding;
+        final paddingTop = padding.top;
         final paintExtent = constraints.remainingPaintExtent;
         final dimension = this.dimension ?? mediaQueryData.size.height;
-        final paddingTop = max(0.0, padding.top - dimension + paintExtent);
+        final newPaddingTop = (paddingTop - dimension + paintExtent).clamp(0.0, paddingTop);
         return MediaQuery(
           data: mediaQueryData.copyWith(
             padding: padding.copyWith(
               left: max(left ? padding.left : 0, minimum.left),
-              top: max(top ? paddingTop : 0, minimum.top),
+              top: max(top ? newPaddingTop : 0, minimum.top),
               right: max(right ? padding.right : 0, minimum.right),
               bottom: max(bottom ? padding.bottom : 0, minimum.bottom),
             ),
