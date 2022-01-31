@@ -1,7 +1,6 @@
 // Copyright (c) 2022 CHANGLEI. All rights reserved.
 
 import 'dart:async';
-import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
@@ -286,20 +285,18 @@ class _LiveRoomsState extends CompatibleState<_LiveRooms> {
   }
 
   Widget _buildItem(BuildContext context, int index) {
-    if (index.isOdd) {
-      return Container(
-        decoration: const BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-              color: CupertinoColors.separator,
-              width: 0,
-            ),
+    return Container(
+      decoration: const BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: CupertinoColors.separator,
+            width: 0,
           ),
         ),
-      );
-    }
-    return _RoomInfo(
-      room: _rooms[index ~/ 2],
+      ),
+      child: _RoomInfo(
+        room: _rooms[index],
+      ),
     );
   }
 
@@ -366,7 +363,7 @@ class _LiveRoomsState extends CompatibleState<_LiveRooms> {
             sliver: SliverList(
               delegate: SliverChildBuilderDelegate(
                 _buildItem,
-                childCount: max(0, _rooms.length * 2 - 1),
+                childCount: _rooms.length,
               ),
             ),
           ),
