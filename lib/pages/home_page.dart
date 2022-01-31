@@ -4,6 +4,7 @@ import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:lives/enums/live_type.dart';
 import 'package:lives/frameworks/framework.dart';
 import 'package:lives/models/live_room_def.dart';
@@ -170,20 +171,22 @@ class _AnchorIdTextFieldState extends State<_AnchorIdTextField> {
   final _rooms = <RoomInfo>[];
 
   @override
+  void initState() {
+    Lives.getRooms(List.generate(100, (index) => (index + 1).toString())).then((value) {
+      _rooms.clear();
+      _rooms.addAll(value.where((element) => element.ownerId != Lives.userId));
+      if (!mounted) {
+        return;
+      }
+      setState(() {});
+    });
+    super.initState();
+  }
+
+  @override
   void dispose() {
     _controller.dispose();
     super.dispose();
-  }
-
-  Future<void> _onSubmitted(String text) async {
-    if (text.isNotEmpty) {
-      final rooms = await Lives.getRooms([text]);
-      _rooms.clear();
-      _rooms.addAll(rooms.where((element) => element.ownerId != Lives.userId));
-    } else {
-      _rooms.clear();
-    }
-    setState(() {});
   }
 
   Future<void> _onConfirm(String anchorId, LiveType liveType) async {
@@ -199,88 +202,99 @@ class _AnchorIdTextFieldState extends State<_AnchorIdTextField> {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final rowCount = (_rooms.length / 2).ceil();
-        return CupertinoAlertDialog(
-          insetAnimationDuration: _keyboardDuration,
-          title: const Text('选择房间'),
-          content: WidgetGroup.spacing(
-            mainAxisSize: MainAxisSize.min,
+    return CupertinoAlertDialog(
+      insetAnimationDuration: _keyboardDuration,
+      title: const Text('选择房间'),
+      content: Container(
+        margin: const EdgeInsets.only(
+          top: 8,
+        ),
+        child: AnimatedCrossFade(
+          crossFadeState: _rooms.isEmpty ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+          duration: const Duration(milliseconds: 250),
+          firstChild: Container(),
+          secondChild: WidgetGroup.separated(
             direction: Axis.vertical,
-            children: [
-              SizedBox(
-                height: 32,
-                child: CupertinoTextField(
-                  controller: _controller,
-                  placeholder: '请输入房间ID',
-                  autofocus: true,
-                  keyboardType: TextInputType.number,
-                  style: const TextStyle(
-                    fontSize: 14,
-                  ),
-                  placeholderStyle: const TextStyle(
-                    fontSize: 14,
-                    color: CupertinoColors.placeholderText,
-                  ),
-                  onChanged: _onSubmitted,
-                ),
-              ),
-              AnimatedContainer(
-                margin: EdgeInsets.only(
-                  top: _rooms.isEmpty ? 0 : 10,
-                ),
-                duration: const Duration(milliseconds: 300),
-                height: rowCount * (115 * 720 / 1280),
-                alignment: Alignment.topCenter,
-                child: GridView.builder(
-                  physics: const NeverScrollableScrollPhysics(),
-                  padding: EdgeInsets.zero,
-                  shrinkWrap: true,
-                  itemCount: _rooms.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 1280 / 720,
-                    crossAxisSpacing: 5,
-                    mainAxisSpacing: 5,
-                  ),
-                  itemBuilder: (context, index) {
-                    final room = _rooms[index];
-                    return Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      clipBehavior: Clip.antiAlias,
-                      child: CupertinoButton(
-                        padding: EdgeInsets.zero,
-                        minSize: 0,
-                        onPressed: () {
-                          _onConfirm(room.ownerId, room.liveType);
-                        },
-                        child: CachedNetworkImage(
-                          imageUrl: room.coverUrl ?? '',
-                          width: 1280,
-                          height: 720,
-                          fit: BoxFit.cover,
+            separatorBuilder: (context, index) {
+              return const SizedBox(
+                height: 10,
+              );
+            },
+            itemCount: _rooms.length,
+            itemBuilder: (context, index) {
+              final room = _rooms[index];
+              return CupertinoButton(
+                padding: EdgeInsets.zero,
+                minSize: 0,
+                onPressed: () {
+                  _onConfirm(room.ownerId, room.liveType);
+                },
+                child: WidgetGroup.spacing(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: 10,
+                  children: [
+                    Expanded(
+                      child: AspectRatio(
+                        aspectRatio: 1280 / 720,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          child: CachedNetworkImage(
+                            imageUrl: room.coverUrl ?? '',
+                            width: 1280,
+                            height: 720,
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
-                    );
-                  },
+                    ),
+                    Expanded(
+                      child: WidgetGroup.spacing(
+                        alignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        direction: Axis.vertical,
+                        spacing: 4,
+                        children: [
+                          Text(
+                            '${room.liveType.label}：${room.roomName ?? '未知'}',
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: CupertinoColors.label,
+                            ),
+                          ),
+                          Text(
+                            '主播：${room.ownerName ?? '未知'}',
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: CupertinoColors.secondaryLabel,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
+              );
+            },
           ),
-          actions: [
-            CupertinoDialogAction(
-              isDestructiveAction: true,
-              child: const Text('取消'),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-          ],
-        );
-      },
+        ),
+      ),
+      actions: [
+        CupertinoDialogAction(
+          isDestructiveAction: true,
+          child: const Text('取消'),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+      ],
     );
   }
 }
