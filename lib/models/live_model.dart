@@ -322,6 +322,10 @@ class LiveModel extends LivesModel implements LiveModule {
     if (isFont == null) {
       return;
     }
+    if (_isFront == true) {
+      _enableTorch = true;
+      await enableCameraTorch();
+    }
     await _LiveProxy.switchCamera(_isFront = !isFont);
     notifyListeners();
   }

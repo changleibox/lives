@@ -5,6 +5,7 @@ import 'package:lives/commons/test_data.dart';
 import 'package:lives/models/lives.dart';
 import 'package:lives/widgets/share.dart';
 import 'package:lives/widgets/widget_group.dart';
+import 'package:oktoast/oktoast.dart';
 import 'package:provider/provider.dart';
 import 'package:tencent_trtc_cloud/trtc_cloud_def.dart';
 
@@ -23,7 +24,8 @@ class InteractiveTools extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final orientation = MediaQuery.of(context).orientation;
+    final mediaQueryData = MediaQuery.of(context);
+    final orientation = mediaQueryData.orientation;
     final portrait = orientation == Orientation.portrait;
     return Container(
       decoration: const BoxDecoration(
@@ -31,6 +33,9 @@ class InteractiveTools extends StatelessWidget {
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(8),
         ),
+      ),
+      constraints: BoxConstraints(
+        maxHeight: mediaQueryData.size.height / 2,
       ),
       child: SingleChildScrollView(
         child: SafeArea(
@@ -132,6 +137,10 @@ class InteractiveTools extends StatelessWidget {
                     text: '闪光灯${model.enableTorch ? '开' : '关'}',
                     icon: CupertinoIcons.bolt_fill,
                     onPressed: () {
+                      if (model.isFront == true) {
+                        showToast('前置摄像头不支持闪光灯');
+                        return;
+                      }
                       model.enableCameraTorch();
                     },
                   ),
