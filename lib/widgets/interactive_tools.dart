@@ -138,7 +138,7 @@ class InteractiveTools extends StatelessWidget {
                     icon: CupertinoIcons.bolt_fill,
                     onPressed: () {
                       if (model.isFront == true) {
-                        showToast('前置摄像头不支持闪光灯');
+                        showToast('前置摄像头不能开启闪光灯噢～');
                         return;
                       }
                       model.enableCameraTorch();
