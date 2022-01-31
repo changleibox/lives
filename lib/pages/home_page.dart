@@ -198,9 +198,8 @@ class _AnchorIdTextFieldState extends State<_AnchorIdTextField> with TickerProvi
           if (!_popped && nearZero(extent, _epsilon)) {
             Navigator.pop(context);
             _popped = true;
-            return false;
           }
-          return true;
+          return !_popped;
         },
         child: DraggableScrollableSheet(
           expand: true,
