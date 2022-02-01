@@ -12,19 +12,16 @@ class SliverMediaQueryPadding extends StatelessWidget {
   const SliverMediaQueryPadding({
     Key? key,
     required this.sliver,
-    this.dimension,
     this.left = true,
     this.top = true,
     this.right = true,
     this.bottom = true,
     this.minimum = EdgeInsets.zero,
+    this.resizeToAvoidBottomInset = true,
   }) : super(key: key);
 
   /// child
   final Widget sliver;
-
-  /// viewportDimension
-  final double? dimension;
 
   /// Whether to avoid system intrusions on the left.
   final bool left;
@@ -44,21 +41,33 @@ class SliverMediaQueryPadding extends StatelessWidget {
   /// The greater of the minimum insets and the media padding will be applied.
   final EdgeInsets minimum;
 
+  /// Whether the [child] should size itself to avoid the window's bottom inset.
+  ///
+  /// For example, if there is an onscreen keyboard displayed above the
+  /// scaffold, the body can be resized to avoid overlapping the keyboard, which
+  /// prevents widgets inside the body from being obscured by the keyboard.
+  ///
+  /// Defaults to true and cannot be null.
+  final bool resizeToAvoidBottomInset;
+
   @override
   Widget build(BuildContext context) {
     return SliverLayoutBuilder(
       builder: (context, constraints) {
         final mediaQueryData = MediaQuery.of(context);
+        final height = mediaQueryData.size.height;
         final padding = mediaQueryData.padding;
         final paddingTop = padding.top;
-        final paintExtent = constraints.remainingPaintExtent;
-        final dimension = this.dimension ?? mediaQueryData.size.height;
-        final newPaddingTop = (paddingTop - dimension + paintExtent).clamp(0.0, paddingTop);
+        final viewInsetBottom = mediaQueryData.viewInsets.bottom;
+        final dimension = height - (resizeToAvoidBottomInset ? viewInsetBottom : 0);
+        final remainingPaintExtent = constraints.remainingPaintExtent;
+        final precedingScrollExtent = constraints.precedingScrollExtent;
+        final newPaddingTop = paddingTop - dimension + remainingPaintExtent - precedingScrollExtent;
         return MediaQuery(
           data: mediaQueryData.copyWith(
             padding: padding.copyWith(
               left: max(left ? padding.left : 0, minimum.left),
-              top: max(top ? newPaddingTop : 0, minimum.top),
+              top: max(top ? newPaddingTop.clamp(0.0, paddingTop) : 0, minimum.top),
               right: max(right ? padding.right : 0, minimum.right),
               bottom: max(bottom ? padding.bottom : 0, minimum.bottom),
             ),
