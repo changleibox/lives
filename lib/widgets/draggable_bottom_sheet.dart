@@ -122,7 +122,6 @@ class _DraggableBottomSheetState extends State<DraggableBottomSheet> {
                       ...widget.slivers.map((e) {
                         return SliverMediaQueryPadding(
                           resizeToAvoidBottomInset: resizeToAvoidBottomInset,
-                          top: navigationBar == null,
                           sliver: e,
                         );
                       }),

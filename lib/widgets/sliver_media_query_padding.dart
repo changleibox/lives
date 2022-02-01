@@ -52,24 +52,36 @@ class SliverMediaQueryPadding extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final mediaQueryData = MediaQuery.of(context);
+    final height = mediaQueryData.size.height;
+    final padding = mediaQueryData.padding;
+    final paddingTop = padding.top;
+    final viewInsetBottom = mediaQueryData.viewInsets.bottom;
+    final dimension = height - (resizeToAvoidBottomInset ? viewInsetBottom : 0);
+    final newPadding = padding.copyWith(
+      left: max(left ? padding.left : 0, minimum.left),
+      top: max(top ? paddingTop : 0, minimum.top),
+      right: max(right ? padding.right : 0, minimum.right),
+      bottom: max(bottom ? padding.bottom : 0, minimum.bottom),
+    );
+    if (!top) {
+      return MediaQuery(
+        data: mediaQueryData.copyWith(
+          padding: newPadding,
+        ),
+        child: sliver,
+      );
+    }
+    final viewportMainAxisExtent = paddingTop - dimension;
     return SliverLayoutBuilder(
       builder: (context, constraints) {
-        final mediaQueryData = MediaQuery.of(context);
-        final height = mediaQueryData.size.height;
-        final padding = mediaQueryData.padding;
-        final paddingTop = padding.top;
-        final viewInsetBottom = mediaQueryData.viewInsets.bottom;
-        final dimension = height - (resizeToAvoidBottomInset ? viewInsetBottom : 0);
         final remainingPaintExtent = constraints.remainingPaintExtent;
         final precedingScrollExtent = constraints.precedingScrollExtent;
-        final newPaddingTop = paddingTop - dimension + remainingPaintExtent - precedingScrollExtent;
+        final newPaddingTop = viewportMainAxisExtent + remainingPaintExtent - precedingScrollExtent;
         return MediaQuery(
           data: mediaQueryData.copyWith(
-            padding: padding.copyWith(
-              left: max(left ? padding.left : 0, minimum.left),
-              top: max(top ? newPaddingTop.clamp(0.0, paddingTop) : 0, minimum.top),
-              right: max(right ? padding.right : 0, minimum.right),
-              bottom: max(bottom ? padding.bottom : 0, minimum.bottom),
+            padding: newPadding.copyWith(
+              top: max(newPaddingTop.clamp(0.0, paddingTop), minimum.top),
             ),
           ),
           child: sliver,
