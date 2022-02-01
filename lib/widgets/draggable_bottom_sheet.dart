@@ -83,34 +83,37 @@ class _DraggableBottomSheetState extends State<DraggableBottomSheet> {
     final navigationBar = widget.navigationBar;
     final preferredSize = navigationBar?.preferredSize;
     final navigationBarHeight = preferredSize?.height ?? 0;
-    final hasViewInsets = MediaQuery.of(context).viewInsets.bottom > 0;
-    return CupertinoPageScaffold(
-      backgroundColor: CupertinoColors.white.withOpacity(0),
-      resizeToAvoidBottomInset: widget.resizeToAvoidBottomInset,
-      child: CupertinoUserInterfaceLevel(
-        data: CupertinoUserInterfaceLevelData.elevated,
-        child: NotificationListener<DraggableScrollableNotification>(
-          onNotification: _onNotification,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final dimension = constraints.biggest.height;
-              return DraggableScrollableSheet(
-                maxChildSize: 1,
-                minChildSize: hasViewInsets ? 1 : 0,
-                initialChildSize: hasViewInsets ? 1 : 0.5,
-                snap: !hasViewInsets,
-                snapSizes: hasViewInsets ? null : const [0, 0.5, 1],
-                builder: (context, scrollController) {
-                  return SlideTransition(
+    final viewInsetBottom = MediaQuery.of(context).viewInsets.bottom;
+    final hasViewInsets = viewInsetBottom > 0;
+    return CupertinoUserInterfaceLevel(
+      data: CupertinoUserInterfaceLevelData.elevated,
+      child: NotificationListener<DraggableScrollableNotification>(
+        onNotification: _onNotification,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            var dimension = constraints.biggest.height;
+            if (widget.resizeToAvoidBottomInset) {
+              dimension -= viewInsetBottom;
+            }
+            return DraggableScrollableSheet(
+              maxChildSize: 1,
+              minChildSize: hasViewInsets ? 1 : 0,
+              initialChildSize: hasViewInsets ? 1 : 0.5,
+              snap: !hasViewInsets,
+              snapSizes: hasViewInsets ? null : const [0, 0.5, 1],
+              builder: (context, scrollController) {
+                return PrimaryScrollController(
+                  controller: scrollController,
+                  child: SlideTransition(
                     position: position,
                     child: Container(
                       decoration: BoxDecoration(
                         borderRadius: widget.borderRadius,
-                        color: widget.backgroundColor,
                       ),
                       clipBehavior: Clip.antiAlias,
-                      child: PrimaryScrollController(
-                        controller: scrollController,
+                      child: CupertinoPageScaffold(
+                        backgroundColor: widget.backgroundColor,
+                        resizeToAvoidBottomInset: widget.resizeToAvoidBottomInset,
                         child: CustomScrollView(
                           slivers: [
                             if (navigationBar != null)
@@ -141,11 +144,11 @@ class _DraggableBottomSheetState extends State<DraggableBottomSheet> {
                         ),
                       ),
                     ),
-                  );
-                },
-              );
-            },
-          ),
+                  ),
+                );
+              },
+            );
+          },
         ),
       ),
     );
