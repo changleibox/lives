@@ -1,6 +1,7 @@
 // Copyright (c) 2022 CHANGLEI. All rights reserved.
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
 import 'package:lives/widgets/persistent_header_delegate.dart';
 import 'package:lives/widgets/sliver_media_query_padding.dart';
@@ -92,7 +93,8 @@ class _DraggableBottomSheetState extends State<DraggableBottomSheet> {
         child: LayoutBuilder(
           builder: (context, constraints) {
             var dimension = constraints.biggest.height;
-            if (widget.resizeToAvoidBottomInset) {
+            final resizeToAvoidBottomInset = widget.resizeToAvoidBottomInset;
+            if (resizeToAvoidBottomInset) {
               dimension -= viewInsetBottom;
             }
             return DraggableScrollableSheet(
@@ -108,40 +110,40 @@ class _DraggableBottomSheetState extends State<DraggableBottomSheet> {
                     position: position,
                     child: Container(
                       decoration: BoxDecoration(
+                        color: widget.backgroundColor,
                         borderRadius: widget.borderRadius,
                       ),
+                      padding: EdgeInsets.only(
+                        bottom: resizeToAvoidBottomInset ? viewInsetBottom : 0,
+                      ),
                       clipBehavior: Clip.antiAlias,
-                      child: CupertinoPageScaffold(
-                        backgroundColor: widget.backgroundColor,
-                        resizeToAvoidBottomInset: widget.resizeToAvoidBottomInset,
-                        child: CustomScrollView(
-                          slivers: [
-                            if (navigationBar != null)
-                              SliverMediaQueryPadding(
-                                dimension: dimension,
-                                sliver: Builder(
-                                  builder: (context) {
-                                    final mediaQueryData = MediaQuery.of(context);
-                                    final padding = mediaQueryData.padding;
-                                    return SliverPersistentHeader(
-                                      pinned: true,
-                                      delegate: SizedPersistentHeaderDelegate.extent(
-                                        extent: navigationBarHeight + padding.top,
-                                        child: navigationBar,
-                                      ),
-                                    );
-                                  },
-                                ),
+                      child: CustomScrollView(
+                        slivers: [
+                          if (navigationBar != null)
+                            SliverMediaQueryPadding(
+                              dimension: dimension,
+                              sliver: Builder(
+                                builder: (context) {
+                                  final mediaQueryData = MediaQuery.of(context);
+                                  final padding = mediaQueryData.padding;
+                                  return SliverPersistentHeader(
+                                    pinned: true,
+                                    delegate: SizedPersistentHeaderDelegate.extent(
+                                      extent: navigationBarHeight + padding.top,
+                                      child: navigationBar,
+                                    ),
+                                  );
+                                },
                               ),
-                            ...widget.slivers.map((e) {
-                              return SliverMediaQueryPadding(
-                                dimension: dimension,
-                                top: navigationBar == null,
-                                sliver: e,
-                              );
-                            }),
-                          ],
-                        ),
+                            ),
+                          ...widget.slivers.map((e) {
+                            return SliverMediaQueryPadding(
+                              dimension: dimension,
+                              top: navigationBar == null,
+                              sliver: e,
+                            );
+                          }),
+                        ],
                       ),
                     ),
                   ),
