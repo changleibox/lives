@@ -2,7 +2,6 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/physics.dart';
 import 'package:lives/widgets/persistent_header_delegate.dart';
 import 'package:lives/widgets/sliver_media_query_padding.dart';
 
@@ -11,31 +10,31 @@ final _kBottomUpTween = Tween<Offset>(
   begin: const Offset(0.0, 1.0),
   end: Offset.zero,
 );
+const _stoppedAnimation = AlwaysStoppedAnimation<double>(1.0);
 
 /// Created by box on 2022/1/31.
 ///
 /// 可拖动的[BottomSheet]
-class DraggableBottomSheet extends StatefulWidget {
+class DraggableBottomSheet extends StatelessWidget {
   /// 可拖动的[BottomSheet]
   const DraggableBottomSheet({
     Key? key,
     this.navigationBar,
-    this.borderRadius,
     this.backgroundColor,
     this.resizeToAvoidBottomInset = true,
+    this.initialChildSize = 0.5,
+    this.minChildSize = 0.25,
+    this.maxChildSize = 1.0,
+    this.expand = true,
+    this.snap = false,
+    this.snapSizes,
+    this.builder,
+    this.onNotification,
     required this.slivers,
   }) : super(key: key);
 
   /// [CupertinoPageScaffold.navigationBar]
   final PreferredSizeWidget? navigationBar;
-
-  /// If non-null, the corners of this box are rounded by this [BorderRadius].
-  ///
-  /// Applies only to boxes with rectangular shapes; ignored if [shape] is not
-  /// [BoxShape.rectangle].
-  ///
-  /// {@macro flutter.painting.BoxDecoration.clip}
-  final BorderRadius? borderRadius;
 
   /// The color of the widget that underlies the entire scaffold.
   ///
@@ -51,83 +50,149 @@ class DraggableBottomSheet extends StatefulWidget {
   /// Defaults to true and cannot be null.
   final bool resizeToAvoidBottomInset;
 
+  /// The initial fractional value of the parent container's height to use when
+  /// displaying the widget.
+  ///
+  /// Rebuilding the sheet with a new [initialChildSize] will only move the
+  /// the sheet to the new value if the sheet has not yet been dragged since it
+  /// was first built or since the last call to [DraggableScrollableActuator.reset].
+  ///
+  /// The default value is `0.5`.
+  final double initialChildSize;
+
+  /// The minimum fractional value of the parent container's height to use when
+  /// displaying the widget.
+  ///
+  /// The default value is `0.25`.
+  final double minChildSize;
+
+  /// The maximum fractional value of the parent container's height to use when
+  /// displaying the widget.
+  ///
+  /// The default value is `1.0`.
+  final double maxChildSize;
+
+  /// Whether the widget should expand to fill the available space in its parent
+  /// or not.
+  ///
+  /// In most cases, this should be true. However, in the case of a parent
+  /// widget that will position this one based on its desired size (such as a
+  /// [Center]), this should be set to false.
+  ///
+  /// The default value is true.
+  final bool expand;
+
+  /// Whether the widget should snap between [snapSizes] when the user lifts
+  /// their finger during a drag.
+  ///
+  /// If the user's finger was still moving when they lifted it, the widget will
+  /// snap to the next snap size (see [snapSizes]) in the direction of the drag.
+  /// If their finger was still, the widget will snap to the nearest snap size.
+  ///
+  /// Rebuilding the sheet with snap newly enabled will immediately trigger a
+  /// snap unless the sheet has not yet been dragged away from
+  /// [initialChildSize] since first being built or since the last call to
+  /// [DraggableScrollableActuator.reset].
+  final bool snap;
+
+  /// A list of target sizes that the widget should snap to.
+  ///
+  /// Snap sizes are fractional values of the parent container's height. They
+  /// must be listed in increasing order and be between [minChildSize] and
+  /// [maxChildSize].
+  ///
+  /// The [minChildSize] and [maxChildSize] are implicitly included in snap
+  /// sizes and do not need to be specified here. For example, `snapSizes = [.5]`
+  /// will result in a sheet that snaps between [minChildSize], `.5`, and
+  /// [maxChildSize].
+  ///
+  /// Any modifications to the [snapSizes] list will not take effect until the
+  /// `build` function containing this widget is run again.
+  ///
+  /// Rebuilding with a modified or new list will trigger a snap unless the
+  /// sheet has not yet been dragged away from [initialChildSize] since first
+  /// being built or since the last call to [DraggableScrollableActuator.reset].
+  final List<double>? snapSizes;
+
+  /// {@macro flutter.widgets.widgetsApp.builder}
+  final TransitionBuilder? builder;
+
+  /// Called when a notification of the appropriate type arrives at this
+  /// location in the tree.
+  ///
+  /// Return true to cancel the notification bubbling. Return false to
+  /// allow the notification to continue to be dispatched to further ancestors.
+  ///
+  /// The notification's [Notification.visitAncestor] method is called for each
+  /// ancestor, and invokes this callback as appropriate.
+  ///
+  /// Notifications vary in terms of when they are dispatched. There are two
+  /// main possibilities: dispatch between frames, and dispatch during layout.
+  ///
+  /// For notifications that dispatch during layout, such as those that inherit
+  /// from [LayoutChangedNotification], it is too late to call [State.setState]
+  /// in response to the notification (as layout is currently happening in a
+  /// descendant, by definition, since notifications bubble up the tree). For
+  /// widgets that depend on layout, consider a [LayoutBuilder] instead.
+  final NotificationListenerCallback<DraggableScrollableNotification>? onNotification;
+
   /// slivers
   final List<Widget> slivers;
 
   @override
-  _DraggableBottomSheetState createState() => _DraggableBottomSheetState();
-}
-
-class _DraggableBottomSheetState extends State<DraggableBottomSheet> {
-  static final _epsilon = Tolerance.defaultTolerance.distance;
-
-  bool _popped = false;
-
-  bool _onNotification(DraggableScrollableNotification notification) {
-    final extent = notification.extent;
-    if (!_popped && nearZero(extent, _epsilon)) {
-      Navigator.pop(context);
-      _popped = true;
-    }
-    return !_popped;
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final preferredSize = navigationBar?.preferredSize;
+    final navigationBarHeight = preferredSize?.height ?? 0;
+    final viewInsetBottom = MediaQuery.of(context).viewInsets.bottom;
+    Widget child = Container(
+      color: backgroundColor,
+      padding: EdgeInsets.only(
+        bottom: resizeToAvoidBottomInset ? viewInsetBottom : 0,
+      ),
+      child: CustomScrollView(
+        slivers: [
+          if (navigationBar != null)
+            _SliverPinnedElement(
+              resizeToAvoidBottomInset: resizeToAvoidBottomInset,
+              height: navigationBarHeight,
+              child: navigationBar!,
+            ),
+          ...slivers.map((e) {
+            return SliverMediaQueryPadding(
+              resizeToAvoidBottomInset: resizeToAvoidBottomInset,
+              sliver: e,
+            );
+          }),
+        ],
+      ),
+    );
+    if (builder != null) {
+      child = builder!(context, child);
+    }
     final animation = ModalRoute.of(context)?.animation;
     final Animation<Offset> position;
     if (animation == null) {
-      position = _kBottomUpTween.animate(const AlwaysStoppedAnimation(1));
+      position = _kBottomUpTween.animate(_stoppedAnimation);
     } else {
       position = _kBottomUpTween.animate(animation);
     }
-    final navigationBar = widget.navigationBar;
-    final preferredSize = navigationBar?.preferredSize;
-    final navigationBarHeight = preferredSize?.height ?? 0;
-    final resizeToAvoidBottomInset = widget.resizeToAvoidBottomInset;
-    final viewInsetBottom = MediaQuery.of(context).viewInsets.bottom;
     final hasViewInsets = viewInsetBottom > 0 && resizeToAvoidBottomInset;
     return CupertinoUserInterfaceLevel(
       data: CupertinoUserInterfaceLevelData.elevated,
       child: NotificationListener<DraggableScrollableNotification>(
-        onNotification: _onNotification,
+        onNotification: onNotification,
         child: DraggableScrollableSheet(
-          maxChildSize: 1,
-          minChildSize: hasViewInsets ? 1 : 0,
-          initialChildSize: hasViewInsets ? 1 : 0.5,
-          snap: !hasViewInsets,
-          snapSizes: hasViewInsets ? null : const [0, 0.5, 1],
+          maxChildSize: hasViewInsets ? 1 : maxChildSize,
+          minChildSize: hasViewInsets ? 1 : minChildSize,
+          initialChildSize: hasViewInsets ? 1 : initialChildSize,
+          snap: !hasViewInsets && snap,
+          snapSizes: hasViewInsets ? null : snapSizes,
           builder: (context, scrollController) {
             return PrimaryScrollController(
               controller: scrollController,
               child: SlideTransition(
                 position: position,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: widget.backgroundColor,
-                    borderRadius: widget.borderRadius,
-                  ),
-                  padding: EdgeInsets.only(
-                    bottom: resizeToAvoidBottomInset ? viewInsetBottom : 0,
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  child: CustomScrollView(
-                    slivers: [
-                      if (navigationBar != null)
-                        _SliverPinnedElement(
-                          resizeToAvoidBottomInset: resizeToAvoidBottomInset,
-                          height: navigationBarHeight,
-                          child: navigationBar,
-                        ),
-                      ...widget.slivers.map((e) {
-                        return SliverMediaQueryPadding(
-                          resizeToAvoidBottomInset: resizeToAvoidBottomInset,
-                          sliver: e,
-                        );
-                      }),
-                    ],
-                  ),
-                ),
+                child: child,
               ),
             );
           },

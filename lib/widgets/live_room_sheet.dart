@@ -2,6 +2,7 @@
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/physics.dart';
 import 'package:lives/enums/live_type.dart';
 import 'package:lives/frameworks/framework.dart';
 import 'package:lives/models/live_room_def.dart';
@@ -40,9 +41,12 @@ class LiveRoomSheet extends StatefulWidget {
 }
 
 class _LiveRoomSheetState extends CompatibleState<LiveRoomSheet> {
+  static final _epsilon = Tolerance.defaultTolerance.distance;
+
   final _rooms = <RoomInfo>[];
 
   bool _isLoading = true;
+  bool _popped = false;
 
   @override
   void onPostFrame(Duration timeStamp) {
@@ -60,6 +64,16 @@ class _LiveRoomSheetState extends CompatibleState<LiveRoomSheet> {
         _isLoading = false;
       });
     }
+  }
+
+  bool _onNotification(DraggableScrollableNotification notification) {
+    final minExtent = notification.minExtent;
+    final extent = notification.extent;
+    if (!_popped && nearEqual(extent, minExtent, _epsilon)) {
+      _popped = true;
+      Navigator.maybePop(context);
+    }
+    return !_popped;
   }
 
   Widget _buildItem(BuildContext context, int index) {
@@ -102,9 +116,12 @@ class _LiveRoomSheetState extends CompatibleState<LiveRoomSheet> {
       );
     }
     return DraggableBottomSheet(
-      borderRadius: const BorderRadius.vertical(
-        top: Radius.circular(10),
-      ),
+      snap: true,
+      minChildSize: 0.0,
+      maxChildSize: 1.0,
+      initialChildSize: 0.5,
+      snapSizes: const [0.0, 0.5, 1.0],
+      onNotification: _onNotification,
       backgroundColor: CupertinoColors.white,
       navigationBar: CupertinoNavigationBar(
         middle: const Text('正在直播'),
@@ -126,6 +143,14 @@ class _LiveRoomSheetState extends CompatibleState<LiveRoomSheet> {
           ),
         ),
       ),
+      builder: (context, child) {
+        return ClipRRect(
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(10),
+          ),
+          child: child,
+        );
+      },
       slivers: [
         SliverSafeArea(
           sliver: sliver,
