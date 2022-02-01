@@ -86,72 +86,86 @@ class _DraggableBottomSheetState extends State<DraggableBottomSheet> {
     final navigationBarHeight = preferredSize?.height ?? 0;
     final viewInsetBottom = MediaQuery.of(context).viewInsets.bottom;
     final hasViewInsets = viewInsetBottom > 0;
+    final resizeToAvoidBottomInset = widget.resizeToAvoidBottomInset;
     return CupertinoUserInterfaceLevel(
       data: CupertinoUserInterfaceLevelData.elevated,
       child: NotificationListener<DraggableScrollableNotification>(
         onNotification: _onNotification,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            var dimension = constraints.biggest.height;
-            final resizeToAvoidBottomInset = widget.resizeToAvoidBottomInset;
-            if (resizeToAvoidBottomInset) {
-              dimension -= viewInsetBottom;
-            }
-            return DraggableScrollableSheet(
-              maxChildSize: 1,
-              minChildSize: hasViewInsets ? 1 : 0,
-              initialChildSize: hasViewInsets ? 1 : 0.5,
-              snap: !hasViewInsets,
-              snapSizes: hasViewInsets ? null : const [0, 0.5, 1],
-              builder: (context, scrollController) {
-                return PrimaryScrollController(
-                  controller: scrollController,
-                  child: SlideTransition(
-                    position: position,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: widget.backgroundColor,
-                        borderRadius: widget.borderRadius,
-                      ),
-                      padding: EdgeInsets.only(
-                        bottom: resizeToAvoidBottomInset ? viewInsetBottom : 0,
-                      ),
-                      clipBehavior: Clip.antiAlias,
-                      child: CustomScrollView(
-                        slivers: [
-                          if (navigationBar != null)
-                            SliverMediaQueryPadding(
-                              dimension: dimension,
-                              sliver: Builder(
-                                builder: (context) {
-                                  final mediaQueryData = MediaQuery.of(context);
-                                  final padding = mediaQueryData.padding;
-                                  return SliverPersistentHeader(
-                                    pinned: true,
-                                    delegate: SizedPersistentHeaderDelegate.extent(
-                                      extent: navigationBarHeight + padding.top,
-                                      child: navigationBar,
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ...widget.slivers.map((e) {
-                            return SliverMediaQueryPadding(
-                              dimension: dimension,
-                              top: navigationBar == null,
-                              sliver: e,
-                            );
-                          }),
-                        ],
-                      ),
-                    ),
+        child: DraggableScrollableSheet(
+          maxChildSize: 1,
+          minChildSize: hasViewInsets ? 1 : 0,
+          initialChildSize: hasViewInsets ? 1 : 0.5,
+          snap: !hasViewInsets,
+          snapSizes: hasViewInsets ? null : const [0, 0.5, 1],
+          builder: (context, scrollController) {
+            return PrimaryScrollController(
+              controller: scrollController,
+              child: SlideTransition(
+                position: position,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: widget.backgroundColor,
+                    borderRadius: widget.borderRadius,
                   ),
-                );
-              },
+                  padding: EdgeInsets.only(
+                    bottom: resizeToAvoidBottomInset ? viewInsetBottom : 0,
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: CustomScrollView(
+                    slivers: [
+                      if (navigationBar != null)
+                        _SliverPinnedElement(
+                          resizeToAvoidBottomInset: resizeToAvoidBottomInset,
+                          height: navigationBarHeight,
+                          child: navigationBar,
+                        ),
+                      ...widget.slivers.map((e) {
+                        return SliverMediaQueryPadding(
+                          resizeToAvoidBottomInset: resizeToAvoidBottomInset,
+                          top: navigationBar == null,
+                          sliver: e,
+                        );
+                      }),
+                    ],
+                  ),
+                ),
+              ),
             );
           },
         ),
+      ),
+    );
+  }
+}
+
+class _SliverPinnedElement extends StatelessWidget {
+  const _SliverPinnedElement({
+    Key? key,
+    required this.resizeToAvoidBottomInset,
+    required this.child,
+    this.height = 0,
+  }) : super(key: key);
+
+  final bool resizeToAvoidBottomInset;
+  final Widget child;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverMediaQueryPadding(
+      resizeToAvoidBottomInset: resizeToAvoidBottomInset,
+      sliver: Builder(
+        builder: (context) {
+          final mediaQueryData = MediaQuery.of(context);
+          final padding = mediaQueryData.padding;
+          return SliverPersistentHeader(
+            pinned: true,
+            delegate: SizedPersistentHeaderDelegate.extent(
+              extent: height + padding.top,
+              child: child,
+            ),
+          );
+        },
       ),
     );
   }
