@@ -84,9 +84,9 @@ class _DraggableBottomSheetState extends State<DraggableBottomSheet> {
     final navigationBar = widget.navigationBar;
     final preferredSize = navigationBar?.preferredSize;
     final navigationBarHeight = preferredSize?.height ?? 0;
-    final viewInsetBottom = MediaQuery.of(context).viewInsets.bottom;
-    final hasViewInsets = viewInsetBottom > 0;
     final resizeToAvoidBottomInset = widget.resizeToAvoidBottomInset;
+    final viewInsetBottom = MediaQuery.of(context).viewInsets.bottom;
+    final hasViewInsets = viewInsetBottom > 0 && resizeToAvoidBottomInset;
     return CupertinoUserInterfaceLevel(
       data: CupertinoUserInterfaceLevelData.elevated,
       child: NotificationListener<DraggableScrollableNotification>(
