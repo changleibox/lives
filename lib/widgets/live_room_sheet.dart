@@ -67,9 +67,7 @@ class _LiveRoomSheetState extends CompatibleState<LiveRoomSheet> {
   }
 
   bool _onNotification(DraggableScrollableNotification notification) {
-    final minExtent = notification.minExtent;
-    final extent = notification.extent;
-    if (!_popped && nearEqual(extent, minExtent, _epsilon)) {
+    if (!_popped && nearZero(notification.extent, _epsilon)) {
       _popped = true;
       Navigator.maybePop(context);
     }
